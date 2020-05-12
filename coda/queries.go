@@ -6,7 +6,7 @@ var (
 	// Get the node status
 	queryDaemonStatus = `
 		query {
-  		daemonStatus {
+			daemonStatus {
 				syncStatus
 				uptimeSecs
 				stateHash
@@ -16,8 +16,7 @@ var (
 				blockchainLength
 				numAccounts
 			}
-		}
-	`
+		}`
 
 	// Get block details
 	queryBlocks = `
@@ -27,8 +26,7 @@ var (
 					%s
 				}
 			}
-		}
-	`
+		}`
 
 	// Block details fields
 	queryBlockFields = `
@@ -37,12 +35,12 @@ var (
 		creator
 		creatorAccount {
 			delegate
-      publicKey
+			publicKey
 			balance {
-      	blockHeight
-        total
-        unknown
-      }
+				blockHeight
+				total
+				unknown
+			}
 		}
 		protocolState {
 			blockchainState {
@@ -52,22 +50,22 @@ var (
 				snarkedLedgerHash
 			}
 			consensusState {
-        blockHeight
-        blockchainLength
-        epoch
-        epochCount
-        hasAncestorInSameCheckpointWindow
-        lastVrfOutput
+				blockHeight
+				blockchainLength
+				epoch
+				epochCount
+				hasAncestorInSameCheckpointWindow
+				lastVrfOutput
 				totalCurrency
 				minWindowDensity
-        slot
-        stakingEpochData {
-          epochLength
-          lockCheckpoint
-          seed
-          startCheckpoint
-        }
-      }
+				slot
+				stakingEpochData {
+					epochLength
+					lockCheckpoint
+					seed
+					startCheckpoint
+				}
+			}
 			previousStateHash
 		}
 		snarkJobs {
@@ -92,43 +90,41 @@ var (
 				to
 				fromAccount {
 					delegate
-      		publicKey
+					publicKey
 					balance {
-      			blockHeight
-        		total
-        		unknown
-      		}
+						blockHeight
+						total
+						unknown
+					}
 				}
 				toAccount {
 					delegate
-      		publicKey
+					publicKey
 					balance {
-      			blockHeight
-        		total
-        		unknown
-      		}
+						blockHeight
+						total
+						unknown
+					}
 				}
 			}
-		}
-	`
+		}`
 
 	queryAccount = `
 		query {
 			account(publicKey: "%s") {
-    		nonce
-    		inferredNonce
-    		receiptChainHash
-    		delegate
-    		votingFor
-    		locked
-    		balance {
-      		unknown
-      		total
-      		blockHeight
+				nonce
+				inferredNonce
+				receiptChainHash
+				delegate
+				votingFor
+				locked
+				balance {
+					unknown
+					total
+					blockHeight
 				}
 			}
-  }	
-`
+		}`
 )
 
 func buildBlocksQuery(filter string) string {
