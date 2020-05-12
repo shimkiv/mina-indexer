@@ -1,4 +1,4 @@
-.PHONY: build test docker-build
+.PHONY: build test docker-build docker-push
 
 DOCKER_IMAGE ?= figment-networks/coda-indexer
 
@@ -13,3 +13,6 @@ docker-build:
 		-t ${DOCKER_IMAGE} \
 		-f Dockerfile \
 		.
+
+docker-push:
+	docker push ${DOCKER_IMAGE}
