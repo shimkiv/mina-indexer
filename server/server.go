@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/figment-networks/coda-indexer/model"
 	"github.com/figment-networks/coda-indexer/store"
 )
 
@@ -24,12 +25,12 @@ func New(db *store.Store) *Server {
 	s.GET("/health", s.Health)
 	s.GET("/height", s.GetCurrentHeight)
 	s.GET("/blocks", s.GetBlocks)
-	s.GET("/blocks/:hash", s.GetBlock)
+	s.GET("/blocks/:id", s.GetBlock)
 	s.GET("/block", s.GetBlockByHeight)
 	s.GET("/block_times", s.GetBlockTimes)
 	s.GET("/block_times_interval", s.GetBlockTimesInterval)
 	s.GET("/transactions", s.GetTransactions)
-	s.GET("/transactions/:hash", s.GetTransaction)
+	s.GET("/transactions/:id", s.GetTransaction)
 	s.GET("/accounts", s.GetAccounts)
 
 	return s
@@ -56,7 +57,16 @@ func (s *Server) GetCurrentHeight(c *gin.Context) {
 
 // GetBlock returns a single block
 func (s *Server) GetBlock(c *gin.Context) {
-	block, err := s.db.Blocks.FindByHash(c.Param("hash"))
+	var block *model.Block
+	var err error
+
+	id := resourceID(c, "id")
+	if id.IsNumeric() {
+		block, err = s.db.Blocks.FindByID(id.Number())
+	} else {
+		block, err = s.db.Blocks.FindByHash(id.String())
+	}
+
 	if err != nil {
 		if err == store.ErrNotFound {
 			notFound(c, err)
@@ -160,7 +170,16 @@ func (s *Server) GetBlockTimesInterval(c *gin.Context) {
 
 // GetTransaction returns a single transaction details
 func (s *Server) GetTransaction(c *gin.Context) {
-	tran, err := s.db.Transactions.FindByHash(c.Param("hash"))
+	var tran *model.Transaction
+	var err error
+
+	id := resourceID(c, "id")
+	if id.IsNumeric() {
+		tran, err = s.db.Transactions.FindByID(id.Number())
+	} else {
+		tran, err = s.db.Transactions.FindByHash(id.String())
+	}
+
 	if err != nil {
 		if err == store.ErrNotFound {
 			notFound(c, err)

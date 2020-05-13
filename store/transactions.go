@@ -41,6 +41,11 @@ func (s TransactionsStore) FindBy(key string, value interface{}) (*model.Transac
 	return result, checkErr(err)
 }
 
+// FindByID returns a transaction for a given ID
+func (s TransactionsStore) FindByID(id int64) (*model.Transaction, error) {
+	return s.FindBy("id", id)
+}
+
 // FindByHash returns a transaction for a given hash
 func (s TransactionsStore) FindByHash(hash string) (*model.Transaction, error) {
 	return s.FindBy("hash", hash)
