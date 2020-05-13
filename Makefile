@@ -1,9 +1,9 @@
 .PHONY: build test docker docker-build docker-push
 
-GIT_COMMIT ?= $(shell git rev-parse HEAD)
-GO_VERSION ?= $(shell go version | awk {'print $$3'})
+GIT_COMMIT   ?= $(shell git rev-parse HEAD)
+GO_VERSION   ?= $(shell go version | awk {'print $$3'})
 DOCKER_IMAGE ?= figment-networks/coda-indexer
-DOCKER_TAG ?= latest
+DOCKER_TAG   ?= latest
 
 # Build the binary
 build:
