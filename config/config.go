@@ -16,10 +16,12 @@ const (
 )
 
 var (
-	errEndpointRequired       = errors.New("Coda API endpoint is required")
-	errDatabaseRequired       = errors.New("Database credentials are required")
-	errCleanupIntervalInvalid = errors.New("Cleanup interval is invalid")
-	errSyncIntervalInvalid    = errors.New("Sync interval is invalid")
+	errEndpointRequired        = errors.New("Coda API endpoint is required")
+	errDatabaseRequired        = errors.New("Database credentials are required")
+	errSyncIntervalRequired    = errors.New("Sync interval is required")
+	errSyncIntervalInvalid     = errors.New("Sync interval is invalid")
+	errCleanupIntervalRequired = errors.New("Cleanup interval is required")
+	errCleanupIntervalInvalid  = errors.New("Cleanup interval is invalid")
 )
 
 // Config holds the configration data
@@ -31,7 +33,7 @@ type Config struct {
 	FirstBlockHeight int    `json:"first_block_height" envconfig:"FIRST_BLOCK_HEIGHT" default:"1"`
 	SyncInterval     string `json:"sync_interval" envconfig:"SYNC_INTERVAL" default:"10s"`
 	CleanupInterval  string `json:"cleanup_interval" envconfig:"CLEANUP_INTERVAL" default:"10m"`
-	CleanupThreshold int    `json:"cleanup_threshold" envconfig:"CLEANUP_THRESHOLD"`
+	CleanupThreshold int    `json:"cleanup_threshold" envconfig:"CLEANUP_THRESHOLD" default:"1000"`
 	DatabaseURL      string `json:"database_url" envconfig:"DATABASE_URL"`
 	Debug            bool   `json:"debug" envconfig:"DEBUG"`
 }
@@ -41,15 +43,25 @@ func (c *Config) Validate() error {
 	if c.CodaEndpoint == "" {
 		return errEndpointRequired
 	}
+
 	if c.DatabaseURL == "" {
 		return errDatabaseRequired
+	}
+
+	if c.SyncInterval == "" {
+		return errSyncIntervalRequired
 	}
 	if _, err := time.ParseDuration(c.SyncInterval); err != nil {
 		return errSyncIntervalInvalid
 	}
+
+	if c.CleanupInterval == "" {
+		return errCleanupIntervalRequired
+	}
 	if _, err := time.ParseDuration(c.CleanupInterval); err != nil {
 		return errCleanupIntervalInvalid
 	}
+
 	return nil
 }
 

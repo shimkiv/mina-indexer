@@ -14,7 +14,7 @@ build:
 
 # Run tests
 test:
-	go test -race ./...
+	go test -race -cover ./...
 
 # Build a local docker image for testing
 docker:
