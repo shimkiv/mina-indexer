@@ -26,6 +26,7 @@ type Sync struct {
 	errors    []error
 	status    *coda.DaemonStatus
 	report    *model.Report
+	block     *model.Block
 	syncables []*model.Syncable
 }
 
@@ -221,7 +222,12 @@ func (s *Sync) createBlock(block coda.Block) error {
 	b.AppVersion = s.status.CommitID
 
 	log.Println("creating block:", b)
-	return s.db.Blocks.CreateIfNotExist(b)
+	if err := s.db.Blocks.CreateIfNotExists(b); err != nil {
+		return err
+	}
+
+	s.block = b
+	return nil
 }
 
 func (s *Sync) createState(block coda.Block) error {
@@ -255,9 +261,13 @@ func (s *Sync) createTransactions(block coda.Block) error {
 	if err != nil {
 		return err
 	}
+
 	for _, t := range transactions {
+		t.BlockID = s.block.ID
+		t.BlockHash = s.block.Hash
+
 		log.Println("creating transaction", t)
-		if err := s.db.Transactions.CreateIfNotExist(&t); err != nil {
+		if err := s.db.Transactions.CreateIfNotExists(&t); err != nil {
 			return err
 		}
 	}

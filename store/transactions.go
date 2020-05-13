@@ -16,8 +16,8 @@ func (s TransactionsStore) Create(t *model.Transaction) error {
 	return checkErr(err)
 }
 
-// CreateIfNotExist creates the transaction if it does not exist
-func (s TransactionsStore) CreateIfNotExist(t *model.Transaction) error {
+// CreateIfNotExists creates the transaction if it does not exist
+func (s TransactionsStore) CreateIfNotExists(t *model.Transaction) error {
 	_, err := s.FindByHash(t.Hash)
 	if err != nil {
 		if err == ErrNotFound {
@@ -49,7 +49,7 @@ func (s TransactionsStore) FindByHash(hash string) (*model.Transaction, error) {
 // ListByHeight returns transactions for a given height
 func (s TransactionsStore) ListByHeight(height int64) ([]model.Transaction, error) {
 	result := []model.Transaction{}
-	scope := s.db.Model(&model.Transaction{}).Order("id ASC")
+	scope := s.db.Model(&model.Transaction{}).Order("id DESC")
 
 	if height > 0 {
 		scope = scope.Where("height = ?", height)

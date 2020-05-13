@@ -3,9 +3,9 @@ package server
 import (
 	"errors"
 
-	"github.com/figment-networks/coda-indexer/store"
-
 	"github.com/gin-gonic/gin"
+
+	"github.com/figment-networks/coda-indexer/store"
 )
 
 // Server handles HTTP requests
@@ -29,6 +29,7 @@ func New(db *store.Store) *Server {
 	s.GET("/block_times", s.GetBlockTimes)
 	s.GET("/block_times_interval", s.GetBlockTimesInterval)
 	s.GET("/transactions", s.GetTransactions)
+	s.GET("/transactions/:hash", s.GetTransaction)
 	s.GET("/accounts", s.GetAccounts)
 
 	return s
@@ -155,6 +156,20 @@ func (s *Server) GetBlockTimesInterval(c *gin.Context) {
 	}
 
 	jsonOk(c, result)
+}
+
+// GetTransaction returns a single transaction details
+func (s *Server) GetTransaction(c *gin.Context) {
+	tran, err := s.db.Transactions.FindByHash(c.Param("hash"))
+	if err != nil {
+		if err == store.ErrNotFound {
+			notFound(c, err)
+			return
+		}
+		badRequest(c, err)
+		return
+	}
+	jsonOk(c, tran)
 }
 
 // GetTransactions returns transactions by height

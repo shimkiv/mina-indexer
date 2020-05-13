@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"fmt"
 	"time"
 )
@@ -14,6 +15,8 @@ const (
 type Transaction struct {
 	Model
 
+	BlockID      int64     `json:"block_id"`
+	BlockHash    string    `json:"block_hash"`
 	Hash         string    `json:"hash"`
 	Type         string    `json:"type"`
 	Height       int64     `json:"height"`
@@ -33,4 +36,36 @@ func (Transaction) TableName() string {
 // String returns transaction text representation
 func (t Transaction) String() string {
 	return fmt.Sprintf("type=%v hash=%v height=%v", t.Type, t.Hash, t.Height)
+}
+
+// Validate returns an error if transaction is invalid
+func (t Transaction) Validate() error {
+	if t.BlockID <= 0 {
+		return errors.New("block id is invalid")
+	}
+	if t.BlockHash == "" {
+		return errors.New("block hash is required")
+	}
+	if t.Hash == "" {
+		return errors.New("hash is required")
+	}
+	if t.Type == "" {
+		return errors.New("type is required")
+	}
+	if t.Height <= 0 {
+		return errors.New("height is invalid")
+	}
+	if t.Time.Year() == 0 {
+		return errors.New("time is invalid")
+	}
+	if t.SenderKey == "" {
+		return errors.New("sender key is required")
+	}
+	if t.RecipientKey == "" {
+		return errors.New("recipient key is required")
+	}
+	if t.Amount < 0 {
+		return errors.New("amount is invalid")
+	}
+	return nil
 }

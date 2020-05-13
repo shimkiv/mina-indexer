@@ -49,8 +49,8 @@ func (s BlocksStore) Update(block *model.Block) error {
 	return checkErr(err)
 }
 
-// CreateIfNotExist creates the block if it does not exist
-func (s BlocksStore) CreateIfNotExist(block *model.Block) error {
+// CreateIfNotExists creates the block if it does not exist
+func (s BlocksStore) CreateIfNotExists(block *model.Block) error {
 	_, err := s.FindByHash(block.Hash)
 	if err != nil {
 		if err == ErrNotFound {
