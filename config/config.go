@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"time"
 
 	"github.com/kelseyhightower/envconfig"
 )
@@ -15,8 +16,10 @@ const (
 )
 
 var (
-	errEndpointRequired = errors.New("Coda API endpoint is required")
-	errDatabaseRequired = errors.New("Database credentials are required")
+	errEndpointRequired       = errors.New("Coda API endpoint is required")
+	errDatabaseRequired       = errors.New("Database credentials are required")
+	errCleanupIntervalInvalid = errors.New("Cleanup interval is invalid")
+	errSyncIntervalInvalid    = errors.New("Sync interval is invalid")
 )
 
 // Config holds the configration data
@@ -27,7 +30,7 @@ type Config struct {
 	ServerPort       int    `json:"server_port" envconfig:"SERVER_PORT" default:"8081"`
 	FirstBlockHeight int    `json:"first_block_height" envconfig:"FIRST_BLOCK_HEIGHT" default:"1"`
 	SyncInterval     string `json:"sync_interval" envconfig:"SYNC_INTERVAL" default:"10s"`
-	CleanupInterval  string `json:"cleanup_interval" envconfig:"CLEANUP_INTERVAL" default:"10min"`
+	CleanupInterval  string `json:"cleanup_interval" envconfig:"CLEANUP_INTERVAL" default:"10m"`
 	CleanupThreshold int    `json:"cleanup_threshold" envconfig:"CLEANUP_THRESHOLD"`
 	DatabaseURL      string `json:"database_url" envconfig:"DATABASE_URL"`
 	Debug            bool   `json:"debug" envconfig:"DEBUG"`
@@ -40,6 +43,12 @@ func (c *Config) Validate() error {
 	}
 	if c.DatabaseURL == "" {
 		return errDatabaseRequired
+	}
+	if _, err := time.ParseDuration(c.SyncInterval); err != nil {
+		return errSyncIntervalInvalid
+	}
+	if _, err := time.ParseDuration(c.CleanupInterval); err != nil {
+		return errCleanupIntervalInvalid
 	}
 	return nil
 }

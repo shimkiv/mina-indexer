@@ -3,7 +3,7 @@
 # ------------------------------------------------------------------------------
 FROM golang:1.14 AS build
 
-WORKDIR /app
+WORKDIR /go/src/github.com/figment-networks/coda-indexer
 
 COPY ./go.mod .
 COPY ./go.sum .
@@ -12,21 +12,25 @@ RUN go mod download
 
 COPY . .
 
+ENV CGO_ENABLED=0
+ENV GOARCH=amd64
+ENV GOOS=linux
+
 RUN \
-  CGO_ENABLED=0 \
-  GOARCH=amd64 \
-  GOOS=linux \
   GO_VERSION=$(go version | awk {'print $3'}) \
   GIT_COMMIT=$(git rev-parse HEAD) \
-  go build \
-    -o /coda-indexer
+  make build
     
 # ------------------------------------------------------------------------------
 # Target Image
 # ------------------------------------------------------------------------------
-FROM alpine:3.10
+FROM alpine:3.10 AS release
 
-COPY --from=build /coda-indexer /bin/coda-indexer
+WORKDIR /app
+
+COPY --from=build /go/src/github.com/figment-networks/coda-indexer/coda-indexer /app/coda-indexer
+COPY --from=build /go/src/github.com/figment-networks/coda-indexer/migrations /app/migrations
 
 EXPOSE 8081
-CMD ["/bin/coda-indexer"]
+
+ENTRYPOINT ["/app/coda-indexer"]
