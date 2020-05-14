@@ -1,0 +1,14 @@
+{
+  "data": {
+    "daemonStatus": {
+      "syncStatus": "SYNCED",
+      "uptimeSecs": 537658,
+      "stateHash": "2qxVeHvPFqZaitZQQh4VVeawCwnQfnWJctJDTmbHvPG2N3NwAQqw6hgbGgnLxpy45Pr7DBdSTUN2UJSPvLTe8ZMPfPn277kEMaJQVq1Vnw46MhDhdtnbKk6vTrvmch8RXk1sXHcQaTg61",
+      "commitId": "9babcbd5da1cdfd2a533c02c686212fc9a1c70a9",
+      "peers": [],
+      "highestBlockLengthReceived": 1,
+      "blockchainLength": 1511,
+      "numAccounts": 5
+    }
+  }
+}
