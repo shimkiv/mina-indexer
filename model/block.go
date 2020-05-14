@@ -18,7 +18,7 @@ type Block struct {
 	Creator           string    `json:"creator"`
 	TransactionsCount int       `json:"transactions_count"`
 	Coinbase          int64     `json:"coinbase"`
-	AppVersion        string    `json:"app_version"`
+	AppVersion        string    `json:"-"`
 }
 
 // BlockIntervalStat contains block count stats for a given time interval

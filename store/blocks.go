@@ -16,7 +16,7 @@ type BlocksStore struct {
 // BlockIndexParams contains the block search params
 // TODO: this should probably moved out of store package
 type BlockIndexParams struct {
-	Search      string `form:"search"`
+	Creator     string `form:"creator"`
 	Order       string `form:"order"`
 	OrderColumn string `form:"order_column"`
 	Limit       int    `form:"limit"`
@@ -94,8 +94,8 @@ func (s BlocksStore) Index(params BlockIndexParams) ([]model.Block, error) {
 		Order(fmt.Sprintf("%s %s", params.OrderColumn, params.Order)).
 		Limit(params.Limit)
 
-	if params.Search != "" {
-		scope = scope.Where("hash = $1 OR creator = $1", params.Search)
+	if params.Creator != "" {
+		scope = scope.Where("creator = $1", params.Creator)
 	}
 
 	err := scope.Find(&result).Error
