@@ -57,7 +57,9 @@ func startCommand(cfg *config.Config, name string) error {
 }
 
 func terminate(message interface{}) {
-	log.Fatal("ERROR: ", message)
+	if message != nil {
+		log.Fatal("ERROR: ", message)
+	}
 }
 
 func initConfig(path string) (*config.Config, error) {

@@ -3,60 +3,28 @@ package store
 import (
 	"fmt"
 
-	"github.com/jinzhu/gorm"
-
 	"github.com/figment-networks/coda-indexer/model"
 )
 
 // BlocksStore handles operations on blocks
 type BlocksStore struct {
-	db *gorm.DB
+	baseStore
 }
 
-// BlockIndexParams contains the block search params
-// TODO: this should probably moved out of store package
-type BlockIndexParams struct {
-	Creator     string `form:"creator"`
+// BlockSearch contains a block search params
+type BlockSearch struct {
+	Creator string `form:"creator"`
+
 	Order       string `form:"order"`
 	OrderColumn string `form:"order_column"`
 	Limit       int    `form:"limit"`
 }
 
-func (p *BlockIndexParams) setDefaults() {
-	if p.Limit <= 0 {
-		p.Limit = 25
-	}
-	if p.Limit > 100 {
-		p.Limit = 100
-	}
-	if p.OrderColumn == "" {
-		p.OrderColumn = "id"
-	}
-	if p.Order == "" {
-		p.Order = "DESC"
-	}
-}
-
-// Create create a new block record
-func (s BlocksStore) Create(block *model.Block) error {
-	err := s.db.Model(block).Create(block).Error
-	return checkErr(err)
-}
-
-// Update updates the existing block record
-func (s BlocksStore) Update(block *model.Block) error {
-	err := s.db.Model(block).Update(block).Error
-	return checkErr(err)
-}
-
 // CreateIfNotExists creates the block if it does not exist
 func (s BlocksStore) CreateIfNotExists(block *model.Block) error {
 	_, err := s.FindByHash(block.Hash)
-	if err != nil {
-		if err == ErrNotFound {
-			return s.Create(block)
-		}
-		return err
+	if isNotFound(err) {
+		return s.Create(block)
 	}
 	return nil
 }
@@ -83,23 +51,45 @@ func (s BlocksStore) FindByHeight(height int64) (*model.Block, error) {
 	return s.FindBy("height", height)
 }
 
-// Index returns list of blocks
-func (s BlocksStore) Index(params BlockIndexParams) ([]model.Block, error) {
-	params.setDefaults()
+// Recent returns the most recent block
+func (s BlocksStore) Recent() (*model.Block, error) {
+	block := &model.Block{}
+
+	err := s.db.
+		Order("height DESC").
+		First(block).
+		Error
+
+	return block, checkErr(err)
+}
+
+// Search returns blocks that match search filters
+func (s BlocksStore) Search(search BlockSearch) ([]model.Block, error) {
+	if search.Limit <= 0 {
+		search.Limit = 25
+	}
+	if search.Limit > 100 {
+		search.Limit = 100
+	}
+	if search.OrderColumn == "" {
+		search.OrderColumn = "id"
+	}
+	if search.Order == "" {
+		search.Order = "DESC"
+	}
 
 	result := []model.Block{}
 
 	scope := s.db.
-		Model(&model.Block{}).
-		Order(fmt.Sprintf("%s %s", params.OrderColumn, params.Order)).
-		Limit(params.Limit)
+		Order(fmt.Sprintf("%s %s", search.OrderColumn, search.Order)).
+		Limit(search.Limit)
 
-	if params.Creator != "" {
-		scope = scope.Where("creator = $1", params.Creator)
+	if search.Creator != "" {
+		scope = scope.Where("creator = ?", search.Creator)
 	}
 
 	err := scope.Find(&result).Error
-	return result, checkErr(err)
+	return result, err
 }
 
 // AvgRecentTimes returns recent blocks averages

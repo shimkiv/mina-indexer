@@ -12,4 +12,4 @@ CREATE TABLE IF NOT EXISTS states (
 );
 
 -- Indexes
-CREATE UNIQUE INDEX idx_states_height ON states (height);
+CREATE INDEX idx_states_height ON states (height);

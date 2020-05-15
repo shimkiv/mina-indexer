@@ -69,11 +69,13 @@ coda-indexer -config path/to/config.json -cmd=server
 
 | Method | Path                            | Description
 |--------|---------------------------------|------------------------------------
-| GET    | /health                         | Healthcheck endpoint, returns `OK` on success
-| GET    | /height                         | Returns current indexed blockchain height
-| GET    | /blocks                         | Returns available blocks data
-| GET    | /blocks/:hash                   | Returns block data by hash
-| GET    | /block_times                    | Returns block times
-| GET    | /block_times_interval           | Returns block creation times stats
-| GET    | /transactions                   | Returns transactions
-| GET    | /accounts                       | Returns accounts
+| GET    | /health                         | Healthcheck endpoint
+| GET    | /height                         | Current indexed blockchain height
+| GET    | /blocks                         | Blocks search
+| GET    | /blocks/:hash                   | Block details by ID or Hash
+| GET    | /block_times                    | Block times stats
+| GET    | /block_times_interval           | Block creation stats
+| GET    | /transactions                   | Transactions search
+| GET    | /transactions/:id               | Transaction details by ID or Hash
+| GET    | /accounts                       | Accounts search
+| GET    | /accounts/:id                   | Account details by ID or Key

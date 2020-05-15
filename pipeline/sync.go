@@ -91,7 +91,7 @@ func (s *Sync) getRecentBlock() (*coda.Block, error) {
 	var block *coda.Block
 
 	// Get the latest processed block syncable
-	recent, err := s.db.Syncables.GetMostRecent(model.SyncableTypeBlock)
+	recent, err := s.db.Syncables.FindMostRecent(model.SyncableTypeBlock)
 	if err != nil {
 		if err != store.ErrNotFound {
 			return nil, err
@@ -142,6 +142,7 @@ func (s *Sync) finishReport() error {
 }
 
 func (s *Sync) createSyncables() error {
+	log.Println("checking block syncable at", s.report.StartHeight)
 	exists, err := s.db.Syncables.Exists(model.SyncableTypeBlock, s.report.StartHeight)
 	if err != nil {
 		return err
@@ -189,8 +190,8 @@ func (s *Sync) processSyncables() error {
 	}
 
 	for _, syncable := range s.syncables {
+		log.Println("processing syncable:", syncable)
 		if err := s.processSyncable(syncable); err != nil {
-			log.Println("processing syncable:", syncable)
 			return err
 		}
 	}
@@ -206,7 +207,9 @@ func (s *Sync) processSyncable(syncable *model.Syncable) error {
 		func() error { return s.createBlock(codaBlock) },
 		func() error { return s.createState(codaBlock) },
 		func() error { return s.createAccounts(codaBlock) },
+		func() error { return s.createValidators(codaBlock) },
 		func() error { return s.createTransactions(codaBlock) },
+		func() error { return s.createJobs(codaBlock) },
 	)
 	if err == nil {
 		err = s.db.Syncables.MarkProcessed(syncable)
@@ -256,6 +259,14 @@ func (s *Sync) createAccounts(block coda.Block) error {
 	return nil
 }
 
+func (s *Sync) createValidators(block coda.Block) error {
+	validator, err := mapper.Validator(block)
+	if err != nil {
+		return err
+	}
+	return s.db.Validators.Create(validator)
+}
+
 func (s *Sync) createTransactions(block coda.Block) error {
 	transactions, err := mapper.Transactions(block)
 	if err != nil {
@@ -263,13 +274,26 @@ func (s *Sync) createTransactions(block coda.Block) error {
 	}
 
 	for _, t := range transactions {
-		t.BlockID = s.block.ID
-		t.BlockHash = s.block.Hash
-
 		log.Println("creating transaction", t)
 		if err := s.db.Transactions.CreateIfNotExists(&t); err != nil {
 			return err
 		}
 	}
+	return nil
+}
+
+func (s *Sync) createJobs(block coda.Block) error {
+	jobs, err := mapper.Jobs(block)
+	if err != nil {
+		return err
+	}
+
+	for _, j := range jobs {
+		log.Println("creating job:", j)
+		if err := s.db.Jobs.Create(&j); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }

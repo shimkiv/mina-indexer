@@ -1,9 +1,5 @@
 package server
 
-type blockByHeightParams struct {
-	Height int64 `form:"height"`
-}
-
 type blockTimesParams struct {
 	Limit int64 `form:"limit"`
 }
@@ -11,10 +7,6 @@ type blockTimesParams struct {
 type blockTimesIntervalParams struct {
 	Interval string `form:"interval"`
 	Period   string `form:"period"`
-}
-
-type transactionsIndexParams struct {
-	Height int64 `form:"height"`
 }
 
 type accountsIndexParams struct {

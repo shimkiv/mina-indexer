@@ -8,31 +8,20 @@ import (
 
 // Block returns a block model constructed from the coda input
 func Block(input coda.Block) (*model.Block, error) {
-	blockTime, err := util.ParseTime(input.ProtocolState.BlockchainState.Date)
-	if err != nil {
-		return nil, err
-	}
-
-	blockHeight, err := util.ParseInt64(input.ProtocolState.ConsensusState.BlockHeight)
-	if err != nil {
-		return nil, err
-	}
-
-	coinbase, err := util.ParseInt64(input.Transactions.Coinbase)
-	if err != nil {
+	if err := blockCheck(input); err != nil {
 		return nil, err
 	}
 
 	block := &model.Block{
-		Height:            blockHeight,
-		Time:              *blockTime,
+		Height:            blockHeight(input),
+		Time:              blockTime(input),
 		Creator:           input.Creator,
 		Hash:              input.StateHash,
 		ParentHash:        input.ProtocolState.PreviousStateHash,
 		LedgerHash:        input.ProtocolState.BlockchainState.SnarkedLedgerHash,
 		TransactionsCount: len(input.Transactions.UserCommands),
-		Coinbase:          coinbase,
+		Coinbase:          util.MustInt64(input.Transactions.Coinbase),
 	}
 
-	return block, nil
+	return block, block.Validate()
 }

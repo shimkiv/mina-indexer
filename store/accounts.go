@@ -1,26 +1,12 @@
 package store
 
 import (
-	"github.com/jinzhu/gorm"
-
 	"github.com/figment-networks/coda-indexer/model"
 )
 
 // AccountsStore handles operations on accounts
 type AccountsStore struct {
-	db *gorm.DB
-}
-
-// Create creates a new account record
-func (s AccountsStore) Create(acc *model.Account) error {
-	err := s.db.Model(acc).Create(acc).Error
-	return checkErr(err)
-}
-
-// Update updates the existing account record
-func (s AccountsStore) Update(acc *model.Account) error {
-	err := s.db.Model(acc).Update(acc).Error
-	return checkErr(err)
+	baseStore
 }
 
 // CreateOrUpdate creates a new account or updates an existing one
@@ -46,17 +32,21 @@ func (s AccountsStore) FindBy(key string, value interface{}) (*model.Account, er
 	return result, checkErr(err)
 }
 
+// FindByID returns an account for the ID
+func (s AccountsStore) FindByID(id int64) (*model.Account, error) {
+	return s.FindBy("id", id)
+}
+
 // FindByPublicKey returns an account for the public key
 func (s AccountsStore) FindByPublicKey(key string) (*model.Account, error) {
 	return s.FindBy("public_key", key)
 }
 
-// ListByHeight returns all accounts that were created at a given height
-func (s AccountsStore) ListByHeight(height int64) ([]model.Account, error) {
+// ByHeight returns all accounts that were created at a given height
+func (s AccountsStore) ByHeight(height int64) ([]model.Account, error) {
 	result := []model.Account{}
 
 	err := s.db.
-		Model(&model.Account{}).
 		Where("start_height <= ?", height).
 		Order("id DESC").
 		Find(&result).
@@ -70,7 +60,6 @@ func (s AccountsStore) All() ([]model.Account, error) {
 	result := []model.Account{}
 
 	err := s.db.
-		Model(&model.Account{}).
 		Order("id ASC").
 		Find(&result).
 		Error

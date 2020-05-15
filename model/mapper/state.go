@@ -7,27 +7,13 @@ import (
 )
 
 // State returns a state model constructed from the coda input
-func State(block coda.Block) (*model.State, error) {
-	consensus := block.ProtocolState.ConsensusState
-
-	height, err := util.ParseInt64(consensus.BlockHeight)
-	if err != nil {
-		return nil, err
-	}
-
-	currency, err := util.ParseInt64(consensus.TotalCurrency)
-	if err != nil {
-		return nil, err
-	}
-
+func State(input coda.Block) (*model.State, error) {
 	state := &model.State{
-		Height:        height,
-		TotalCurrency: currency,
+		Height:        blockHeight(input),
+		TotalCurrency: util.MustInt64(input.ProtocolState.ConsensusState.TotalCurrency),
+		LastVFROutput: input.ProtocolState.ConsensusState.LastVrfOutput,
+		Epoch:         util.MustInt64(input.ProtocolState.ConsensusState.Epoch),
+		EpochCount:    util.MustInt64(input.ProtocolState.ConsensusState.EpochCount),
 	}
-
-	if err := state.Validate(); err != nil {
-		return nil, err
-	}
-
-	return state, nil
+	return state, state.Validate()
 }

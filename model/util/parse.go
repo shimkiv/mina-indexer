@@ -19,3 +19,21 @@ func ParseTime(input string) (*time.Time, error) {
 	t := time.Unix(0, msec*1000000)
 	return &t, nil
 }
+
+// MustInt64 returns an Int64 value without an error
+func MustInt64(input string) int64 {
+	v, err := ParseInt64(input)
+	if err != nil {
+		v = 0
+	}
+	return v
+}
+
+// MustTime returns a time from a string
+func MustTime(input string) time.Time {
+	t, err := ParseTime(input)
+	if err != nil {
+		return time.Time{}
+	}
+	return *t
+}

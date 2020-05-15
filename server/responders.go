@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	"github.com/figment-networks/coda-indexer/store"
 )
 
 // jsonError renders an error response
@@ -13,8 +15,6 @@ func jsonError(c *gin.Context, status int, err interface{}) {
 	switch v := err.(type) {
 	case error:
 		message = v.Error()
-	case string:
-		message = v
 	default:
 		message = v
 	}
@@ -35,7 +35,27 @@ func notFound(c *gin.Context, err interface{}) {
 	jsonError(c, http.StatusNotFound, err)
 }
 
+// serverError renders a HTTP 500 error response
+func serverError(c *gin.Context, err interface{}) {
+	jsonError(c, http.StatusInternalServerError, err)
+}
+
 // jsonOk renders a successful response
 func jsonOk(c *gin.Context, data interface{}) {
 	c.JSON(200, data)
+}
+
+// shouldReturn is a shorthand method for handling resource errors
+func shouldReturn(c *gin.Context, err error) bool {
+	if err == nil {
+		return false
+	}
+
+	if err == store.ErrNotFound {
+		notFound(c, err)
+	} else {
+		badRequest(c, err)
+	}
+
+	return true
 }

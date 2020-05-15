@@ -39,11 +39,7 @@ func Account(block coda.Block, input coda.Account) (*model.Account, error) {
 		Nonce:       nonce,
 	}
 
-	if err := acc.Validate(); err != nil {
-		return nil, err
-	}
-
-	return acc, nil
+	return acc, acc.Validate()
 }
 
 // Accounts returns accounts models references from the block data
