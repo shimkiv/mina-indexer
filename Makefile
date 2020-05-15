@@ -2,7 +2,7 @@
 
 GIT_COMMIT   ?= $(shell git rev-parse HEAD)
 GO_VERSION   ?= $(shell go version | awk {'print $$3'})
-DOCKER_IMAGE ?= figment-networks/coda-indexer
+DOCKER_IMAGE ?= figmentnetworks/coda-indexer
 DOCKER_TAG   ?= latest
 
 # Build the binary
