@@ -3,6 +3,8 @@ package pipeline
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"time"
 
@@ -166,6 +168,11 @@ func (s *Sync) createSyncables() error {
 		return err
 	}
 
+	// Dump the block files to disk for debugging
+	if s.cfg.DumpDir != "" {
+		s.dumpBlockToFile(block)
+	}
+
 	syncable := &model.Syncable{
 		ReportID: s.report.ID,
 		Height:   s.report.StartHeight,
@@ -181,6 +188,21 @@ func (s *Sync) createSyncables() error {
 	s.syncables = append(s.syncables, syncable)
 
 	return nil
+}
+
+func (s *Sync) dumpBlockToFile(block *coda.Block) {
+	savePath := fmt.Sprintf("%v/%v.json", s.cfg.DumpDir, s.report.StartHeight)
+	log.Println("dumping block to", savePath)
+
+	data, err := json.MarshalIndent(block, "", "  ")
+	if err != nil {
+		log.Println("json error:", err)
+		return
+	}
+
+	if err := ioutil.WriteFile(savePath, data, 0755); err != nil {
+		log.Println("dump error:", err)
+	}
 }
 
 func (s *Sync) processSyncables() error {
