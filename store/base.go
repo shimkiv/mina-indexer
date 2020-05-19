@@ -3,7 +3,6 @@ package store
 import (
 	"errors"
 	"fmt"
-	"reflect"
 
 	"github.com/jinzhu/gorm"
 )
@@ -37,7 +36,7 @@ func (s baseStore) Truncate() error {
 
 // DeleteByHeight removes all records associated with a height
 func (s baseStore) DeleteByHeight(height int64) error {
-	return s.db.Delete(s.model, "height = ?").Error
+	return s.db.Delete(s.model, "height = ?", height).Error
 }
 
 func scoped(conn *gorm.DB, m interface{}) baseStore {
@@ -62,10 +61,3 @@ func checkErr(err error) error {
 	}
 	return err
 }
-
-func makeNew(src interface{}) interface{} {
-	ptr := reflect.New(reflect.TypeOf(src))
-	return reflect.Indirect(ptr)
-}
-
-type filter map[string]interface{}
