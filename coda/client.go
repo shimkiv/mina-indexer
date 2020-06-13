@@ -197,6 +197,11 @@ func (c Client) GetNextBlock(after string) (*Block, error) {
 	return c.GetSingleBlock(filter)
 }
 
+// GetNextBlocks returns a next N blocks after a given block hash
+func (c Client) GetNextBlocks(after string, n int) ([]Block, error) {
+	return c.GetBlocks(fmt.Sprintf("after=%v,first:%v", after, n))
+}
+
 // GetAccount returns account for a given public key
 func (c Client) GetAccount(publicKey string) (*Account, error) {
 	var result struct {
