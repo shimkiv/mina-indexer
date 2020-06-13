@@ -16,9 +16,7 @@ func TestFromEnv(t *testing.T) {
 	assert.Equal(t, 8081, config.ServerPort)
 	assert.Equal(t, "10s", config.SyncInterval)
 	assert.Equal(t, "10m", config.CleanupInterval)
-	assert.Equal(t, 1, config.FirstBlockHeight)
 	assert.Equal(t, 1000, config.CleanupThreshold)
-	assert.Equal(t, false, config.Debug)
 }
 
 func TestFromFile(t *testing.T) {

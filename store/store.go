@@ -1,6 +1,8 @@
 package store
 
 import (
+	"database/sql"
+
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 
@@ -11,14 +13,15 @@ import (
 type Store struct {
 	db *gorm.DB
 
-	Syncables    SyncablesStore
-	Reports      ReportsStore
+	Heights      HeightsStore
 	Blocks       BlocksStore
 	Accounts     AccountsStore
 	Validators   ValidatorsStore
 	Transactions TransactionsStore
-	States       StatesStore
 	Jobs         JobsStore
+	Snarkers     SnarkersStore
+	FeeTransfers FeeTransfersStore
+	Stats        StatsStore
 }
 
 // Test checks the connection status
@@ -29,6 +32,11 @@ func (s *Store) Test() error {
 // Close closes the database connection
 func (s *Store) Close() error {
 	return s.db.Close()
+}
+
+// Conn returns an underlying database connection
+func (s *Store) Conn() *sql.DB {
+	return s.db.DB()
 }
 
 // SetDebugMode enabled detailed query logging
@@ -46,23 +54,20 @@ func New(connStr string) (*Store, error) {
 	return &Store{
 		db: conn,
 
-		Syncables:    NewSyncablesStore(conn),
-		Reports:      NewReportsStore(conn),
+		Heights:      NewHeightsStore(conn),
 		Blocks:       NewBlocksStore(conn),
 		Accounts:     NewAccountsStore(conn),
 		Validators:   NewValidatorsStore(conn),
 		Transactions: NewTransactionsStore(conn),
-		States:       NewStatesStore(conn),
+		Snarkers:     NewSnarkersStore(conn),
 		Jobs:         NewJobsStore(conn),
+		FeeTransfers: NewFeeTransfersStore(conn),
+		Stats:        NewStatsStore(conn),
 	}, nil
 }
 
-func NewSyncablesStore(db *gorm.DB) SyncablesStore {
-	return SyncablesStore{scoped(db, model.Report{})}
-}
-
-func NewReportsStore(db *gorm.DB) ReportsStore {
-	return ReportsStore{scoped(db, model.Report{})}
+func NewHeightsStore(db *gorm.DB) HeightsStore {
+	return HeightsStore{scoped(db, model.Height{})}
 }
 
 func NewBlocksStore(db *gorm.DB) BlocksStore {
@@ -81,10 +86,18 @@ func NewTransactionsStore(db *gorm.DB) TransactionsStore {
 	return TransactionsStore{scoped(db, model.Transaction{})}
 }
 
-func NewStatesStore(db *gorm.DB) StatesStore {
-	return StatesStore{scoped(db, model.State{})}
+func NewSnarkersStore(db *gorm.DB) SnarkersStore {
+	return SnarkersStore{scoped(db, model.Snarker{})}
 }
 
 func NewJobsStore(db *gorm.DB) JobsStore {
 	return JobsStore{scoped(db, model.Job{})}
+}
+
+func NewFeeTransfersStore(db *gorm.DB) FeeTransfersStore {
+	return FeeTransfersStore{scoped(db, model.FeeTransfer{})}
+}
+
+func NewStatsStore(db *gorm.DB) StatsStore {
+	return StatsStore{baseStore{db: db}}
 }

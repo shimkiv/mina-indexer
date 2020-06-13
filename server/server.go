@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/figment-networks/coda-indexer/config"
 	"github.com/figment-networks/coda-indexer/model"
 	"github.com/figment-networks/coda-indexer/store"
 )
@@ -22,28 +23,47 @@ func New(db *store.Store) *Server {
 		Engine: gin.Default(),
 	}
 
-	s.GET("/health", s.Health)
+	s.GET("/health", s.GetHealth)
+	s.GET("/status", s.GetStatus)
 	s.GET("/height", s.GetCurrentHeight)
 	s.GET("/block", s.GetCurrentBlock)
 	s.GET("/blocks", s.GetBlocks)
 	s.GET("/blocks/:id", s.GetBlock)
 	s.GET("/block_times", s.GetBlockTimes)
-	s.GET("/block_times_interval", s.GetBlockTimesInterval)
+	s.GET("/block_stats", s.GetBlockStats)
+	s.GET("/validators", s.GetValidators)
+	s.GET("/snarkers/", s.GetSnarkers)
 	s.GET("/transactions", s.GetTransactions)
 	s.GET("/transactions/:id", s.GetTransaction)
-	s.GET("/accounts", s.GetAccounts)
 	s.GET("/accounts/:id", s.GetAccount)
 
 	return s
 }
 
-// Health reports the system health
-func (s *Server) Health(c *gin.Context) {
+// GetHealth renders the server health status
+func (s Server) GetHealth(c *gin.Context) {
 	if err := s.db.Test(); err != nil {
-		c.String(500, "ERROR")
+		jsonError(c, 500, "unhealthy")
 		return
 	}
-	c.String(200, "OK")
+	jsonOk(c, gin.H{"healthy": true})
+}
+
+// GetStatus returns the status of the service
+func (s Server) GetStatus(c *gin.Context) {
+	data := gin.H{
+		"app_name":    config.AppName,
+		"app_version": config.AppVersion,
+		"git_commit":  config.GitCommit,
+		"go_version":  config.GoVersion,
+	}
+
+	if block, err := s.db.Blocks.Recent(); err == nil {
+		data["last_block_time"] = block.Time
+		data["last_block_height"] = block.Height
+	}
+
+	jsonOk(c, data)
 }
 
 // GetCurrentHeight returns the current blockchain height
@@ -75,11 +95,11 @@ func (s *Server) GetBlock(c *gin.Context) {
 
 	id := resourceID(c, "id")
 	if id.IsNumeric() {
-		if id.Number() <= 0 {
+		if id.UInt64() == 0 {
 			badRequest(c, errors.New("height must be greater than 0"))
 			return
 		}
-		block, err = s.db.Blocks.FindByHeight(id.Number())
+		block, err = s.db.Blocks.FindByHeight(id.UInt64())
 	} else {
 		block, err = s.db.Blocks.FindByHash(id.String())
 	}
@@ -88,11 +108,20 @@ func (s *Server) GetBlock(c *gin.Context) {
 	}
 
 	creator, err := s.db.Accounts.FindByPublicKey(block.Creator)
+	if err == store.ErrNotFound {
+		creator = nil
+		err = nil
+	}
 	if shouldReturn(c, err) {
 		return
 	}
 
 	transactions, err := s.db.Transactions.ByHeight(block.Height)
+	if shouldReturn(c, err) {
+		return
+	}
+
+	transfers, err := s.db.FeeTransfers.FindByHeight(block.Height)
 	if shouldReturn(c, err) {
 		return
 	}
@@ -103,10 +132,11 @@ func (s *Server) GetBlock(c *gin.Context) {
 	}
 
 	jsonOk(c, gin.H{
-		"block":        block,
-		"creator":      creator,
-		"transactions": transactions,
-		"jobs":         jobs,
+		"block":         block,
+		"creator":       creator,
+		"transactions":  transactions,
+		"fee_transfers": transfers,
+		"jobs":          jobs,
 	})
 }
 
@@ -137,7 +167,7 @@ func (s *Server) GetBlockTimes(c *gin.Context) {
 	}
 	params.setDefaults()
 
-	result, err := s.db.Blocks.AvgRecentTimes(params.Limit)
+	result, err := s.db.Blocks.AvgTimes(params.Limit)
 	if err != nil {
 		badRequest(c, err)
 		return
@@ -146,8 +176,8 @@ func (s *Server) GetBlockTimes(c *gin.Context) {
 	jsonOk(c, result)
 }
 
-// GetBlockTimesInterval returns block stats for an interval
-func (s *Server) GetBlockTimesInterval(c *gin.Context) {
+// GetBlockStats returns block stats for an interval
+func (s *Server) GetBlockStats(c *gin.Context) {
 	params := blockTimesIntervalParams{}
 
 	if err := c.BindQuery(&params); err != nil {
@@ -156,7 +186,7 @@ func (s *Server) GetBlockTimesInterval(c *gin.Context) {
 	}
 	params.setDefaults()
 
-	result, err := s.db.Blocks.AvgTimesForInterval(params.Interval, params.Period)
+	result, err := s.db.Blocks.Stats(params.Interval, params.Period)
 	if shouldReturn(c, err) {
 		return
 	}
@@ -171,7 +201,7 @@ func (s *Server) GetTransaction(c *gin.Context) {
 
 	id := resourceID(c, "id")
 	if id.IsNumeric() {
-		tran, err = s.db.Transactions.FindByID(id.Number())
+		tran, err = s.db.Transactions.FindByID(id.Int64())
 	} else {
 		tran, err = s.db.Transactions.FindByHash(id.String())
 	}
@@ -180,6 +210,22 @@ func (s *Server) GetTransaction(c *gin.Context) {
 	}
 
 	jsonOk(c, tran)
+}
+
+func (s *Server) GetValidators(c *gin.Context) {
+	validators, err := s.db.Validators.FindAll()
+	if shouldReturn(c, err) {
+		return
+	}
+	jsonOk(c, validators)
+}
+
+func (s *Server) GetSnarkers(c *gin.Context) {
+	snarkers, err := s.db.Snarkers.All()
+	if shouldReturn(c, err) {
+		return
+	}
+	jsonOk(c, snarkers)
 }
 
 // GetTransactions returns transactions by height
@@ -198,27 +244,6 @@ func (s *Server) GetTransactions(c *gin.Context) {
 	jsonOk(c, transactions)
 }
 
-// GetAccounts returns all accounts
-func (s *Server) GetAccounts(c *gin.Context) {
-	params := accountsIndexParams{}
-	if err := c.BindQuery(&params); err != nil {
-		badRequest(c, err)
-		return
-	}
-
-	if params.Height <= 0 {
-		badRequest(c, errors.New("height is required"))
-		return
-	}
-
-	accounts, err := s.db.Accounts.ByHeight(params.Height)
-	if err != nil {
-		badRequest(c, err)
-	}
-
-	jsonOk(c, accounts)
-}
-
 // GetAccount returns account for by hash or ID
 func (s *Server) GetAccount(c *gin.Context) {
 	var acc *model.Account
@@ -226,7 +251,7 @@ func (s *Server) GetAccount(c *gin.Context) {
 
 	id := resourceID(c, "id")
 	if id.IsNumeric() {
-		acc, err = s.db.Accounts.FindByID(id.Number())
+		acc, err = s.db.Accounts.FindByID(id.Int64())
 	} else {
 		acc, err = s.db.Accounts.FindByPublicKey(id.String())
 	}

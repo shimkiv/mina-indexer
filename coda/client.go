@@ -8,17 +8,21 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var (
 	ErrBlockNotFound = errors.New("block not found")
-	ErrBlockInvalid  = errors.New("block in not valid")
+	ErrBlockInvalid  = errors.New("block is invalid")
 )
 
 // Client is a GraphQL API client
 type Client struct {
 	endpoint string
 	client   *http.Client
+	debug    bool
 }
 
 // NewClient returns a new client for a given endpoint
@@ -29,14 +33,31 @@ func NewClient(client *http.Client, endpoint string) *Client {
 	}
 }
 
+func NewDefaultClient(endpoint string) *Client {
+	return &Client{
+		client: &http.Client{
+			Timeout: time.Second * 10,
+		},
+		endpoint: endpoint,
+	}
+}
+
+func (c *Client) SetDebug(enabled bool) {
+	c.debug = enabled
+}
+
 // Execute make a GraphQL query and returns the response
 func (c Client) Execute(q string) (*GraphResponse, error) {
 	r := map[string]string{"query": q}
-	data, err := json.Marshal(r)
+	data, err := json.MarshalIndent(r, "", "  ")
 	if err != nil {
 		return nil, err
 	}
 	reqBody := bytes.NewReader(data)
+
+	if c.debug {
+		fmt.Printf("%s\n", q)
+	}
 
 	req, err := http.NewRequest(http.MethodPost, c.endpoint, reqBody)
 	if err != nil {
@@ -53,6 +74,10 @@ func (c Client) Execute(q string) (*GraphResponse, error) {
 	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
+	}
+
+	if c.debug {
+		log.Debugf("client response: %s\n", respBody)
 	}
 
 	graphResp := GraphResponse{}
@@ -110,6 +135,18 @@ func (c Client) GetCurrentHeight() (int64, error) {
 
 	height := block.ProtocolState.ConsensusState.BlockHeight
 	return strconv.ParseInt(height, 10, 64)
+}
+
+// GetBestChain returns the blocks from the canonical chain
+func (c Client) GetBestChain() ([]Block, error) {
+	var result struct {
+		Blocks []Block `json:"bestChain"`
+	}
+	q := buildBestChainQuery()
+	if err := c.Query(q, &result); err != nil {
+		return nil, err
+	}
+	return result.Blocks, nil
 }
 
 // GetBlocks returns blocks for a filter

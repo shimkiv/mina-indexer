@@ -1,7 +1,9 @@
 .DS_Store
 coda-indexer
-tmp/*
 *.log
 .env*
+tmp
+scripts
 Procfile
-config.json
+./config.json
+migrations/migrations.go

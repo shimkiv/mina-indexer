@@ -51,7 +51,7 @@ func findBy(db *gorm.DB, dst interface{}, key string, value interface{}) error {
 	return db.
 		Model(dst).
 		Where(fmt.Sprintf("%s = ?", key), value).
-		First(dst).
+		Take(dst).
 		Error
 }
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/figment-networks/coda-indexer/model"
+	"github.com/figment-networks/indexing-engine/store/jsonquery"
 )
 
 // BlocksStore handles operations on blocks
@@ -47,20 +48,23 @@ func (s BlocksStore) FindByHash(hash string) (*model.Block, error) {
 }
 
 // FindByHeight returns a block with the matching height
-func (s BlocksStore) FindByHeight(height int64) (*model.Block, error) {
+func (s BlocksStore) FindByHeight(height uint64) (*model.Block, error) {
 	return s.FindBy("height", height)
 }
 
 // Recent returns the most recent block
 func (s BlocksStore) Recent() (*model.Block, error) {
 	block := &model.Block{}
-
-	err := s.db.
-		Order("height DESC").
-		First(block).
-		Error
-
+	err := s.db.Order("id DESC").Limit(1).Take(block).Error
 	return block, checkErr(err)
+}
+
+func (s BlocksStore) PickExisting(hashes []string) (result []string, err error) {
+	err = s.db.
+		Raw("SELECT hash FROM blocks WHERE hash IN (?)", hashes).
+		Scan(&result).
+		Error
+	return
 }
 
 // Search returns blocks that match search filters
@@ -68,8 +72,8 @@ func (s BlocksStore) Search(search BlockSearch) ([]model.Block, error) {
 	if search.Limit <= 0 {
 		search.Limit = 25
 	}
-	if search.Limit > 100 {
-		search.Limit = 100
+	if search.Limit > 1000 {
+		search.Limit = 1000
 	}
 	if search.OrderColumn == "" {
 		search.OrderColumn = "id"
@@ -92,35 +96,47 @@ func (s BlocksStore) Search(search BlockSearch) ([]model.Block, error) {
 	return result, err
 }
 
-// AvgRecentTimes returns recent blocks averages
-func (s BlocksStore) AvgRecentTimes(limit int64) (*model.BlockAvgStat, error) {
-	res := &model.BlockAvgStat{}
-
-	err := s.db.
-		Raw(blockTimesForRecentBlocksQuery, limit).
-		Scan(res).
-		Error
-
-	return res, checkErr(err)
+// AvgTimes returns recent blocks averages
+func (s BlocksStore) AvgTimes(limit int64) ([]byte, error) {
+	return jsonquery.MustObject(s.db, sqlBlockTimes, limit)
 }
 
-// AvgTimesForInterval returns block stats for a given interval
-func (s BlocksStore) AvgTimesForInterval(interval, period string) ([]model.BlockIntervalStat, error) {
-	rows, err := s.db.Raw(blockTimesForIntervalQuery, interval, period).Rows()
-	if err != nil {
-		return nil, checkErr(err)
-	}
-	defer rows.Close()
-
-	result := []model.BlockIntervalStat{}
-
-	for rows.Next() {
-		row := model.BlockIntervalStat{}
-		if err := s.db.ScanRows(rows, &row); err != nil {
-			return nil, err
-		}
-		result = append(result, row)
-	}
-
-	return result, err
+// Stats returns block stats for a given interval
+func (s BlocksStore) Stats(interval, period string) ([]byte, error) {
+	return jsonquery.MustArray(s.db, sqlBlocksStats, interval, period)
 }
+
+var (
+	sqlBlockTimes = `
+		SELECT
+			MIN(height) start_height,
+			MAX(height) end_height,
+			MIN(time) start_time,
+			MAX(time) end_time,
+			COUNT(*) count,
+			EXTRACT(EPOCH FROM MAX(time) - MIN(time)) AS diff,
+			EXTRACT(EPOCH FROM ((MAX(time) - MIN(time)) / COUNT(*))) AS avg
+		FROM
+			(
+				SELECT * FROM blocks
+				ORDER BY height DESC
+				LIMIT ?
+			) t`
+
+	sqlBlocksStats = `
+		SELECT
+			time,
+			block_time_avg,
+			blocks_count,
+			validators_count,
+			snarkers_count,
+			transactions_count,
+			jobs_count
+		FROM
+			chain_stats
+		WHERE
+			bucket = $1
+		ORDER BY
+			time DESC
+		LIMIT $2`
+)

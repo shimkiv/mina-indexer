@@ -28,15 +28,20 @@ var (
 type Config struct {
 	AppEnv           string `json:"app_env" envconfig:"APP_ENV" default:"development"`
 	CodaEndpoint     string `json:"coda_endpoint" envconfig:"CODA_ENDPOINT"`
+	GenesisFile      string `json:"genesis_file" envconfig:"GENESIS_FILE"`
 	ServerAddr       string `json:"server_addr" envconfig:"SERVER_ADDR" default:"0.0.0.0"`
 	ServerPort       int    `json:"server_port" envconfig:"SERVER_PORT" default:"8081"`
-	FirstBlockHeight int    `json:"first_block_height" envconfig:"FIRST_BLOCK_HEIGHT" default:"1"`
 	SyncInterval     string `json:"sync_interval" envconfig:"SYNC_INTERVAL" default:"10s"`
 	CleanupInterval  string `json:"cleanup_interval" envconfig:"CLEANUP_INTERVAL" default:"10m"`
 	CleanupThreshold int    `json:"cleanup_threshold" envconfig:"CLEANUP_THRESHOLD" default:"1000"`
 	DatabaseURL      string `json:"database_url" envconfig:"DATABASE_URL"`
-	DumpDir          string `json:"dump_dir"`
-	Debug            bool   `json:"debug" envconfig:"DEBUG"`
+	DumpDir          string `json:"dump_dir" envconfig:"DUMP_DIR"`
+	LogLevel         string `json:"log_level" envconfig:"LOG_LEVEL" default:"info"`
+	RollbarToken     string `json:"rollbar_token" envconfig:"ROLLBAR_TOKEN"`
+	RollbarNamespace string `json:"rollbar_namespace" envconfig:"ROLLBAR_NAMESPACE"`
+
+	syncDuration    time.Duration
+	cleanupDuration time.Duration
 }
 
 // Validate returns an error if config is invalid
@@ -52,16 +57,20 @@ func (c *Config) Validate() error {
 	if c.SyncInterval == "" {
 		return errSyncIntervalRequired
 	}
-	if _, err := time.ParseDuration(c.SyncInterval); err != nil {
+	d, err := time.ParseDuration(c.SyncInterval)
+	if err != nil {
 		return errSyncIntervalInvalid
 	}
+	c.syncDuration = d
 
 	if c.CleanupInterval == "" {
 		return errCleanupIntervalRequired
 	}
-	if _, err := time.ParseDuration(c.CleanupInterval); err != nil {
+	d, err = time.ParseDuration(c.CleanupInterval)
+	if err != nil {
 		return errCleanupIntervalInvalid
 	}
+	c.cleanupDuration = d
 
 	return nil
 }
@@ -79,6 +88,16 @@ func (c *Config) IsProduction() bool {
 // ListenAddr returns a full listen address and port
 func (c *Config) ListenAddr() string {
 	return fmt.Sprintf("%s:%d", c.ServerAddr, c.ServerPort)
+}
+
+// SyncDuration returns the parsed duration for the sync pipeline
+func (c *Config) SyncDuration() time.Duration {
+	return c.syncDuration
+}
+
+// CleanupDuration returns the parsed duration for the cleanup pipeline
+func (c *Config) CleanupDuration() time.Duration {
+	return c.cleanupDuration
 }
 
 // New returns a new config

@@ -14,7 +14,18 @@ var (
 	errNoBlockchainState = errors.New("no blockchain state")
 )
 
-func blockCheck(input coda.Block) error {
+// BlockHeight returns a parsed block height
+func BlockHeight(input *coda.Block) uint64 {
+	// NOTE: Coda's height starts at height=2!
+	return util.MustUInt64(input.ProtocolState.ConsensusState.BlockHeight)
+}
+
+// BlockTime returns a parsed block time
+func BlockTime(input *coda.Block) time.Time {
+	return util.MustTime(input.ProtocolState.BlockchainState.Date)
+}
+
+func blockCheck(input *coda.Block) error {
 	if input.ProtocolState == nil {
 		return errNoProtocolState
 	}
@@ -25,12 +36,4 @@ func blockCheck(input coda.Block) error {
 		return errNoBlockchainState
 	}
 	return nil
-}
-
-func blockHeight(input coda.Block) int64 {
-	return util.MustInt64(input.ProtocolState.ConsensusState.BlockHeight)
-}
-
-func blockTime(input coda.Block) time.Time {
-	return util.MustTime(input.ProtocolState.BlockchainState.Date)
 }

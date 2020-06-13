@@ -10,15 +10,22 @@ import (
 type Block struct {
 	Model
 
+	AppVersion        string    `json:"-"`
+	Height            uint64    `json:"height"`
 	Time              time.Time `json:"time"`
-	Height            int64     `json:"height"`
 	Hash              string    `json:"hash"`
 	ParentHash        string    `json:"parent_hash"`
 	LedgerHash        string    `json:"ledger_hash"`
 	Creator           string    `json:"creator"`
+	Coinbase          uint64    `json:"coinbase"`
+	TotalCurrency     uint64    `json:"total_currency"`
+	Epoch             int64     `json:"epoch"`
+	Slot              int64     `json:"slot"`
 	TransactionsCount int       `json:"transactions_count"`
-	Coinbase          int64     `json:"coinbase"`
-	AppVersion        string    `json:"-"`
+	FeeTransfersCount int       `json:"fee_transfers_count"`
+	SnarkersCount     int       `json:"snarkers_count"`
+	SnarkJobsCount    int       `json:"snark_jobs_count"`
+	SnarkJobsFees     uint64    `json:"snark_jobs_fees"`
 }
 
 // BlockIntervalStat contains block count stats for a given time interval
@@ -28,7 +35,7 @@ type BlockIntervalStat struct {
 	Avg          float64 `json:"avg"`
 }
 
-// BlockAvgStat contains block averages
+// BlockAvgStat contains block averagess
 type BlockAvgStat struct {
 	StartHeight int64   `json:"start_height"`
 	EndHeight   int64   `json:"end_height"`
@@ -51,10 +58,10 @@ func (b Block) String() string {
 
 // Validate returns an error if block data is invalid
 func (b Block) Validate() error {
-	if b.Time.Year() == 0 {
+	if b.Time.IsZero() {
 		return errors.New("time is invalid")
 	}
-	if b.Height <= 0 {
+	if b.Height == 0 {
 		return errors.New("height is invalid")
 	}
 	if b.Hash == "" {

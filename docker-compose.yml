@@ -11,7 +11,7 @@ volumes:
 services:
   database:
     image: timescale/timescaledb:latest-pg10
-    networks: 
+    networks:
       - internal
     ports:
       - "5432"
@@ -21,7 +21,7 @@ services:
       POSTGRES_DB: coda
     volumes:
       - database:/var/lib/postgresql/data/
-  
+
   server:
     build: .
     command: -cmd=server
@@ -34,11 +34,11 @@ services:
       DATABASE_URL: postgres://coda:coda@database/coda?sslmode=disable
     depends_on:
       - database
-  
+
   worker:
     build: .
     command: -cmd=worker
-    networks:    
+    networks:
       - internal
     environment:
       CODA_ENDPOINT: http://YOUR_ENDPOINT

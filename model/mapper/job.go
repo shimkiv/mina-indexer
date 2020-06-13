@@ -7,18 +7,19 @@ import (
 )
 
 // Job returns a job model constructed from the coda input
-func Job(block coda.Block, w *coda.CompletedWork) (*model.Job, error) {
+func Job(block *coda.Block, w *coda.CompletedWork) (*model.Job, error) {
 	j := &model.Job{
-		Height: blockHeight(block),
-		Time:   blockTime(block),
-		Prover: w.Prover,
-		Fee:    util.MustInt64(w.Fee),
+		Height:     BlockHeight(block),
+		Time:       BlockTime(block),
+		Prover:     w.Prover,
+		Fee:        util.MustUInt64(w.Fee),
+		WorksCount: len(w.WorkIds),
 	}
 	return j, j.Validate()
 }
 
 // Jobs returns list of jobs constructed from the coda input
-func Jobs(block coda.Block) ([]model.Job, error) {
+func Jobs(block *coda.Block) ([]model.Job, error) {
 	result := []model.Job{}
 
 	for _, w := range block.SnarkJobs {

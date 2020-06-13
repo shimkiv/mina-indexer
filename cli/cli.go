@@ -3,7 +3,11 @@ package cli
 import (
 	"flag"
 	"fmt"
-	"log"
+	"os"
+	"os/signal"
+	"syscall"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/figment-networks/coda-indexer/config"
 	"github.com/figment-networks/coda-indexer/store"
@@ -21,7 +25,7 @@ func Run() {
 	flag.Parse()
 
 	if showVersion {
-		log.Println(versionString())
+		log.Println(config.VersionString())
 		return
 	}
 
@@ -29,6 +33,8 @@ func Run() {
 	if err != nil {
 		terminate(err)
 	}
+
+	initLog(cfg)
 
 	if runCommand == "" {
 		terminate("Command is required")
@@ -41,8 +47,10 @@ func Run() {
 
 func startCommand(cfg *config.Config, name string) error {
 	switch name {
-	case "migrate":
-		return startMigrations(cfg)
+	case "migrate", "migrate:up", "migrate:down", "migrate:redo":
+		return startMigrations(name, cfg)
+	case "init":
+		return startInit(cfg)
 	case "server":
 		return startServer(cfg)
 	case "worker":
@@ -65,11 +73,11 @@ func terminate(message interface{}) {
 func initConfig(path string) (*config.Config, error) {
 	cfg := config.New()
 
-	if path == "" {
-		if err := config.FromEnv(cfg); err != nil {
-			return nil, err
-		}
-	} else {
+	if err := config.FromEnv(cfg); err != nil {
+		return nil, err
+	}
+
+	if path != "" {
 		if err := config.FromFile(path, cfg); err != nil {
 			return nil, err
 		}
@@ -82,13 +90,36 @@ func initConfig(path string) (*config.Config, error) {
 	return cfg, nil
 }
 
+func initLog(cfg *config.Config) {
+	log.SetFormatter(&log.TextFormatter{
+		DisableColors: true,
+		FullTimestamp: true,
+	})
+
+	switch cfg.LogLevel {
+	case "debug":
+		log.SetLevel(log.DebugLevel)
+	case "info":
+		log.SetLevel(log.InfoLevel)
+	case "warn":
+		log.SetLevel(log.WarnLevel)
+	case "error":
+		log.SetLevel(log.ErrorLevel)
+	}
+}
+
 func initStore(cfg *config.Config) (*store.Store, error) {
 	db, err := store.New(cfg.DatabaseURL)
 	if err != nil {
 		return nil, err
 	}
-
-	db.SetDebugMode(cfg.Debug)
+	db.SetDebugMode(cfg.LogLevel == "debug")
 
 	return db, nil
+}
+
+func initSignals() chan os.Signal {
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, os.Kill, syscall.SIGTERM)
+	return c
 }

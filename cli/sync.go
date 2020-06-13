@@ -5,17 +5,20 @@ import (
 
 	"github.com/figment-networks/coda-indexer/coda"
 	"github.com/figment-networks/coda-indexer/config"
-	"github.com/figment-networks/coda-indexer/pipeline"
+	"github.com/figment-networks/coda-indexer/worker"
 )
 
 func runSync(cfg *config.Config) error {
-	client := coda.NewClient(http.DefaultClient, cfg.CodaEndpoint)
-
 	db, err := initStore(cfg)
 	if err != nil {
 		return err
 	}
 	defer db.Close()
 
-	return pipeline.NewSync(cfg, db, client).Execute()
+	client := coda.NewClient(http.DefaultClient, cfg.CodaEndpoint)
+	if cfg.LogLevel == "debug" {
+		client.SetDebug(true)
+	}
+
+	return worker.RunSync(cfg, db, client)
 }

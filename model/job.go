@@ -10,10 +10,11 @@ import (
 type Job struct {
 	Model
 
-	Height int64     `json:"height"`
-	Time   time.Time `json:"time"`
-	Prover string    `json:"prover"`
-	Fee    int64     `json:"fee"`
+	Height     uint64    `json:"height"`
+	Time       time.Time `json:"time"`
+	Prover     string    `json:"prover"`
+	Fee        uint64    `json:"fee"`
+	WorksCount int       `json:"works_count"`
 }
 
 // TableName returns the Job table name
@@ -39,9 +40,9 @@ func (j Job) Validate() error {
 		return errors.New("time is invalid")
 	}
 	if j.Prover == "" {
-		return errors.New("prover is invalid")
+		return errors.New("prover is required")
 	}
-	if j.Fee <= 0 {
+	if j.Fee < 0 {
 		return errors.New("fee is invalid")
 	}
 	return nil

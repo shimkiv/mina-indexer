@@ -11,7 +11,7 @@ type TransactionsStore struct {
 
 // TransactionSearch contains transaction search params
 type TransactionSearch struct {
-	Height    int64  `form:"height"`
+	Height    uint64 `form:"height"`
 	Type      string `form:"type"`
 	BlockHash string `form:"block_hash"`
 	Account   string `form:"account"`
@@ -83,6 +83,6 @@ func (s TransactionsStore) ByAccount(account string) ([]model.Transaction, error
 }
 
 // ByHeight returns transactions for a given height
-func (s TransactionsStore) ByHeight(height int64) ([]model.Transaction, error) {
+func (s TransactionsStore) ByHeight(height uint64) ([]model.Transaction, error) {
 	return s.Search(TransactionSearch{Height: height})
 }

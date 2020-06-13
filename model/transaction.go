@@ -15,16 +15,22 @@ const (
 type Transaction struct {
 	Model
 
-	Type         string    `json:"type"`
-	Hash         string    `json:"hash"`
-	BlockHash    string    `json:"block_hash"`
-	Height       int64     `json:"height"`
-	Time         time.Time `json:"time"`
-	Nonce        int64     `json:"nonce"`
-	SenderKey    string    `json:"sender_key"`
-	RecipientKey string    `json:"recipient_key"`
-	Amount       int64     `json:"amount"`
-	Fee          int64     `json:"fee"`
+	Type      string    `json:"type"`
+	Hash      string    `json:"hash"`
+	BlockHash string    `json:"block_hash"`
+	Height    uint64    `json:"height"`
+	Time      time.Time `json:"time"`
+	Sender    string    `json:"sender"`
+	Receiver  string    `json:"receiver"`
+	Amount    uint64    `json:"amount"`
+	Fee       uint64    `json:"fee"`
+	Nonce     int       `json:"nonce"`
+	Memo      string    `json:"memo"`
+}
+
+type TransactionCount struct {
+	Time  time.Time
+	Count int
 }
 
 // TableName returns the model table name
@@ -51,14 +57,14 @@ func (t Transaction) Validate() error {
 	if t.Height <= 0 {
 		return errors.New("height is invalid")
 	}
-	if t.Time.Year() == 0 {
+	if t.Time.IsZero() {
 		return errors.New("time is invalid")
 	}
-	if t.SenderKey == "" {
-		return errors.New("sender key is required")
+	if t.Sender == "" {
+		return errors.New("sender is required")
 	}
-	if t.RecipientKey == "" {
-		return errors.New("recipient key is required")
+	if t.Receiver == "" {
+		return errors.New("receiver is required")
 	}
 	if t.Amount < 0 {
 		return errors.New("amount is invalid")

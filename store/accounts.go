@@ -1,12 +1,21 @@
 package store
 
 import (
+	"time"
+
 	"github.com/figment-networks/coda-indexer/model"
+	"github.com/figment-networks/indexing-engine/store/bulk"
 )
 
 // AccountsStore handles operations on accounts
 type AccountsStore struct {
 	baseStore
+}
+
+func (s AccountsStore) Count() (int, error) {
+	var n int
+	err := s.db.Table("accounts").Count(&n).Error
+	return n, err
 }
 
 // CreateOrUpdate creates a new account or updates an existing one
@@ -66,3 +75,55 @@ func (s AccountsStore) All() ([]model.Account, error) {
 
 	return result, checkErr(err)
 }
+
+func (s AccountsStore) Import(records []model.Account) error {
+	if len(records) == 0 {
+		return nil
+	}
+
+	return bulk.Import(s.db, sqlAccountsImport, len(records), func(idx int) bulk.Row {
+		acc := records[idx]
+		now := time.Now()
+
+		return bulk.Row{
+			acc.PublicKey,
+			acc.Delegate,
+			acc.Balance,
+			acc.BalanceUnknown,
+			acc.Nonce,
+			acc.StartHeight,
+			acc.StartTime,
+			acc.LastHeight,
+			acc.LastTime,
+			now,
+			now,
+		}
+	})
+}
+
+var (
+	sqlAccountsImport = `
+		INSERT INTO accounts (
+			public_key,
+			delegate,
+			balance,
+			balance_unknown,
+			nonce,
+			start_height,
+			start_time,
+			last_height,
+			last_time,
+			created_at,
+			updated_at
+		)
+		VALUES @values
+		ON CONFLICT (public_key) DO UPDATE
+		SET
+			delegate        = excluded.delegate,
+			balance         = excluded.balance,
+			balance_unknown = excluded.balance_unknown,
+			nonce           = excluded.nonce,
+			last_height     = excluded.last_height,
+			last_time       = excluded.last_time,
+			updated_at      = excluded.updated_at`
+)

@@ -28,14 +28,24 @@ var (
 			}
 		}`
 
+	queryBestChain = `
+		query {
+			bestChain {
+				%s
+			}
+		}
+	`
+
 	// Block details fields
 	queryBlockFields = `
 		stateHash
 		stateHashField
 		creator
 		creatorAccount {
-			delegate
 			publicKey
+			delegate
+			nonce
+			votingFor
 			balance {
 				blockHeight
 				total
@@ -60,6 +70,7 @@ var (
 				minWindowDensity
 				slot
 				stakingEpochData {
+					ledger
 					epochLength
 					lockCheckpoint
 					seed
@@ -91,6 +102,8 @@ var (
 				fromAccount {
 					delegate
 					publicKey
+					nonce
+					votingFor
 					balance {
 						blockHeight
 						total
@@ -98,8 +111,10 @@ var (
 					}
 				}
 				toAccount {
-					delegate
 					publicKey
+					delegate
+					nonce
+					votingFor
 					balance {
 						blockHeight
 						total
@@ -126,6 +141,10 @@ var (
 			}
 		}`
 )
+
+func buildBestChainQuery() string {
+	return fmt.Sprintf(queryBestChain, queryBlockFields)
+}
 
 func buildBlocksQuery(filter string) string {
 	return fmt.Sprintf(queryBlocks, filter, queryBlockFields)

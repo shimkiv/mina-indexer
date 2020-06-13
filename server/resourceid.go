@@ -35,8 +35,13 @@ func (r rid) String() string {
 	return r.raw
 }
 
-func (r rid) Number() int64 {
+func (r rid) Int64() int64 {
 	v, _ := strconv.ParseInt(r.raw, 10, 64)
+	return v
+}
+
+func (r rid) UInt64() uint64 {
+	v, _ := strconv.ParseUint(r.raw, 10, 64)
 	return v
 }
 

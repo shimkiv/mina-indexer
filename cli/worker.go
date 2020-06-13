@@ -1,54 +1,71 @@
 package cli
 
 import (
+	"context"
 	"log"
-	"net/http"
 	"sync"
 	"time"
 
 	"github.com/figment-networks/coda-indexer/coda"
 	"github.com/figment-networks/coda-indexer/config"
-	"github.com/figment-networks/coda-indexer/pipeline"
 	"github.com/figment-networks/coda-indexer/store"
+	"github.com/figment-networks/coda-indexer/worker"
 )
 
-func startSync(cfg *config.Config, db *store.Store) error {
-	log.Println("sync will run every", cfg.SyncInterval)
-	duration, err := time.ParseDuration(cfg.SyncInterval)
-	if err != nil {
-		return err
-	}
+func startSyncWorker(wg *sync.WaitGroup, cfg *config.Config, db *store.Store) context.CancelFunc {
+	wg.Add(1)
+	ctx, cancel := context.WithCancel(context.Background())
+	client := coda.NewDefaultClient(cfg.CodaEndpoint)
+	ticker := time.NewTicker(cfg.SyncDuration())
 
-	log.Println("using coda endpoint", cfg.CodaEndpoint)
-	client := coda.NewClient(http.DefaultClient, cfg.CodaEndpoint)
+	go func() {
+		defer func() {
+			ticker.Stop()
+			wg.Done()
+		}()
 
-	for range time.Tick(duration) {
-		log.Println("starting sync")
-		if err := pipeline.NewSync(cfg, db, client).Execute(); err != nil {
-			log.Println("sync error:", err)
+		for {
+			select {
+			case <-ticker.C:
+				worker.RunSync(cfg, db, client)
+			case <-ctx.Done():
+				return
+			}
 		}
-	}
+	}()
 
-	return nil
+	return cancel
 }
 
-func startCleanup(cfg *config.Config, db *store.Store) error {
-	log.Println("cleanup will run every", cfg.CleanupInterval)
-	duration, err := time.ParseDuration(cfg.CleanupInterval)
-	if err != nil {
-		return err
-	}
+func startCleanupWorker(wg *sync.WaitGroup, cfg *config.Config, db *store.Store) context.CancelFunc {
+	wg.Add(1)
+	ctx, cancel := context.WithCancel(context.Background())
+	ticker := time.NewTicker(cfg.CleanupDuration())
 
-	for range time.Tick(duration) {
-		log.Println("starting cleanup")
-		if err := pipeline.NewCleanup(cfg, db).Execute(); err != nil {
-			log.Println("clenaup error:", err)
+	go func() {
+		defer func() {
+			ticker.Stop()
+			wg.Done()
+		}()
+
+		for {
+			select {
+			case <-ticker.C:
+				worker.RunCleanup(cfg, db)
+			case <-ctx.Done():
+				return
+			}
 		}
-	}
-	return nil
+	}()
+
+	return cancel
 }
 
 func startWorker(cfg *config.Config) error {
+	log.Println("using api endpoint", cfg.CodaEndpoint)
+	log.Println("sync will run every", cfg.SyncInterval)
+	log.Println("cleanup will run every", cfg.CleanupInterval)
+
 	db, err := initStore(cfg)
 	if err != nil {
 		return err
@@ -56,23 +73,16 @@ func startWorker(cfg *config.Config) error {
 	defer db.Close()
 
 	wg := &sync.WaitGroup{}
-	wg.Add(2)
 
-	go func() {
-		if err := startSync(cfg, db); err != nil {
-			log.Println(err)
-		}
-		wg.Done()
-	}()
+	cancelSync := startSyncWorker(wg, cfg, db)
+	cancelCleanup := startCleanupWorker(wg, cfg, db)
 
-	go func() {
-		if err := startCleanup(cfg, db); err != nil {
-			log.Println(err)
-		}
-		wg.Done()
-	}()
+	s := <-initSignals()
+
+	log.Println("received signal", s)
+	cancelSync()
+	cancelCleanup()
 
 	wg.Wait()
-
 	return nil
 }
