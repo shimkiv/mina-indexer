@@ -17,10 +17,14 @@ type Server struct {
 }
 
 // New returns a new server instance
-func New(db *store.Store) *Server {
+func New(db *store.Store, cfg *config.Config) *Server {
 	s := &Server{
 		db:     db,
 		Engine: gin.Default(),
+	}
+
+	if cfg.RollbarToken != "" {
+		s.Use(RollbarMiddleware())
 	}
 
 	s.GET("/health", s.GetHealth)

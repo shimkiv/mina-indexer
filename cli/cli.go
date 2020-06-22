@@ -36,6 +36,9 @@ func Run() {
 
 	initLog(cfg)
 
+	config.InitRollbar(cfg)
+	defer config.TrackRecovery()
+
 	if runCommand == "" {
 		terminate("Command is required")
 	}
@@ -122,4 +125,8 @@ func initSignals() chan os.Signal {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, os.Kill, syscall.SIGTERM)
 	return c
+}
+
+func initRollbar(cfg *config.Config) {
+	config.InitRollbar(cfg)
 }
