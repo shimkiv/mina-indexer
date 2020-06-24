@@ -3,6 +3,8 @@ package util
 import (
 	"strconv"
 	"time"
+
+	"github.com/btcsuite/btcutil/base58"
 )
 
 // ParseUInt64 returns an UInt64 from a string
@@ -50,4 +52,9 @@ func MustTime(input string) time.Time {
 		return time.Time{}
 	}
 	return *t
+}
+
+// ParseBase58 returns a decoded base58 data
+func ParseBase58(input string) []byte {
+	return base58.Decode(input)
 }

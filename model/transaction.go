@@ -7,8 +7,10 @@ import (
 )
 
 const (
-	TransactionTypePayment    = "payment"
-	TransactionTypeDelegation = "delegation"
+	TxTypePayment     = "payment"
+	TxTypeDelegation  = "delegation"
+	TxTypeSnarkFee    = "snark_fee"
+	TxTypeBlockReward = "block_reward"
 )
 
 // Transaction contains the blockchain transaction details
@@ -26,11 +28,6 @@ type Transaction struct {
 	Fee       uint64    `json:"fee"`
 	Nonce     int       `json:"nonce"`
 	Memo      string    `json:"memo"`
-}
-
-type TransactionCount struct {
-	Time  time.Time
-	Count int
 }
 
 // TableName returns the model table name
@@ -59,9 +56,6 @@ func (t Transaction) Validate() error {
 	}
 	if t.Time.IsZero() {
 		return errors.New("time is invalid")
-	}
-	if t.Sender == "" {
-		return errors.New("sender is required")
 	}
 	if t.Receiver == "" {
 		return errors.New("receiver is required")

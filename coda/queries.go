@@ -86,6 +86,17 @@ var (
 		}
 		transactions {
 			coinbase
+			coinbaseReceiverAccount {
+				publicKey
+				delegate
+				nonce
+				votingFor
+				balance {
+					blockHeight
+					total
+					unknown
+				}
+			}
 			feeTransfer {
 				recipient
 				fee

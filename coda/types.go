@@ -432,6 +432,8 @@ type Transactions struct {
 	FeeTransfer []*FeeTransfer `json:"feeTransfer"`
 	// Amount of coda granted to the producer of this block
 	Coinbase string `json:"coinbase"`
+	// Receiver of the block reward
+	CoinbaseReceiver *Account `json:"coinbaseReceiverAccount"`
 }
 
 type TrustStatusPayload struct {

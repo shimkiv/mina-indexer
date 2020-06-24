@@ -61,13 +61,13 @@ func (s TransactionsStore) Search(search TransactionSearch) ([]model.Transaction
 		scope = scope.Where("type = ?", search.Type)
 	}
 	if search.Account != "" {
-		scope = scope.Where("sender_key = ? OR recipient_key = ?", search.Account, search.Account)
+		scope = scope.Where("sender = ? OR receiver = ?", search.Account, search.Account)
 	} else {
 		if search.From != "" {
-			scope = scope.Where("sender_key = ?", search.From)
+			scope = scope.Where("sender = ?", search.From)
 		}
 		if search.To != "" {
-			scope = scope.Where("recipient_key = ?", search.To)
+			scope = scope.Where("receiver = ?", search.To)
 		}
 	}
 

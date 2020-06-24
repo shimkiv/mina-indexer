@@ -3,6 +3,7 @@ module github.com/figment-networks/coda-indexer
 go 1.14
 
 require (
+	github.com/btcsuite/btcutil v1.0.2
 	github.com/figment-networks/indexing-engine v0.1.4
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-sql-driver/mysql v1.5.0 // indirect

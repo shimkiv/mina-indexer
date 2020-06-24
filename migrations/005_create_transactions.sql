@@ -1,16 +1,23 @@
 -- +goose Up
+CREATE TYPE e_tx_type AS ENUM (
+  'payment',
+  'delegation',
+  'snark_fee',
+  'block_reward'
+);
+
 CREATE TABLE IF NOT EXISTS transactions (
   id         SERIAL NOT NULL,
-  type       TEXT NOT NULL,
+  type       e_tx_type NOT NULL,
   hash       TEXT NOT NULL,
   block_hash TEXT NOT NULL,
   height     DOUBLE PRECISION NOT NULL,
   time       TIMESTAMP WITH TIME ZONE NOT NULL,
-  nonce      NUMERIC NOT NULL,
-  sender     TEXT NOT NULL,
+  nonce      NUMERIC,
+  sender     TEXT NOT,
   receiver   TEXT NOT NULL,
   amount     DECIMAL(65, 0) NOT NULL,
-  fee        DECIMAL(65, 0) NOT NULL,
+  fee        DECIMAL(65, 0),
   memo       TEXT,
   created_at TIMESTAMP WITH TIME ZONE NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
