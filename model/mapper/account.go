@@ -21,6 +21,10 @@ func Account(block *coda.Block, input *coda.Account) (*model.Account, error) {
 		BalanceUnknown: input.Balance.Unknown,
 	}
 
+	if input.Delegate != nil && *input.Delegate != input.PublicKey {
+		acc.Delegate = input.Delegate
+	}
+
 	if input.Nonce != nil {
 		acc.Nonce = util.MustInt64(*input.Nonce)
 	}
@@ -30,31 +34,30 @@ func Account(block *coda.Block, input *coda.Account) (*model.Account, error) {
 
 // Accounts returns accounts models references from the block data
 func Accounts(block *coda.Block) ([]model.Account, error) {
-	accounts := map[string]*model.Account{}
-
-	// Prepare validator record
-	validator, err := Account(block, block.CreatorAccount)
-	if err != nil {
-		return nil, err
+	codaAccounts := []*coda.Account{
+		block.CreatorAccount,
+		block.CreatorAccount.DelegateAccount,
 	}
-	accounts[validator.PublicKey] = validator
-
-	// Prepare accounts from user transactions
 	for _, t := range block.Transactions.UserCommands {
-		from, err := Account(block, t.FromAccount)
-		if err != nil {
-			return nil, err
-		}
-		if accounts[from.PublicKey] == nil {
-			accounts[from.PublicKey] = from
+		codaAccounts = append(codaAccounts,
+			t.FromAccount, t.FromAccount.DelegateAccount,
+			t.ToAccount, t.ToAccount.DelegateAccount,
+		)
+	}
+
+	accounts := map[string]*model.Account{}
+	for _, codaAcc := range codaAccounts {
+		if codaAcc == nil {
+			continue
 		}
 
-		to, err := Account(block, t.ToAccount)
+		acc, err := Account(block, codaAcc)
 		if err != nil {
 			return nil, err
 		}
-		if accounts[to.PublicKey] == nil {
-			accounts[to.PublicKey] = to
+
+		if accounts[acc.PublicKey] == nil {
+			accounts[acc.PublicKey] = acc
 		}
 	}
 

@@ -1,8 +1,6 @@
 package cli
 
 import (
-	"net/http"
-
 	"github.com/figment-networks/coda-indexer/coda"
 	"github.com/figment-networks/coda-indexer/config"
 	"github.com/figment-networks/coda-indexer/worker"
@@ -15,7 +13,7 @@ func runSync(cfg *config.Config) error {
 	}
 	defer db.Close()
 
-	client := coda.NewClient(http.DefaultClient, cfg.CodaEndpoint)
+	client := coda.NewDefaultClient(cfg.CodaEndpoint)
 	if cfg.LogLevel == "debug" {
 		client.SetDebug(true)
 	}

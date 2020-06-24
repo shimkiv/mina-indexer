@@ -2,7 +2,6 @@
 CREATE TABLE IF NOT EXISTS accounts (
   id              SERIAL NOT NULL,
   public_key      TEXT NOT NULL,
-  name            TEXT,
   delegate        TEXT,
   balance         TEXT NOT NULL,
   balance_unknown TEXT NOT NULL,

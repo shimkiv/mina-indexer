@@ -100,8 +100,19 @@ var (
 				nonce
 				to
 				fromAccount {
-					delegate
 					publicKey
+					delegate
+					delegateAccount {
+      			publicKey
+						delegate
+						nonce
+						votingFor
+						balance {
+							blockHeight
+							total
+							unknown
+						}
+    			}
 					nonce
 					votingFor
 					balance {
@@ -113,6 +124,17 @@ var (
 				toAccount {
 					publicKey
 					delegate
+					delegateAccount {
+      			publicKey
+						delegate
+						nonce
+						votingFor
+						balance {
+							blockHeight
+							total
+							unknown
+						}
+    			}
 					nonce
 					votingFor
 					balance {
@@ -131,6 +153,17 @@ var (
 				inferredNonce
 				receiptChainHash
 				delegate
+				delegateAccount {
+					publicKey
+					delegate
+					nonce
+					votingFor
+					balance {
+						blockHeight
+						total
+						unknown
+					}
+				}
 				votingFor
 				locked
 				balance {

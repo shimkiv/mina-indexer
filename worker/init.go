@@ -27,7 +27,7 @@ func RunInit(cfg *config.Config, db *store.Store) error {
 	}
 	log.Info("genesis accounts found:", len(genesis.Accounts))
 
-	// These are default start/end attributes and not necessarity correct
+	// These are default start/end attributes and might not be correct
 	// TODO: make the end height/time optional?
 	height := uint64(0)
 	now := time.Now()

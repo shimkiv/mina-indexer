@@ -26,6 +26,9 @@ CREATE TABLE blocks (
 CREATE INDEX idx_blocks_height
   ON blocks (height);
 
+CREATE INDEX idx_blocks_time
+  ON blocks (time);
+
 CREATE INDEX idx_blocks_hash
   ON blocks (hash);
 

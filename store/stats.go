@@ -71,7 +71,7 @@ var (
 			DATE_TRUNC('@bucket', time) AS time,
 			'@bucket' AS bucket,
 
-			ROUND(EXTRACT(EPOCH FROM (LAST(time, time) - FIRST(time, time)) / COUNT(1))::NUMERIC, 2) AS block_time_avg,
+			ROUND(EXTRACT(EPOCH FROM (MAX(time) - MIN(time)) / COUNT(1))::NUMERIC, 2) AS block_time_avg,
 			COUNT(1) AS blocks_count,
 
 			SUM(transactions_count) AS transactions_count,

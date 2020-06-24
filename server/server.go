@@ -23,6 +23,10 @@ func New(db *store.Store, cfg *config.Config) *Server {
 		Engine: gin.Default(),
 	}
 
+	if cfg.IsDevelopment() {
+		s.Use(CORSMiddleware())
+	}
+
 	if cfg.RollbarToken != "" {
 		s.Use(RollbarMiddleware())
 	}
@@ -36,6 +40,7 @@ func New(db *store.Store, cfg *config.Config) *Server {
 	s.GET("/block_times", s.GetBlockTimes)
 	s.GET("/block_stats", s.GetBlockStats)
 	s.GET("/validators", s.GetValidators)
+	s.GET("/validators/:id", s.GetValidator)
 	s.GET("/snarkers/", s.GetSnarkers)
 	s.GET("/transactions", s.GetTransactions)
 	s.GET("/transactions/:id", s.GetTransaction)
@@ -216,6 +221,7 @@ func (s *Server) GetTransaction(c *gin.Context) {
 	jsonOk(c, tran)
 }
 
+// GetValidators rendes all existing validators
 func (s *Server) GetValidators(c *gin.Context) {
 	validators, err := s.db.Validators.FindAll()
 	if shouldReturn(c, err) {
@@ -224,6 +230,25 @@ func (s *Server) GetValidators(c *gin.Context) {
 	jsonOk(c, validators)
 }
 
+// GetValidator renders the validator details
+func (s *Server) GetValidator(c *gin.Context) {
+	validator, err := s.db.Validators.FindByAccount(c.Param("id"))
+	if shouldReturn(c, err) {
+		return
+	}
+
+	account, err := s.db.Accounts.FindByPublicKey(c.Param("id"))
+	if shouldReturn(c, err) {
+		return
+	}
+
+	jsonOk(c, gin.H{
+		"validator": validator,
+		"account":   account,
+	})
+}
+
+// GetSnarkers renders all existing snarkers
 func (s *Server) GetSnarkers(c *gin.Context) {
 	snarkers, err := s.db.Snarkers.All()
 	if shouldReturn(c, err) {
