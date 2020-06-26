@@ -16,18 +16,24 @@ func startSyncWorker(wg *sync.WaitGroup, cfg *config.Config, db *store.Store) co
 	wg.Add(1)
 	ctx, cancel := context.WithCancel(context.Background())
 	client := coda.NewDefaultClient(cfg.CodaEndpoint)
-	ticker := time.NewTicker(cfg.SyncDuration())
+	timer := time.NewTimer(cfg.SyncDuration())
 
 	go func() {
 		defer func() {
-			ticker.Stop()
+			timer.Stop()
 			wg.Done()
 		}()
 
 		for {
 			select {
-			case <-ticker.C:
-				worker.RunSync(cfg, db, client)
+			case <-timer.C:
+				n, _ := worker.RunSync(cfg, db, client)
+				log.Println("lag is", n)
+				if n > 10 {
+					timer.Reset(time.Millisecond * 100)
+				} else {
+					timer.Reset(cfg.SyncDuration())
+				}
 			case <-ctx.Done():
 				return
 			}
@@ -62,7 +68,7 @@ func startCleanupWorker(wg *sync.WaitGroup, cfg *config.Config, db *store.Store)
 }
 
 func startWorker(cfg *config.Config) error {
-	log.Println("using api endpoint", cfg.CodaEndpoint)
+	log.Println("using coda endpoint", cfg.CodaEndpoint)
 	log.Println("sync will run every", cfg.SyncInterval)
 	log.Println("cleanup will run every", cfg.CleanupInterval)
 

@@ -20,12 +20,12 @@ func UserTransaction(block *coda.Block, t *coda.UserCommand) (*model.Transaction
 		Height:    BlockHeight(block),
 		Hash:      t.ID,
 		BlockHash: block.StateHash,
-		Sender:    t.From,
+		Sender:    &t.From,
 		Receiver:  t.To,
 		Amount:    util.MustUInt64(t.Amount),
 		Fee:       util.MustUInt64(t.Fee),
-		Nonce:     t.Nonce,
-		Memo:      t.Memo,
+		Nonce:     &t.Nonce,
+		Memo:      &t.Memo,
 	}
 
 	return tran, tran.Validate()
@@ -45,6 +45,22 @@ func BlockRewardTransaction(block *coda.Block) (*model.Transaction, error) {
 	return t, t.Validate()
 }
 
+func FeeTransaction(block *coda.Block, transfer *coda.FeeTransfer) (*model.Transaction, error) {
+	uid := fmt.Sprintf("%s%s%s", block.StateHash, transfer.Recipient, transfer.Fee)
+
+	t := &model.Transaction{
+		Type:      model.TxTypeFee,
+		BlockHash: block.StateHash,
+		Hash:      util.SHA1(uid),
+		Height:    BlockHeight(block),
+		Time:      BlockTime(block),
+		Receiver:  transfer.Recipient,
+		Amount:    util.MustUInt64(transfer.Fee),
+	}
+
+	return t, t.Validate()
+}
+
 func SnarkFeeTransaction(block *coda.Block, transfer *coda.FeeTransfer) (*model.Transaction, error) {
 	uid := fmt.Sprintf("%s%s%s", block.StateHash, transfer.Recipient, transfer.Fee)
 
@@ -54,6 +70,7 @@ func SnarkFeeTransaction(block *coda.Block, transfer *coda.FeeTransfer) (*model.
 		Hash:      util.SHA1(uid),
 		Height:    BlockHeight(block),
 		Time:      BlockTime(block),
+		Sender:    &block.Creator,
 		Receiver:  transfer.Recipient,
 		Amount:    util.MustUInt64(transfer.Fee),
 	}
@@ -73,10 +90,12 @@ func Transactions(block *coda.Block) ([]model.Transaction, error) {
 	result := []model.Transaction{}
 
 	// Add the block reward transaction
-	if t, err := BlockRewardTransaction(block); err == nil {
-		result = append(result, *t)
-	} else {
-		return nil, err
+	if block.Transactions.Coinbase != "0" && block.Transactions.CoinbaseReceiver != nil {
+		if t, err := BlockRewardTransaction(block); err == nil {
+			result = append(result, *t)
+		} else {
+			return nil, err
+		}
 	}
 
 	// Add user transactions
@@ -90,13 +109,26 @@ func Transactions(block *coda.Block) ([]model.Transaction, error) {
 	}
 
 	// Add snarker fees transactions
+	snarkerIDs := map[string]bool{}
+	for _, job := range block.SnarkJobs {
+		snarkerIDs[job.Prover] = true
+	}
+
 	feeTransfers := block.Transactions.FeeTransfer
 	for _, transfer := range feeTransfers {
-		t, err := SnarkFeeTransaction(block, transfer)
+		var feeTx *model.Transaction
+		var err error
+
+		if snarkerIDs[transfer.Recipient] {
+			feeTx, err = SnarkFeeTransaction(block, transfer)
+		} else {
+			feeTx, err = FeeTransaction(block, transfer)
+		}
 		if err != nil {
 			return nil, err
 		}
-		result = append(result, *t)
+
+		result = append(result, *feeTx)
 	}
 
 	return result, nil

@@ -24,11 +24,11 @@ func New(db *store.Store, cfg *config.Config) *Server {
 	}
 
 	if cfg.IsDevelopment() {
-		s.Use(CORSMiddleware())
+		s.Use(corsMiddleware())
 	}
 
 	if cfg.RollbarToken != "" {
-		s.Use(RollbarMiddleware())
+		s.Use(rollbarMiddleware())
 	}
 
 	s.GET("/health", s.GetHealth)
@@ -38,10 +38,12 @@ func New(db *store.Store, cfg *config.Config) *Server {
 	s.GET("/blocks", s.GetBlocks)
 	s.GET("/blocks/:id", s.GetBlock)
 	s.GET("/block_times", s.GetBlockTimes)
-	s.GET("/block_stats", s.GetBlockStats)
+	s.GET("/block_stats", timeBucketMiddleware(), s.GetBlockStats)
 	s.GET("/validators", s.GetValidators)
 	s.GET("/validators/:id", s.GetValidator)
 	s.GET("/snarkers/", s.GetSnarkers)
+	s.GET("/transactions_stats", timeBucketMiddleware(), s.GetTransactionsStats)
+	s.GET("/transaction_types", s.GetTransactionTypes)
 	s.GET("/transactions", s.GetTransactions)
 	s.GET("/transactions/:id", s.GetTransaction)
 	s.GET("/accounts/:id", s.GetAccount)
@@ -187,19 +189,11 @@ func (s *Server) GetBlockTimes(c *gin.Context) {
 
 // GetBlockStats returns block stats for an interval
 func (s *Server) GetBlockStats(c *gin.Context) {
-	params := blockTimesIntervalParams{}
-
-	if err := c.BindQuery(&params); err != nil {
-		badRequest(c, err)
-		return
-	}
-	params.setDefaults()
-
-	result, err := s.db.Blocks.Stats(params.Interval, params.Period)
+	tb := c.MustGet("timebucket").(timeBucket)
+	result, err := s.db.Blocks.Stats(tb.Period, tb.Interval)
 	if shouldReturn(c, err) {
 		return
 	}
-
 	jsonOk(c, result)
 }
 
@@ -257,10 +251,32 @@ func (s *Server) GetSnarkers(c *gin.Context) {
 	jsonOk(c, snarkers)
 }
 
+func (s *Server) GetTransactionsStats(c *gin.Context) {
+	tb := c.MustGet("timebucket").(timeBucket)
+	result, err := s.db.Stats.TransactionsStats(tb.Period, tb.Interval)
+	if shouldReturn(c, err) {
+		return
+	}
+
+	jsonOk(c, result)
+}
+
+func (s *Server) GetTransactionTypes(c *gin.Context) {
+	result, err := s.db.Transactions.Types()
+	if shouldReturn(c, err) {
+		return
+	}
+	jsonOk(c, result)
+}
+
 // GetTransactions returns transactions by height
 func (s *Server) GetTransactions(c *gin.Context) {
 	search := store.TransactionSearch{}
 	if err := c.BindQuery(&search); err != nil {
+		badRequest(c, err)
+		return
+	}
+	if err := search.Validate(); err != nil {
 		badRequest(c, err)
 		return
 	}

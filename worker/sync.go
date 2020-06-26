@@ -17,43 +17,42 @@ import (
 	"github.com/figment-networks/coda-indexer/store"
 )
 
-func RunSync(cfg *config.Config, db *store.Store, client *coda.Client) error {
+func RunSync(cfg *config.Config, db *store.Store, client *coda.Client) (int, error) {
 	log.Debug("checking daemon status")
 	status, err := checkNodeStatus(client)
 	if err != nil {
-		return err
+		return 0, err
 	}
+
+	var blocks []coda.Block
+	var lag int
 
 	log.Info("fetching blocks")
-	blocks, err := client.GetBestChain()
-	if err != nil {
-		return err
-	}
-
-	imported := 0
-	total := len(blocks)
-
 	defer func() {
-		log.
-			WithFields(log.Fields{"fetched": total, "imported": imported}).
-			Info("done processing")
+		log.WithField("lag", lag).Info("done fetching")
 	}()
 
-	for _, block := range blocks {
-		if cfg.DumpDir != "" {
-			dumpBlock(&block, cfg.DumpDir)
+	block, err := db.Blocks.Recent()
+	if err != nil {
+		if err == store.ErrNotFound {
+			blocks, err = client.GetFirstBlocks(10)
+		} else {
+			return -1, err
 		}
+	}
+	lag = *status.BlockchainLength - int(block.Height)
 
-		done, err := processBlock(db, status, &block)
+	if len(blocks) == 0 {
+		blocks, err = client.GetNextBlocks(block.Hash, 10)
 		if err != nil {
-			return err
-		}
-		if done {
-			imported++
+			return lag, err
 		}
 	}
 
-	return nil
+	n, err := processBlocks(cfg, db, status, blocks)
+	lag -= n
+
+	return lag, err
 }
 
 func checkNodeStatus(client *coda.Client) (*coda.DaemonStatus, error) {
@@ -76,6 +75,33 @@ func checkNodeStatus(client *coda.Client) (*coda.DaemonStatus, error) {
 	}
 
 	return status, nil
+}
+
+func processBlocks(cfg *config.Config, db *store.Store, status *coda.DaemonStatus, blocks []coda.Block) (int, error) {
+	imported := 0
+	total := len(blocks)
+
+	defer func() {
+		log.
+			WithFields(log.Fields{"fetched": total, "imported": imported}).
+			Info("done processing")
+	}()
+
+	for _, block := range blocks {
+		if cfg.DumpDir != "" {
+			dumpBlock(&block, cfg.DumpDir)
+		}
+
+		done, err := processBlock(db, status, &block)
+		if err != nil {
+			return imported, err
+		}
+		if done {
+			imported++
+		}
+	}
+
+	return imported, nil
 }
 
 func processBlock(db *store.Store, status *coda.DaemonStatus, block *coda.Block) (bool, error) {

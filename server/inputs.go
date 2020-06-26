@@ -1,12 +1,13 @@
 package server
 
+import (
+	"errors"
+
+	"github.com/gin-gonic/gin"
+)
+
 type blockTimesParams struct {
 	Limit int64 `form:"limit"`
-}
-
-type blockTimesIntervalParams struct {
-	Interval string `form:"interval"`
-	Period   string `form:"period"`
 }
 
 type accountsIndexParams struct {
@@ -22,16 +23,42 @@ func (p *blockTimesParams) setDefaults() {
 	}
 }
 
-func (p *blockTimesIntervalParams) setDefaults() {
-	if p.Interval == "" {
-		p.Interval = "h"
+type timeBucket struct {
+	Interval string `form:"interval"`
+	Period   uint   `form:"period"`
+}
+
+func (t *timeBucket) validate() error {
+	if t.Interval == "" {
+		t.Interval = "h"
 	}
-	if p.Period == "" {
-		if p.Interval == "h" {
-			p.Period = "48"
+
+	switch t.Interval {
+	case "h":
+		if t.Period == 0 {
+			t.Period = 48
 		}
-		if p.Interval == "d" {
-			p.Period = "30"
+		if t.Period > 120 {
+			t.Period = 120
 		}
+	case "d":
+		if t.Period == 0 {
+			t.Period = 30
+		}
+		if t.Period > 100 {
+			t.Period = 100
+		}
+	default:
+		return errors.New("invalid interval: " + t.Interval)
 	}
+
+	return nil
+}
+
+func getTimeBucket(c *gin.Context) (t timeBucket, err error) {
+	if err = c.BindQuery(&t); err != nil {
+		return
+	}
+	err = t.validate()
+	return
 }

@@ -9,25 +9,37 @@ import (
 const (
 	TxTypePayment     = "payment"
 	TxTypeDelegation  = "delegation"
+	TxTypeFee         = "fee"
 	TxTypeSnarkFee    = "snark_fee"
 	TxTypeBlockReward = "block_reward"
 )
 
+var (
+	TxTypes = []string{
+		TxTypePayment,
+		TxTypeDelegation,
+		TxTypeBlockReward,
+		TxTypeFee,
+		TxTypeSnarkFee,
+	}
+)
+
 // Transaction contains the blockchain transaction details
 type Transaction struct {
-	Model
-
+	ID        int64     `json:"id"`
 	Type      string    `json:"type"`
 	Hash      string    `json:"hash"`
 	BlockHash string    `json:"block_hash"`
 	Height    uint64    `json:"height"`
 	Time      time.Time `json:"time"`
-	Sender    string    `json:"sender"`
+	Sender    *string   `json:"sender"`
 	Receiver  string    `json:"receiver"`
 	Amount    uint64    `json:"amount"`
 	Fee       uint64    `json:"fee"`
-	Nonce     int       `json:"nonce"`
-	Memo      string    `json:"memo"`
+	Nonce     *int      `json:"nonce"`
+	Memo      *string   `json:"memo"`
+	CreatedAt time.Time `json:"-"`
+	UpdatedAt time.Time `json:"-"`
 }
 
 // TableName returns the model table name

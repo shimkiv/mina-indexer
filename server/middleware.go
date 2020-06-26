@@ -6,8 +6,8 @@ import (
 	"github.com/figment-networks/coda-indexer/config"
 )
 
-// CORSMiddleware inject CORS headers into the response
-func CORSMiddleware() gin.HandlerFunc {
+// corsMiddleware inject CORS headers into the response
+func corsMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		c.Header("Access-Control-Expose-Headers", "*")
@@ -15,8 +15,8 @@ func CORSMiddleware() gin.HandlerFunc {
 	}
 }
 
-// RollbarMiddleware reports panics to rollback error tracker
-func RollbarMiddleware() gin.HandlerFunc {
+// rollbarMiddleware reports panics to rollback error tracker
+func rollbarMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
@@ -25,5 +25,20 @@ func RollbarMiddleware() gin.HandlerFunc {
 			}
 		}()
 		c.Next()
+	}
+}
+
+func timeBucketMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		timeBucket, err := getTimeBucket(c)
+		if err != nil {
+			badRequest(c, err)
+			return
+		}
+		if err := timeBucket.validate(); err != nil {
+			badRequest(c, err)
+			return
+		}
+		c.Set("timebucket", timeBucket)
 	}
 }

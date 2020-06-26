@@ -102,8 +102,8 @@ func (s BlocksStore) AvgTimes(limit int64) ([]byte, error) {
 }
 
 // Stats returns block stats for a given interval
-func (s BlocksStore) Stats(interval, period string) ([]byte, error) {
-	return jsonquery.MustArray(s.db, sqlBlocksStats, interval, period)
+func (s BlocksStore) Stats(period uint, interval string) ([]byte, error) {
+	return jsonquery.MustArray(s.db, sqlBlocksStats, period, interval)
 }
 
 var (
@@ -135,8 +135,8 @@ var (
 		FROM
 			chain_stats
 		WHERE
-			bucket = $1
+			bucket = $2
 		ORDER BY
 			time DESC
-		LIMIT $2`
+		LIMIT $1`
 )

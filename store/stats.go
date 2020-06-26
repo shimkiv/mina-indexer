@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/figment-networks/coda-indexer/model/util"
+	"github.com/figment-networks/indexing-engine/store/jsonquery"
 )
 
 const (
@@ -18,18 +19,12 @@ type StatsStore struct {
 }
 
 func (s StatsStore) CreateChainStats(bucket string, ts time.Time) error {
-	var start, end time.Time
-
-	switch bucket {
-	case BucketHour:
-		start, end = util.HourInterval(ts)
-	case BucketDay:
-		start, end = util.DayInterval(ts)
-	default:
-		return errors.New("invalid time bucket")
+	start, end, err := s.getTimeRange(bucket, ts)
+	if err != nil {
+		return err
 	}
 
-	err := s.db.Exec(
+	err = s.db.Exec(
 		s.prepareBucket(sqlChainStatsDelete, bucket),
 		start,
 	).Error
@@ -41,6 +36,35 @@ func (s StatsStore) CreateChainStats(bucket string, ts time.Time) error {
 		s.prepareBucket(sqlChainStatsImport, bucket),
 		start, end,
 	).Error
+}
+
+func (s StatsStore) CreateTransactionsStats(bucket string, ts time.Time) error {
+	start, end, err := s.getTimeRange(bucket, ts)
+	if err != nil {
+		return err
+	}
+
+	return s.db.Exec(
+		s.prepareBucket(sqlTransactionsStatsImport, bucket),
+		start, end,
+	).Error
+}
+
+func (s StatsStore) TransactionsStats(period uint, interval string) ([]byte, error) {
+	return jsonquery.MustArray(s.db, sqlTransactionsStats, period, interval)
+}
+
+// getTimeRange returns the start/end time for a given time bucket
+func (s StatsStore) getTimeRange(bucket string, ts time.Time) (start time.Time, end time.Time, err error) {
+	switch bucket {
+	case BucketHour:
+		start, end = util.HourInterval(ts)
+	case BucketDay:
+		start, end = util.DayInterval(ts)
+	default:
+		err = errors.New("invalid time bucket")
+	}
+	return
 }
 
 func (s StatsStore) prepareBucket(q, bucket string) string {
@@ -105,4 +129,66 @@ var (
 			time >= $1 AND time <= $2
 		GROUP BY
 			DATE_TRUNC('@bucket', time);`
+
+	sqlTransactionsStatsImport = `
+		INSERT INTO transactions_stats (
+			time, bucket,
+			payments_count, payments_amount,
+			delegations_count, delegations_amount,
+			block_rewards_count, block_rewards_amount,
+			fees_count, fees_amount,
+			snark_fees_count, snark_fees_amount
+		)
+		SELECT
+  		DATE_TRUNC('@bucket', time) AS time,
+  		'@bucket' AS bucket,
+  		COUNT(1) FILTER (WHERE type = 'payment') AS payments_count,
+  		COALESCE(SUM(amount) FILTER (WHERE type = 'payment'), 0) AS payments_amount,
+  		COUNT(1) FILTER (WHERE type = 'delegation') AS delegations_count,
+  		COALESCE(SUM(amount) FILTER (WHERE type = 'delegation'), 0) AS delegations_amount,
+  		COUNT(1) FILTER (WHERE type = 'block_reward') AS block_rewards_count,
+  		COALESCE(SUM(amount) FILTER (WHERE type = 'block_reward'), 0) AS block_rewards_amount,
+  		COUNT(1) FILTER (WHERE type = 'fee') AS fees_count,
+  		COALESCE(SUM(amount) FILTER (WHERE type = 'fee'), 0) AS fees_amount,
+  		COUNT(1) FILTER (WHERE type = 'snark_fee') AS snark_fees_count,
+  		COALESCE(SUM(amount) FILTER (WHERE type = 'snark_fee'), 0) AS snark_fees_amount
+		FROM
+			transactions
+		WHERE
+			time >= $1 AND time <= $2
+		GROUP BY
+			DATE_TRUNC('@bucket', time)
+		ON CONFLICT (time, bucket) DO UPDATE
+		SET
+			payments_count       = excluded.payments_count,
+			payments_amount      = excluded.payments_amount,
+			delegations_count    = excluded.delegations_count,
+			delegations_amount   = excluded.delegations_amount,
+			block_rewards_count  = excluded.block_rewards_count,
+			block_rewards_amount = excluded.block_rewards_amount,
+			fees_count           = excluded.fees_count,
+			fees_amount          = excluded.fees_amount,
+			snark_fees_count     = excluded.snark_fees_count,
+			snark_fees_amount    = excluded.snark_fees_amount`
+
+	sqlTransactionsStats = `
+		SELECT
+			time,
+			payments_count,
+			payments_amount,
+			delegations_count,
+			delegations_amount,
+			block_rewards_count,
+			block_rewards_amount,
+			fees_count,
+			fees_amount,
+			snark_fees_count,
+			snark_fees_amount
+		FROM
+			transactions_stats
+		WHERE
+			bucket = $2
+		ORDER BY
+			time DESC
+		LIMIT $1`
 )

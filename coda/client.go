@@ -182,6 +182,12 @@ func (c Client) GetFirstBlock() (*Block, error) {
 	return c.GetSingleBlock("first:1")
 }
 
+// GetFirstBlocks returns the first n blocks
+func (c Client) GetFirstBlocks(n int) ([]Block, error) {
+	filter := fmt.Sprintf("first:%v", n)
+	return c.GetBlocks(filter)
+}
+
 // GetLastBlock returns the last block available in the chain node
 func (c Client) GetLastBlock() (*Block, error) {
 	return c.GetSingleBlock("last:1")
@@ -199,7 +205,7 @@ func (c Client) GetNextBlock(after string) (*Block, error) {
 
 // GetNextBlocks returns a next N blocks after a given block hash
 func (c Client) GetNextBlocks(after string, n int) ([]Block, error) {
-	return c.GetBlocks(fmt.Sprintf("after=%v,first:%v", after, n))
+	return c.GetBlocks(fmt.Sprintf("after:%q,first:%v", after, n))
 }
 
 // GetAccount returns account for a given public key

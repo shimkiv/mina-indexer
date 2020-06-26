@@ -26,7 +26,7 @@ func TestTransactions(t *testing.T) {
 
 	tx := transactions[0]
 	assert.Equal(t, model.TxTypeBlockReward, tx.Type)
-	assert.Equal(t, "", tx.Sender)
+	assert.Nil(t, tx.Sender)
 	assert.Equal(t, block.Transactions.CoinbaseReceiver.PublicKey, tx.Receiver)
 	assert.Equal(t, uint64(200000000000), tx.Amount)
 }

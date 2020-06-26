@@ -18,5 +18,6 @@ func runSync(cfg *config.Config) error {
 		client.SetDebug(true)
 	}
 
-	return worker.RunSync(cfg, db, client)
+	_, err = worker.RunSync(cfg, db, client)
+	return err
 }

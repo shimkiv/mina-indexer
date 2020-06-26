@@ -8,16 +8,18 @@ import (
 // Finalize generates summary records
 func Finalize(db *store.Store, data *Data) error {
 	ts := data.Block.Time
+	buckets := []string{store.BucketHour, store.BucketDay}
 
-	// Create hourly stats rollup
-	log.Debug("creating hourly stats")
-	if err := db.Stats.CreateChainStats(store.BucketHour, ts); err != nil {
-		return err
-	}
+	for _, bucket := range buckets {
+		log.WithField("bucket", bucket).Info("creating chain stats")
+		if err := db.Stats.CreateChainStats(bucket, ts); err != nil {
+			return err
+		}
 
-	log.Debug("creating daily stats")
-	if err := db.Stats.CreateChainStats(store.BucketDay, ts); err != nil {
-		return err
+		log.WithField("bucket", bucket).Info("creating transaction stats")
+		if err := db.Stats.CreateTransactionsStats(bucket, ts); err != nil {
+			return err
+		}
 	}
 
 	return nil
