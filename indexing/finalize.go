@@ -11,12 +11,12 @@ func Finalize(db *store.Store, data *Data) error {
 	buckets := []string{store.BucketHour, store.BucketDay}
 
 	for _, bucket := range buckets {
-		log.WithField("bucket", bucket).Info("creating chain stats")
+		log.WithField("bucket", bucket).Debug("creating chain stats")
 		if err := db.Stats.CreateChainStats(bucket, ts); err != nil {
 			return err
 		}
 
-		log.WithField("bucket", bucket).Info("creating transaction stats")
+		log.WithField("bucket", bucket).Debug("creating transaction stats")
 		if err := db.Stats.CreateTransactionsStats(bucket, ts); err != nil {
 			return err
 		}

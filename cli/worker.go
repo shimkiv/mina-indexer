@@ -28,7 +28,6 @@ func startSyncWorker(wg *sync.WaitGroup, cfg *config.Config, db *store.Store) co
 			select {
 			case <-timer.C:
 				n, _ := worker.RunSync(cfg, db, client)
-				log.Println("lag is", n)
 				if n > 10 {
 					timer.Reset(time.Millisecond * 100)
 				} else {
