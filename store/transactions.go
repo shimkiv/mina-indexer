@@ -75,12 +75,15 @@ func (s TransactionsStore) Search(search TransactionSearch) ([]model.Transaction
 	if search.Account != "" {
 		scope = scope.Where("sender = ? OR receiver = ?", search.Account, search.Account)
 	} else {
-		if search.From != "" {
-			scope = scope.Where("sender = ?", search.From)
+		if search.Sender != "" {
+			scope = scope.Where("sender = ?", search.Sender)
 		}
-		if search.To != "" {
-			scope = scope.Where("receiver = ?", search.To)
+		if search.Receiver != "" {
+			scope = scope.Where("receiver = ?", search.Receiver)
 		}
+	}
+	if search.Memo != "" {
+		scope = scope.Where("memo @@ ?", search.Memo)
 	}
 	if search.startTime != nil {
 		scope = scope.Where("time >= ?", search.startTime)

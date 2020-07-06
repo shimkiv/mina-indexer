@@ -21,8 +21,9 @@ type TransactionSearch struct {
 	Type      string `form:"type"`
 	BlockHash string `form:"block_hash"`
 	Account   string `form:"account"`
-	From      string `form:"from"`
-	To        string `form:"to"`
+	Sender    string `form:"sender"`
+	Receiver  string `form:"receiver"`
+	Memo      string `form:"memo"`
 	StartTime string `form:"start_time"`
 	EndTime   string `form:"end_time"`
 	Limit     uint   `form:"limit"`
@@ -31,6 +32,7 @@ type TransactionSearch struct {
 	endTime   *time.Time
 }
 
+// Validate returns an error if search form is invalid
 func (s *TransactionSearch) Validate() error {
 	if s.Type != "" {
 		s.Type = strings.ToLower(s.Type)

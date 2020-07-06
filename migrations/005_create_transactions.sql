@@ -45,6 +45,9 @@ CREATE INDEX idx_transactions_sender
 CREATE INDEX idx_transactions_receiver
   ON transactions(receiver);
 
+CREATE INDEX idx_transactions_memo
+  ON transactions(LOWER(memo));
+
 -- +goose Down
 DROP TABLE transactions;
 DROP TYPE e_tx_type;

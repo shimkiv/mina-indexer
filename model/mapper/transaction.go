@@ -14,6 +14,11 @@ func UserTransaction(block *coda.Block, t *coda.UserCommand) (*model.Transaction
 		ttype = model.TxTypeDelegation
 	}
 
+	var memoText *string
+	if text := util.ParseBase58Text(t.Memo); len(text) > 0 {
+		memoText = &text
+	}
+
 	tran := &model.Transaction{
 		Type:      ttype,
 		Time:      BlockTime(block),
@@ -25,7 +30,7 @@ func UserTransaction(block *coda.Block, t *coda.UserCommand) (*model.Transaction
 		Amount:    util.MustUInt64(t.Amount),
 		Fee:       util.MustUInt64(t.Fee),
 		Nonce:     &t.Nonce,
-		Memo:      &t.Memo,
+		Memo:      memoText,
 	}
 
 	return tran, tran.Validate()
