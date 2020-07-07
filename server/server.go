@@ -147,7 +147,7 @@ func (s *Server) GetBlock(c *gin.Context) {
 		"creator":       creator,
 		"transactions":  transactions,
 		"fee_transfers": transfers,
-		"jobs":          jobs,
+		"snark_jobs":    jobs,
 	})
 }
 
@@ -217,7 +217,7 @@ func (s *Server) GetTransaction(c *gin.Context) {
 
 // GetValidators rendes all existing validators
 func (s *Server) GetValidators(c *gin.Context) {
-	validators, err := s.db.Validators.FindAll()
+	validators, err := s.db.Validators.Index()
 	if shouldReturn(c, err) {
 		return
 	}
@@ -236,9 +236,15 @@ func (s *Server) GetValidator(c *gin.Context) {
 		return
 	}
 
+	delegations, err := s.db.Accounts.AllByDelegator(validator.Account)
+	if shouldReturn(c, err) {
+		return
+	}
+
 	jsonOk(c, gin.H{
-		"validator": validator,
-		"account":   account,
+		"validator":   validator,
+		"account":     account,
+		"delegations": delegations,
 	})
 }
 

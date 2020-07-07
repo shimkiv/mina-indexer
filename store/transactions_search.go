@@ -35,16 +35,18 @@ type TransactionSearch struct {
 // Validate returns an error if search form is invalid
 func (s *TransactionSearch) Validate() error {
 	if s.Type != "" {
-		s.Type = strings.ToLower(s.Type)
-		found := false
-		for _, t := range model.TxTypes {
-			if s.Type == t {
-				found = true
-				break
+		types := strings.Split(strings.ToLower(s.Type), ",")
+		for _, t := range types {
+			found := false
+			for _, existing := range model.TxTypes {
+				if existing == t {
+					found = true
+					break
+				}
 			}
-		}
-		if !found {
-			return errors.New("invalid transaction type: " + s.Type)
+			if !found {
+				return errors.New("invalid transaction type: " + t)
+			}
 		}
 	}
 

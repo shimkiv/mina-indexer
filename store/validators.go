@@ -5,11 +5,16 @@ import (
 
 	"github.com/figment-networks/coda-indexer/model"
 	"github.com/figment-networks/indexing-engine/store/bulk"
+	"github.com/figment-networks/indexing-engine/store/jsonquery"
 )
 
 // ValidatorsStore handles operations on validators
 type ValidatorsStore struct {
 	baseStore
+}
+
+func (s ValidatorsStore) Index() ([]byte, error) {
+	return jsonquery.MustArray(s.db, sqlValidatorsIndex)
 }
 
 // FindAll returns all available validators
@@ -60,6 +65,18 @@ func (s ValidatorsStore) Import(records []model.Validator) error {
 }
 
 var (
+	sqlValidatorsIndex = `
+		SELECT
+			validators.*,
+			accounts.balance AS account_balance,
+			accounts.balance_unknown AS account_balance_unknown
+		FROM
+			validators
+		LEFT JOIN accounts
+			ON accounts.public_key = validators.account
+		ORDER BY
+			blocks_created DESC`
+
 	sqlValidatorsImport = `
 		INSERT INTO validators (
 			account,

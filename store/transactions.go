@@ -1,6 +1,8 @@
 package store
 
 import (
+	"strings"
+
 	"github.com/figment-networks/coda-indexer/model"
 	"github.com/figment-networks/indexing-engine/store/jsonquery"
 )
@@ -70,7 +72,7 @@ func (s TransactionsStore) Search(search TransactionSearch) ([]model.Transaction
 		scope = scope.Where("height = ?", search.Height)
 	}
 	if search.Type != "" {
-		scope = scope.Where("type = ?", search.Type)
+		scope = scope.Where("type IN (?)", strings.Split(search.Type, ","))
 	}
 	if search.Account != "" {
 		scope = scope.Where("sender = ? OR receiver = ?", search.Account, search.Account)

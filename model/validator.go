@@ -13,8 +13,8 @@ type Validator struct {
 	BlocksCreated  int    `json:"blocks_created"`
 	BlocksProposed int    `json:"blocks_proposed"`
 
-	StartHeight uint64    `json:"start_time"`
-	StartTime   time.Time `json:"start_height"`
+	StartHeight uint64    `json:"start_height"`
+	StartTime   time.Time `json:"start_time"`
 	LastHeight  uint64    `json:"last_height"`
 	LastTime    time.Time `json:"last_time"`
 }

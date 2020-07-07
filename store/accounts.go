@@ -51,6 +51,16 @@ func (s AccountsStore) FindByPublicKey(key string) (*model.Account, error) {
 	return s.FindBy("public_key", key)
 }
 
+// AllByDelegator returns all accounts delegated to another account
+func (s AccountsStore) AllByDelegator(account string) ([]model.Account, error) {
+	result := []model.Account{}
+	err := s.db.
+		Where("delegate = ?", account).
+		Find(&result).
+		Error
+	return result, checkErr(err)
+}
+
 // ByHeight returns all accounts that were created at a given height
 func (s AccountsStore) ByHeight(height int64) ([]model.Account, error) {
 	result := []model.Account{}
