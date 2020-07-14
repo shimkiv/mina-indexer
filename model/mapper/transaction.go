@@ -15,7 +15,7 @@ func UserTransaction(block *coda.Block, t *coda.UserCommand) (*model.Transaction
 	}
 
 	var memoText *string
-	if text := util.ParseBase58Text(t.Memo); len(text) > 0 {
+	if text := util.ParseMemoText(t.Memo); len(text) > 0 {
 		memoText = &text
 	}
 

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"strconv"
 	"strings"
-	"text/scanner"
 	"time"
 
 	"github.com/btcsuite/btcutil/base58"
@@ -62,25 +61,10 @@ func ParseBase58(input string) []byte {
 	return base58.Decode(input)
 }
 
-// ParseBase58Text returns plantext from base58 data
-func ParseBase58Text(input string) string {
+// ParseMemoText returns memo plaintext from base58 data
+func ParseMemoText(input string) string {
 	data := base58.Decode(input)
-
-	s := scanner.Scanner{}
-	s.Init(bytes.NewReader(data))
-	s.Mode ^= scanner.ScanRawStrings
-
-	chunks := []string{}
-
-	for tok := s.Scan(); tok != scanner.EOF; tok = s.Scan() {
-		if tok == 0 {
-			continue
-		}
-		chunks = append(chunks, s.TokenText())
-	}
-
-	result := strings.ToValidUTF8(strings.Join(chunks, " "), "")
-	result = strings.TrimSpace(result)
-
+	data = bytes.ReplaceAll(data[3:32], []byte("\x00"), []byte(""))
+	result := strings.ToValidUTF8(string(data), "")
 	return result
 }
