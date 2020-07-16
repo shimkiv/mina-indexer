@@ -80,6 +80,7 @@ var (
 			bucket,
 			block_time_avg,
 			blocks_count,
+			blocks_total_count,
 			transactions_count,
 			fee_transfers_count,
 			validators_count,
@@ -97,6 +98,7 @@ var (
 
 			ROUND(EXTRACT(EPOCH FROM (MAX(time) - MIN(time)) / COUNT(1))::NUMERIC, 2) AS block_time_avg,
 			COUNT(1) AS blocks_count,
+			(SELECT COUNT(1) FROM blocks) AS total_blocks_count,
 
 			SUM(transactions_count) AS transactions_count,
 			SUM(fee_transfers_count) AS fee_transfers_count,

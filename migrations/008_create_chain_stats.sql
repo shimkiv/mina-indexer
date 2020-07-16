@@ -8,6 +8,7 @@ CREATE TABLE chain_stats (
 
   block_time_avg      NUMERIC,
   blocks_count        INTEGER,
+  blocks_total_count  INTEGER,
   transactions_count  INTEGER,
   fee_transfers_count INTEGER,
   validators_count    INTEGER,
