@@ -78,16 +78,14 @@ func (s *TransactionSearch) Validate() error {
 		return errors.New("end time must be greater than start time")
 	}
 
-	if (s.startTime != nil || s.endTime != nil) && (s.BeforeID > 0 || s.AfterID > 0) {
-		return errors.New("can't use time and ID filters together")
-	}
-
 	if s.Limit == 0 {
 		s.Limit = 25
 	}
 	if s.Limit > 100 {
 		s.Limit = 100
 	}
+
+	s.Memo = strings.TrimSpace(strings.ToLower(s.Memo))
 
 	return nil
 }

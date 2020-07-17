@@ -282,6 +282,7 @@ func (s *Server) GetTransactions(c *gin.Context) {
 		badRequest(c, err)
 		return
 	}
+
 	if err := search.Validate(); err != nil {
 		badRequest(c, err)
 		return

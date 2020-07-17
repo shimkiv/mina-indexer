@@ -1,6 +1,7 @@
 package store
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/figment-networks/coda-indexer/model"
@@ -63,7 +64,7 @@ func (s TransactionsStore) Search(search TransactionSearch) ([]model.Transaction
 		scope = scope.Where("id < ?", search.BeforeID)
 	}
 	if search.AfterID > 0 {
-		scope.Where("id > ?", search.AfterID)
+		scope = scope.Where("id > ?", search.AfterID)
 	}
 	if search.BlockHash != "" {
 		scope = scope.Where("block_hash = ?", search.BlockHash)
@@ -84,8 +85,8 @@ func (s TransactionsStore) Search(search TransactionSearch) ([]model.Transaction
 			scope = scope.Where("receiver = ?", search.Receiver)
 		}
 	}
-	if search.Memo != "" {
-		scope = scope.Where("memo @@ ?", search.Memo)
+	if len(search.Memo) > 2 {
+		scope = scope.Where("memo ILIKE ?", fmt.Sprintf("%%%s%%", search.Memo))
 	}
 	if search.startTime != nil {
 		scope = scope.Where("time >= ?", search.startTime)
