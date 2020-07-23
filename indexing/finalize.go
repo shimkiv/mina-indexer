@@ -20,6 +20,11 @@ func Finalize(db *store.Store, data *Data) error {
 		if err := db.Stats.CreateTransactionsStats(bucket, ts); err != nil {
 			return err
 		}
+
+		log.WithField("bucket", bucket).Debug("creating validator stats")
+		if err := db.Stats.CreateValidatorStats(data.Validator, bucket, ts); err != nil {
+			return err
+		}
 	}
 
 	return nil

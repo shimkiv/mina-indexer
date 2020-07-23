@@ -19,6 +19,14 @@ type Validator struct {
 	LastTime    time.Time `json:"last_time"`
 }
 
+type ValidatorStat struct {
+	Time                string `json:"time"`
+	Bucket              string `json:"bucket"`
+	BlocksProducedCount int    `json:"blocks_produced_count"`
+	DelegationsCount    int    `json:"delegations_count"`
+	DelegationsAmount   int64  `json:"delegations_amount"`
+}
+
 // Validate returns an error if validator is invalid
 func (v Validator) Validate() error {
 	if v.Account == "" {

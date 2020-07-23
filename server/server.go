@@ -241,10 +241,16 @@ func (s *Server) GetValidator(c *gin.Context) {
 		return
 	}
 
+	stats, err := s.db.Stats.ValidatorStats(validator, 90, store.BucketDay)
+	if shouldReturn(c, err) {
+		return
+	}
+
 	jsonOk(c, gin.H{
 		"validator":   validator,
 		"account":     account,
 		"delegations": delegations,
+		"stats":       stats,
 	})
 }
 

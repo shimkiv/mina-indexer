@@ -49,7 +49,7 @@ func RunSync(cfg *config.Config, db *store.Store, client *coda.Client) (int, err
 		}
 	}
 
-	n, err := processBlocks(cfg, db, status, blocks)
+	n, err := ProcessBlocks(cfg, db, status, blocks)
 	lag -= n
 
 	return lag, err
@@ -77,7 +77,7 @@ func checkNodeStatus(client *coda.Client) (*coda.DaemonStatus, error) {
 	return status, nil
 }
 
-func processBlocks(cfg *config.Config, db *store.Store, status *coda.DaemonStatus, blocks []coda.Block) (int, error) {
+func ProcessBlocks(cfg *config.Config, db *store.Store, status *coda.DaemonStatus, blocks []coda.Block) (int, error) {
 	imported := 0
 	total := len(blocks)
 
@@ -92,7 +92,7 @@ func processBlocks(cfg *config.Config, db *store.Store, status *coda.DaemonStatu
 			dumpBlock(&block, cfg.DumpDir)
 		}
 
-		done, err := processBlock(db, status, &block)
+		done, err := ProcessBlock(db, status, &block)
 		if err != nil {
 			return imported, err
 		}
@@ -104,7 +104,7 @@ func processBlocks(cfg *config.Config, db *store.Store, status *coda.DaemonStatu
 	return imported, nil
 }
 
-func processBlock(db *store.Store, status *coda.DaemonStatus, block *coda.Block) (bool, error) {
+func ProcessBlock(db *store.Store, status *coda.DaemonStatus, block *coda.Block) (bool, error) {
 	_, err := db.Blocks.FindByHash(block.StateHash)
 	if err == nil {
 		log.WithField("hash", block.StateHash).Debug("skipping already existing block")

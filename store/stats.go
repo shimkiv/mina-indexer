@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/figment-networks/coda-indexer/model"
 	"github.com/figment-networks/coda-indexer/model/util"
 	"github.com/figment-networks/indexing-engine/store/jsonquery"
 )
@@ -18,6 +19,7 @@ type StatsStore struct {
 	baseStore
 }
 
+// CreateChainStats creates a new chain stats record
 func (s StatsStore) CreateChainStats(bucket string, ts time.Time) error {
 	start, end, err := s.getTimeRange(bucket, ts)
 	if err != nil {
@@ -38,6 +40,35 @@ func (s StatsStore) CreateChainStats(bucket string, ts time.Time) error {
 	).Error
 }
 
+// CreateValidatorStats creates a new validator stats record
+func (s StatsStore) CreateValidatorStats(validator *model.Validator, bucket string, ts time.Time) error {
+	start, end, err := s.getTimeRange(bucket, ts)
+	if err != nil {
+		return err
+	}
+
+	return s.db.Exec(
+		s.prepareBucket(sqlValidatorStatsImport, bucket),
+		start, end, validator.Account,
+	).Error
+}
+
+// ValidatorStats returns validator stats for a given timeframe
+func (s StatsStore) ValidatorStats(validator *model.Validator, period uint, interval string) ([]model.ValidatorStat, error) {
+	result := []model.ValidatorStat{}
+
+	err := s.db.
+		Model(&model.ValidatorStat{}).
+		Where("validator_id = ? AND bucket = ?", validator.ID, interval).
+		Order("time DESC").
+		Limit(period).
+		Find(&result).
+		Error
+
+	return result, err
+}
+
+// CreateTransactionsStats creates a new transaction stats record
 func (s StatsStore) CreateTransactionsStats(bucket string, ts time.Time) error {
 	start, end, err := s.getTimeRange(bucket, ts)
 	if err != nil {
@@ -50,6 +81,7 @@ func (s StatsStore) CreateTransactionsStats(bucket string, ts time.Time) error {
 	).Error
 }
 
+// TransactionsStats returns transactions stats for a given timeframe
 func (s StatsStore) TransactionsStats(period uint, interval string) ([]byte, error) {
 	return jsonquery.MustArray(s.db, sqlTransactionsStats, period, interval)
 }
@@ -193,4 +225,39 @@ var (
 		ORDER BY
 			time DESC
 		LIMIT $1`
+
+	sqlValidatorStats = `
+		SELECT
+			blocks_produced_count,
+			delegations_count,
+			delegations_amount
+		FROM
+			validator_stats
+		WHERE
+			validator_id = $1
+			AND bucket = $2
+		LIMIT $3`
+
+	sqlValidatorStatsImport = `
+		INSERT INTO validator_stats (
+			time,
+			bucket,
+			validator_id,
+			blocks_produced_count,
+			delegations_count,
+			delegations_amount
+		)
+		VALUES (
+			DATE_TRUNC('@bucket', $1::timestamp),
+			'@bucket',
+			(SELECT id FROM validators WHERE account = $3 LIMIT 1),
+			(SELECT COUNT(1) FROM blocks WHERE time >= $1 AND time <= $2 AND creator = $3),
+			(SELECT COUNT(1) FROM accounts WHERE delegate = $3),
+			(SELECT COALESCE(SUM(balance::numeric), 0) FROM accounts WHERE delegate = $3)
+		)
+		ON CONFLICT (time, bucket, validator_id) DO UPDATE
+		SET
+			blocks_produced_count = excluded.blocks_produced_count,
+			delegations_count     = excluded.delegations_count,
+			delegations_amount    = excluded.delegations_amount`
 )
