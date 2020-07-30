@@ -11,7 +11,6 @@ var (
 				uptimeSecs
 				stateHash
 				commitId
-				peers
 				highestBlockLengthReceived
 				blockchainLength
 				numAccounts
@@ -70,7 +69,9 @@ var (
 				minWindowDensity
 				slot
 				stakingEpochData {
-					ledger
+					ledger {
+						totalCurrency
+					}
 					epochLength
 					lockCheckpoint
 					seed

@@ -2,6 +2,7 @@ package server
 
 import (
 	"errors"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -67,11 +68,16 @@ func (s Server) GetStatus(c *gin.Context) {
 		"app_version": config.AppVersion,
 		"git_commit":  config.GitCommit,
 		"go_version":  config.GoVersion,
+		"sync_status": "stale",
 	}
 
 	if block, err := s.db.Blocks.Recent(); err == nil {
 		data["last_block_time"] = block.Time
 		data["last_block_height"] = block.Height
+
+		if time.Since(block.Time).Minutes() <= 30 {
+			data["sync_status"] = "current"
+		}
 	}
 
 	jsonOk(c, data)
