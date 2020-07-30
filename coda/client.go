@@ -149,6 +149,18 @@ func (c Client) GetBestChain() ([]Block, error) {
 	return result.Blocks, nil
 }
 
+// GetBlock returns a single block for the given state hash
+func (c Client) GetBlock(hash string) (*Block, error) {
+	q := fmt.Sprintf(queryBlock, hash, queryBlockFields)
+	result := &Block{}
+
+	if err := c.Query(q, result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // GetBlocks returns blocks for a filter
 func (c Client) GetBlocks(filter string) ([]Block, error) {
 	var result struct {

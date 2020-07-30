@@ -35,6 +35,14 @@ var (
 		}
 	`
 
+	queryBlock = `
+		query {
+			block(stateHash: "%s") {
+				%s
+			}
+		}
+	`
+
 	// Block details fields
 	queryBlockFields = `
 		stateHash

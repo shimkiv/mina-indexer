@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/figment-networks/coda-indexer/coda"
 	"github.com/figment-networks/coda-indexer/config"
 	"github.com/figment-networks/coda-indexer/model"
 	"github.com/figment-networks/coda-indexer/store"
@@ -14,14 +15,18 @@ import (
 // Server handles HTTP requests
 type Server struct {
 	*gin.Engine
-	db *store.Store
+
+	api *coda.Client
+	db  *store.Store
 }
 
 // New returns a new server instance
 func New(db *store.Store, cfg *config.Config) *Server {
 	s := &Server{
-		db:     db,
 		Engine: gin.Default(),
+
+		db:  db,
+		api: coda.NewDefaultClient(cfg.CodaEndpoint),
 	}
 
 	if cfg.IsDevelopment() {
@@ -109,6 +114,15 @@ func (s *Server) GetCurrentBlock(c *gin.Context) {
 func (s *Server) GetBlock(c *gin.Context) {
 	var block *model.Block
 	var err error
+
+	if c.Query("raw") == "1" {
+		block, err := s.api.GetBlock(c.Param("id"))
+		if shouldReturn(c, err) {
+			return
+		}
+		jsonOk(c, block)
+		return
+	}
 
 	id := resourceID(c, "id")
 	if id.IsNumeric() {
