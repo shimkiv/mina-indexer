@@ -9,9 +9,11 @@ import (
 type Validator struct {
 	Model
 
-	Account        string `json:"account"`
-	BlocksCreated  int    `json:"blocks_created"`
-	BlocksProposed int    `json:"blocks_proposed"`
+	Account           string `json:"account"`
+	BlocksCreated     int    `json:"blocks_created"`
+	BlocksProposed    int    `json:"blocks_proposed"`
+	DelegatedAccounts int    `json:"delegated_accounts"`
+	DelegatedBalance  int    `json:"delegated_balance"`
 
 	StartHeight uint64    `json:"start_height"`
 	StartTime   time.Time `json:"start_time"`
