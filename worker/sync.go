@@ -138,7 +138,7 @@ func dumpBlock(block *coda.Block, dir string) error {
 		dir,
 		time.Format("2006-01-02"),
 		block.ProtocolState.ConsensusState.BlockHeight,
-		block.StateHash[0:64],
+		block.StateHash[0:52],
 	)
 
 	if err := os.MkdirAll(filepath.Dir(savePath), 0755); err != nil {
