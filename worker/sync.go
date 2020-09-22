@@ -143,7 +143,7 @@ func dumpBlock(block *coda.Block, dir string) error {
 
 	if err := os.MkdirAll(filepath.Dir(savePath), 0755); err != nil {
 		log.WithError(err).Error("dump dir creation failed")
-		panic(err)
+		return err
 	}
 
 	data, err := json.MarshalIndent(block, "", "  ")
