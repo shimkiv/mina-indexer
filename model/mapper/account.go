@@ -1,9 +1,9 @@
 package mapper
 
 import (
-	"github.com/figment-networks/coda-indexer/coda"
-	"github.com/figment-networks/coda-indexer/model"
-	"github.com/figment-networks/coda-indexer/model/util"
+	"github.com/figment-networks/mina-indexer/coda"
+	"github.com/figment-networks/mina-indexer/model"
+	"github.com/figment-networks/mina-indexer/model/util"
 )
 
 // Account returns an account model constructed from the coda input

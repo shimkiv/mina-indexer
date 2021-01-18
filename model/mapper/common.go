@@ -4,8 +4,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/figment-networks/coda-indexer/coda"
-	"github.com/figment-networks/coda-indexer/model/util"
+	"github.com/figment-networks/mina-indexer/coda"
+	"github.com/figment-networks/mina-indexer/model/util"
 )
 
 var (

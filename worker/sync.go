@@ -10,11 +10,11 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/figment-networks/coda-indexer/coda"
-	"github.com/figment-networks/coda-indexer/config"
-	"github.com/figment-networks/coda-indexer/indexing"
-	"github.com/figment-networks/coda-indexer/model/mapper"
-	"github.com/figment-networks/coda-indexer/store"
+	"github.com/figment-networks/mina-indexer/coda"
+	"github.com/figment-networks/mina-indexer/config"
+	"github.com/figment-networks/mina-indexer/indexing"
+	"github.com/figment-networks/mina-indexer/model/mapper"
+	"github.com/figment-networks/mina-indexer/store"
 )
 
 func RunSync(cfg *config.Config, db *store.Store, client *coda.Client) (int, error) {
@@ -32,21 +32,9 @@ func RunSync(cfg *config.Config, db *store.Store, client *coda.Client) (int, err
 		log.WithField("lag", lag).Info("done fetching")
 	}()
 
-	block, err := db.Blocks.Recent()
+	blocks, err = client.GetBestChain()
 	if err != nil {
-		if err == store.ErrNotFound {
-			blocks, err = client.GetFirstBlocks(10)
-		} else {
-			return -1, err
-		}
-	}
-	lag = *status.BlockchainLength - int(block.Height)
-
-	if len(blocks) == 0 {
-		blocks, err = client.GetNextBlocks(block.Hash, 10)
-		if err != nil {
-			return lag, err
-		}
+		return 0, err
 	}
 
 	n, err := ProcessBlocks(cfg, db, status, blocks)

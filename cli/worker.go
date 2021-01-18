@@ -6,10 +6,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/figment-networks/coda-indexer/coda"
-	"github.com/figment-networks/coda-indexer/config"
-	"github.com/figment-networks/coda-indexer/store"
-	"github.com/figment-networks/coda-indexer/worker"
+	"github.com/figment-networks/mina-indexer/coda"
+	"github.com/figment-networks/mina-indexer/config"
+	"github.com/figment-networks/mina-indexer/store"
+	"github.com/figment-networks/mina-indexer/worker"
 )
 
 func startSyncWorker(wg *sync.WaitGroup, cfg *config.Config, db *store.Store) context.CancelFunc {

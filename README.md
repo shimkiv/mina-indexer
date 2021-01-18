@@ -1,4 +1,4 @@
-# coda-indexer
+# mina-indexer
 
 Blockchain data indexer and API service for Coda blockchain protocol
 
@@ -50,19 +50,19 @@ Once you have created a database and specified all configuration options, you
 need to migrate the database. You can do that by running the command below:
 
 ```bash
-coda-indexer -config path/to/config.json -cmd=migrate
+mina-indexer -config path/to/config.json -cmd=migrate
 ```
 
 Start the data indexer:
 
 ```bash
-coda-indexer -config path/to/config.json -cmd=worker
+mina-indexer -config path/to/config.json -cmd=worker
 ```
 
 Start the API server:
 
 ```bash
-coda-indexer -config path/to/config.json -cmd=server
+mina-indexer -config path/to/config.json -cmd=server
 ```
 
 ## API Reference

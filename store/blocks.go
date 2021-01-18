@@ -3,8 +3,8 @@ package store
 import (
 	"fmt"
 
-	"github.com/figment-networks/coda-indexer/model"
 	"github.com/figment-networks/indexing-engine/store/jsonquery"
+	"github.com/figment-networks/mina-indexer/model"
 )
 
 // BlocksStore handles operations on blocks

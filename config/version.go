@@ -3,7 +3,7 @@ package config
 import "fmt"
 
 var (
-	AppName    = "coda-indexer"
+	AppName    = "mina-indexer"
 	AppVersion = "0.2.0"
 	GitCommit  = "-"
 	GoVersion  = "-"

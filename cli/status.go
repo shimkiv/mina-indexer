@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/figment-networks/coda-indexer/coda"
-	"github.com/figment-networks/coda-indexer/config"
+	"github.com/figment-networks/mina-indexer/coda"
+	"github.com/figment-networks/mina-indexer/config"
 )
 
 func startStatus(cfg *config.Config) error {

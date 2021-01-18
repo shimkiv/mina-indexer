@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/figment-networks/coda-indexer/cli"
+	"github.com/figment-networks/mina-indexer/cli"
 )
 
 func main() {

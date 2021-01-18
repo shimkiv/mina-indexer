@@ -29,7 +29,7 @@ var (
 
 	queryBestChain = `
 		query {
-			bestChain {
+			bestChain(maxLength: 300) {
 				%s
 			}
 		}

@@ -3,7 +3,7 @@
 # ------------------------------------------------------------------------------
 FROM golang:1.14 AS build
 
-WORKDIR /go/src/github.com/figment-networks/coda-indexer
+WORKDIR /go/src/github.com/figment-networks/mina-indexer
 
 COPY ./go.mod .
 COPY ./go.sum .
@@ -28,9 +28,9 @@ FROM alpine:3.10 AS release
 
 WORKDIR /app
 
-COPY --from=build /go/src/github.com/figment-networks/coda-indexer/coda-indexer /app/coda-indexer
-COPY --from=build /go/src/github.com/figment-networks/coda-indexer/migrations /app/migrations
+COPY --from=build /go/src/github.com/figment-networks/mina-indexer/mina-indexer /app/mina-indexer
+COPY --from=build /go/src/github.com/figment-networks/mina-indexer/migrations /app/migrations
 
 EXPOSE 8081
 
-ENTRYPOINT ["/app/coda-indexer"]
+ENTRYPOINT ["/app/mina-indexer"]

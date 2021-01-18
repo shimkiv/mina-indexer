@@ -1,7 +1,7 @@
 package indexing
 
 import (
-	"github.com/figment-networks/coda-indexer/store"
+	"github.com/figment-networks/mina-indexer/store"
 	log "github.com/sirupsen/logrus"
 )
 

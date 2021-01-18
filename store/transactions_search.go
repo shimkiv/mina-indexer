@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/figment-networks/coda-indexer/model"
+	"github.com/figment-networks/mina-indexer/model"
 )
 
 var (

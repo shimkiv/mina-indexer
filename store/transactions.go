@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/figment-networks/coda-indexer/model"
 	"github.com/figment-networks/indexing-engine/store/jsonquery"
+	"github.com/figment-networks/mina-indexer/model"
 )
 
 // TransactionsStore handles operations on transactions

@@ -1,8 +1,8 @@
 package indexing
 
 import (
-	"github.com/figment-networks/coda-indexer/coda"
-	"github.com/figment-networks/coda-indexer/model/mapper"
+	"github.com/figment-networks/mina-indexer/coda"
+	"github.com/figment-networks/mina-indexer/model/mapper"
 )
 
 // Prepare generates a new models from the coda block data

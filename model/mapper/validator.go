@@ -1,8 +1,8 @@
 package mapper
 
 import (
-	"github.com/figment-networks/coda-indexer/coda"
-	"github.com/figment-networks/coda-indexer/model"
+	"github.com/figment-networks/mina-indexer/coda"
+	"github.com/figment-networks/mina-indexer/model"
 )
 
 // Validator returns a validator model constructed from the coda input

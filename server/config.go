@@ -3,7 +3,7 @@ package server
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/figment-networks/coda-indexer/config"
+	"github.com/figment-networks/mina-indexer/config"
 )
 
 // SetGinDefaults changes Gin behavior base on application environment

@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/figment-networks/coda-indexer/store"
+	"github.com/figment-networks/mina-indexer/store"
 )
 
 // jsonError renders an error response

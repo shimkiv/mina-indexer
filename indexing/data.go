@@ -1,6 +1,6 @@
 package indexing
 
-import "github.com/figment-networks/coda-indexer/model"
+import "github.com/figment-networks/mina-indexer/model"
 
 // Data contains all the records processed for a height
 type Data struct {

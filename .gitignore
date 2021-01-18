@@ -1,5 +1,6 @@
 .DS_Store
 coda-indexer
+mina-indexer
 *.log
 .env*
 tmp

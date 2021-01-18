@@ -1,6 +1,6 @@
 .PHONY: setup build migrations test fmt docker docker-build docker-push
 
-PROJECT      ?= coda-indexer
+PROJECT      ?= mina-indexer
 GIT_COMMIT   ?= $(shell git rev-parse HEAD)
 GO_VERSION   ?= $(shell go version | awk {'print $$3'})
 DOCKER_IMAGE ?= figmentnetworks/${PROJECT}

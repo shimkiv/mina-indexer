@@ -1,7 +1,7 @@
 package store
 
 import (
-	"github.com/figment-networks/coda-indexer/model"
+	"github.com/figment-networks/mina-indexer/model"
 )
 
 // HeightsStore handles operations on heights

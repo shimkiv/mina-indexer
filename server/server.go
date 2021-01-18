@@ -6,10 +6,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/figment-networks/coda-indexer/coda"
-	"github.com/figment-networks/coda-indexer/config"
-	"github.com/figment-networks/coda-indexer/model"
-	"github.com/figment-networks/coda-indexer/store"
+	"github.com/figment-networks/mina-indexer/coda"
+	"github.com/figment-networks/mina-indexer/config"
+	"github.com/figment-networks/mina-indexer/model"
+	"github.com/figment-networks/mina-indexer/store"
 )
 
 // Server handles HTTP requests

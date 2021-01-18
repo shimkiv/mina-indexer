@@ -1,9 +1,9 @@
 package mapper
 
 import (
-	"github.com/figment-networks/coda-indexer/coda"
-	"github.com/figment-networks/coda-indexer/model"
-	"github.com/figment-networks/coda-indexer/model/util"
+	"github.com/figment-networks/mina-indexer/coda"
+	"github.com/figment-networks/mina-indexer/model"
+	"github.com/figment-networks/mina-indexer/model/util"
 )
 
 func Snarker(block *coda.Block, job *coda.CompletedWork) (*model.Snarker, error) {

@@ -3,8 +3,8 @@ package cli
 import (
 	"errors"
 
-	"github.com/figment-networks/coda-indexer/config"
-	"github.com/figment-networks/coda-indexer/worker"
+	"github.com/figment-networks/mina-indexer/config"
+	"github.com/figment-networks/mina-indexer/worker"
 )
 
 func startInit(cfg *config.Config) error {

@@ -3,8 +3,8 @@ package cli
 import (
 	"log"
 
-	"github.com/figment-networks/coda-indexer/config"
-	"github.com/figment-networks/coda-indexer/server"
+	"github.com/figment-networks/mina-indexer/config"
+	"github.com/figment-networks/mina-indexer/server"
 )
 
 func startServer(cfg *config.Config) error {

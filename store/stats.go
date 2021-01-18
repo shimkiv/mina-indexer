@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/figment-networks/coda-indexer/model"
-	"github.com/figment-networks/coda-indexer/model/util"
 	"github.com/figment-networks/indexing-engine/store/jsonquery"
+	"github.com/figment-networks/mina-indexer/model"
+	"github.com/figment-networks/mina-indexer/model/util"
 )
 
 const (

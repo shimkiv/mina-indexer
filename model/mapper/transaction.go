@@ -3,9 +3,9 @@ package mapper
 import (
 	"fmt"
 
-	"github.com/figment-networks/coda-indexer/coda"
-	"github.com/figment-networks/coda-indexer/model"
-	"github.com/figment-networks/coda-indexer/model/util"
+	"github.com/figment-networks/mina-indexer/coda"
+	"github.com/figment-networks/mina-indexer/model"
+	"github.com/figment-networks/mina-indexer/model/util"
 )
 
 func UserTransaction(block *coda.Block, t *coda.UserCommand) (*model.Transaction, error) {

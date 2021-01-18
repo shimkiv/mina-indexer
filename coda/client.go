@@ -36,7 +36,7 @@ func NewClient(client *http.Client, endpoint string) *Client {
 func NewDefaultClient(endpoint string) *Client {
 	return &Client{
 		client: &http.Client{
-			Timeout: time.Second * 10,
+			Timeout: time.Second * 180,
 		},
 		endpoint: endpoint,
 	}

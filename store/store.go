@@ -6,7 +6,7 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 
-	"github.com/figment-networks/coda-indexer/model"
+	"github.com/figment-networks/mina-indexer/model"
 )
 
 // Store handles all database operations

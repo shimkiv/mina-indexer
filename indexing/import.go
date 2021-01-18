@@ -3,8 +3,8 @@ package indexing
 import (
 	log "github.com/sirupsen/logrus"
 
-	"github.com/figment-networks/coda-indexer/model"
-	"github.com/figment-networks/coda-indexer/store"
+	"github.com/figment-networks/mina-indexer/model"
+	"github.com/figment-networks/mina-indexer/store"
 )
 
 // Import creates new database records for the chain data

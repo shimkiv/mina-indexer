@@ -9,8 +9,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/figment-networks/coda-indexer/config"
-	"github.com/figment-networks/coda-indexer/store"
+	"github.com/figment-networks/mina-indexer/config"
+	"github.com/figment-networks/mina-indexer/store"
 )
 
 // Run executes the command line interface
