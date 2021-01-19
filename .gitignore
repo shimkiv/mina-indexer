@@ -8,3 +8,4 @@ scripts
 Procfile
 ./config.json
 migrations/migrations.go
+archive-proxy/queries/*.go
