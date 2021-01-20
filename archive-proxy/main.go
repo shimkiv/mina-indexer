@@ -3,70 +3,45 @@ package main
 import (
 	"log"
 	"os"
-	"strconv"
 
+	"github.com/figment-networks/indexing-engine/store/jsonquery"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 
-	"github.com/figment-networks/indexing-engine/store/jsonquery"
 	"github.com/figment-networks/mina-indexer/archive-proxy/queries"
 )
 
+func init() {
+	gin.SetMode(gin.ReleaseMode)
+}
+
 func main() {
+	log.Println("connecting to database...")
 	conn, err := initConn(os.Getenv("DATABASE_URL"))
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer conn.Close()
 
+	conn.LogMode(os.Getenv("TRACE_SQL") == "1")
+
 	router := gin.Default()
 
-	router.GET("/blocks", func(c *gin.Context) {
-		var after int
-		var err error
-		var limit int
+	router.GET("/", handleInfo(conn))
+	router.GET("/blocks", handleBlocks(conn))
+	router.GET("/blocks/:hash", handleBlock(conn))
+	router.GET("/blocks/:hash/user_commands", handleUserCommands(conn))
+	router.GET("/blocks/:hash/internal_commands", handleInternalCommands(conn))
 
-		if val := c.Query("after"); val != "" {
-			after, err = strconv.Atoi(val)
-			if err != nil {
-				c.AbortWithStatusJSON(400, gin.H{"error": err})
-				return
-			}
-		}
-
-		if val := c.Query("limit"); val != "" {
-			limit, err = strconv.Atoi(val)
-			if err != nil {
-				c.AbortWithStatusJSON(400, gin.H{"error": err})
-				return
-			}
-		}
-		if limit <= 0 {
-			limit = 100
-		}
-
-		renderQuery(c, conn, "array", queries.Blocks, after, limit)
-	})
-
-	router.GET("/blocks/:hash", func(c *gin.Context) {
-		renderQuery(c, conn, "object", queries.Block, c.Param("hash"))
-	})
-
-	router.GET("/blocks/:hash/user_commands", func(c *gin.Context) {
-		renderQuery(c, conn, "array", queries.UserCommands, c.Param("hash"))
-	})
-
-	router.GET("/blocks/:hash/internal_commands", func(c *gin.Context) {
-		renderQuery(c, conn, "array", queries.InternalCommands, c.Param("hash"))
-	})
-
-	listenPort := os.Getenv("PORT")
-	if listenPort == "" {
-		listenPort = "3088"
+	listenAddr := os.Getenv("PORT")
+	if listenAddr == "" {
+		listenAddr = "3088"
 	}
+	listenAddr = "0.0.0.0:" + listenAddr
 
-	if err := router.Run(":" + listenPort); err != nil {
+	log.Println("starting server on", listenAddr)
+	if err := router.Run(listenAddr); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -96,4 +71,52 @@ func renderQuery(ctx *gin.Context, conn *gorm.DB, mode string, query string, arg
 	}
 
 	ctx.Data(200, "application/json", result)
+}
+
+type blocksParams struct {
+	StartHeight uint `form:"start_height"`
+	Limit       uint `form:"limit"`
+}
+
+func handleInfo(conn *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		renderQuery(c, conn, "object", queries.Info)
+	}
+}
+
+func handleBlocks(conn *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		params := blocksParams{}
+		if err := c.Bind(&params); err != nil {
+			c.AbortWithStatusJSON(400, gin.H{"error": err})
+			return
+		}
+
+		if params.Limit == 0 {
+			params.Limit = 100
+		}
+		if params.Limit > 1000 {
+			params.Limit = 1000
+		}
+
+		renderQuery(c, conn, "array", queries.Blocks, params.StartHeight, params.Limit)
+	}
+}
+
+func handleBlock(conn *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		renderQuery(c, conn, "object", queries.Block, c.Param("hash"))
+	}
+}
+
+func handleUserCommands(conn *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		renderQuery(c, conn, "array", queries.UserCommands, c.Param("hash"))
+	}
+}
+
+func handleInternalCommands(conn *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		renderQuery(c, conn, "array", queries.InternalCommands, c.Param("hash"))
+	}
 }
