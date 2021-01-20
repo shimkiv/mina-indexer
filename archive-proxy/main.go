@@ -29,10 +29,13 @@ func main() {
 	router := gin.Default()
 
 	router.GET("/", handleInfo(conn))
+	router.GET("/status", handleStatus(conn))
 	router.GET("/blocks", handleBlocks(conn))
 	router.GET("/blocks/:hash", handleBlock(conn))
 	router.GET("/blocks/:hash/user_commands", handleUserCommands(conn))
 	router.GET("/blocks/:hash/internal_commands", handleInternalCommands(conn))
+	router.GET("/public_keys", handlePublicKeys(conn))
+	router.GET("/public_keys/:id", handlePublicKey(conn))
 
 	listenAddr := os.Getenv("PORT")
 	if listenAddr == "" {
@@ -122,5 +125,29 @@ func handleUserCommands(conn *gorm.DB) gin.HandlerFunc {
 func handleInternalCommands(conn *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		renderQuery(c, conn, "array", queries.InternalCommands, c.Param("hash"))
+	}
+}
+
+func handlePublicKeys(conn *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		renderQuery(c, conn, "object", queries.PublicKeys)
+	}
+}
+
+func handlePublicKey(conn *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		renderQuery(c, conn, "object", queries.PublicKey, c.Param("id"))
+	}
+}
+
+func handleStatus(conn *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		err := conn.Exec("SELECT 1").Error
+		if err != nil {
+			log.Println("db connection test erro:", err)
+			c.AbortWithStatusJSON(500, gin.H{"healthy": false})
+			return
+		}
+		c.JSON(200, gin.H{"healthy": true})
 	}
 }

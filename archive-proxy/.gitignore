@@ -1,2 +1,4 @@
 archive-proxy
 dist
+Procfile
+.env

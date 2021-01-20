@@ -5,6 +5,7 @@ SELECT
   MAX(height) AS blocks_max_height,
   MAX(timestamp) AS blocks_max_timestamp,
   COUNT(DISTINCT creator_id) AS blocks_producers_count,
+  (SELECT COUNT(1) FROM public_keys) AS public_keys_count,
   (SELECT COUNT(1) FROM internal_commands) AS internal_commands_count,
   (SELECT COUNT(1) FROM user_commands) AS user_commands_count,
   {{ array }}
