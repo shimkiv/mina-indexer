@@ -60,7 +60,11 @@ func renderQuery(ctx *gin.Context, conn *gorm.DB, mode string, query string, arg
 	var err error
 
 	if mode == "object" {
-		result, err = jsonquery.MustObject(conn, jsonquery.Prepare(query), args)
+		result, err = jsonquery.Object(conn, jsonquery.Prepare(query), args)
+		if result == nil && err == nil {
+			ctx.AbortWithStatusJSON(404, gin.H{"error": "record not found"})
+			return
+		}
 	} else {
 		result, err = jsonquery.MustArray(conn, jsonquery.Prepare(query), args)
 	}
