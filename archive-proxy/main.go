@@ -1,8 +1,12 @@
 package main
 
 import (
+	"bytes"
+	"context"
 	"log"
 	"os"
+	"os/exec"
+	"time"
 
 	"github.com/figment-networks/indexing-engine/store/jsonquery"
 	"github.com/gin-gonic/gin"
@@ -36,6 +40,7 @@ func main() {
 	router.GET("/blocks/:hash/internal_commands", handleInternalCommands(conn))
 	router.GET("/public_keys", handlePublicKeys(conn))
 	router.GET("/public_keys/:id", handlePublicKey(conn))
+	router.GET("/staking_ledger", handleStakingLedger())
 
 	listenAddr := os.Getenv("PORT")
 	if listenAddr == "" {
@@ -149,5 +154,31 @@ func handleStatus(conn *gorm.DB) gin.HandlerFunc {
 			return
 		}
 		c.JSON(200, gin.H{"healthy": true})
+	}
+}
+
+// TODO: move ledger dumping into background, run the command every 60s
+func handleStakingLedger() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ledgerType := "current"
+		if c.Query("type") == "next" {
+			ledgerType = "next"
+		}
+
+		ledgerbuf := bytes.NewBuffer(nil)
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+		defer cancel()
+
+		cmd := exec.CommandContext(ctx, "coda", "advanced", "dump-staking-ledger", ledgerType, "-json")
+		cmd.Stderr = os.Stderr
+		cmd.Stdout = ledgerbuf
+
+		if err := cmd.Run(); err != nil {
+			c.AbortWithStatusJSON(500, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.Data(200, "application/json", ledgerbuf.Bytes())
 	}
 }

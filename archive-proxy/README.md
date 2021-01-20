@@ -12,3 +12,4 @@ Archive data API for Mina
 | GET    | /blocks/:hash    | Get block details by hash
 | GET    | /public_keys     | Get all public keys
 | GET    | /public_keys/:id | Get public keys details by value
+| GET    | /staking_ledger  | Get staking ledger dump
