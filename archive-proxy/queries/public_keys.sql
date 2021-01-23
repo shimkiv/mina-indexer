@@ -1,1 +1,0 @@
-SELECT json_agg(value) AS public_keys FROM public_keys
