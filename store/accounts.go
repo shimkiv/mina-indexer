@@ -4,7 +4,9 @@ import (
 	"time"
 
 	"github.com/figment-networks/indexing-engine/store/bulk"
+
 	"github.com/figment-networks/mina-indexer/model"
+	"github.com/figment-networks/mina-indexer/store/queries"
 )
 
 // AccountsStore handles operations on accounts
@@ -16,22 +18,6 @@ func (s AccountsStore) Count() (int, error) {
 	var n int
 	err := s.db.Table("accounts").Count(&n).Error
 	return n, err
-}
-
-// CreateOrUpdate creates a new account or updates an existing one
-func (s AccountsStore) CreateOrUpdate(acc *model.Account) error {
-	existing, err := s.FindByPublicKey(acc.PublicKey)
-	if err != nil {
-		if err == ErrNotFound {
-			return s.Create(acc)
-		}
-		return err
-	}
-
-	existing.Balance = acc.Balance
-	existing.Nonce = acc.Nonce
-
-	return s.Update(existing)
 }
 
 // FindBy returns an account for a matching attribute
@@ -91,7 +77,7 @@ func (s AccountsStore) Import(records []model.Account) error {
 		return nil
 	}
 
-	return bulk.Import(s.db, sqlAccountsImport, len(records), func(idx int) bulk.Row {
+	return bulk.Import(s.db, queries.AccountsImport, len(records), func(idx int) bulk.Row {
 		acc := records[idx]
 		now := time.Now()
 
@@ -110,30 +96,3 @@ func (s AccountsStore) Import(records []model.Account) error {
 		}
 	})
 }
-
-var (
-	sqlAccountsImport = `
-		INSERT INTO accounts (
-			public_key,
-			delegate,
-			balance,
-			balance_unknown,
-			nonce,
-			start_height,
-			start_time,
-			last_height,
-			last_time,
-			created_at,
-			updated_at
-		)
-		VALUES @values
-		ON CONFLICT (public_key) DO UPDATE
-		SET
-			delegate        = excluded.delegate,
-			balance         = excluded.balance,
-			balance_unknown = excluded.balance_unknown,
-			nonce           = excluded.nonce,
-			last_height     = excluded.last_height,
-			last_time       = excluded.last_time,
-			updated_at      = excluded.updated_at`
-)

@@ -5,6 +5,7 @@ import (
 
 	"github.com/figment-networks/indexing-engine/store/jsonquery"
 	"github.com/figment-networks/mina-indexer/model"
+	"github.com/figment-networks/mina-indexer/store/queries"
 )
 
 // BlocksStore handles operations on blocks
@@ -55,16 +56,8 @@ func (s BlocksStore) FindByHeight(height uint64) (*model.Block, error) {
 // Recent returns the most recent block
 func (s BlocksStore) Recent() (*model.Block, error) {
 	block := &model.Block{}
-	err := s.db.Order("id DESC").Limit(1).Take(block).Error
+	err := s.db.Order("height DESC").Limit(1).Take(block).Error
 	return block, checkErr(err)
-}
-
-func (s BlocksStore) PickExisting(hashes []string) (result []string, err error) {
-	err = s.db.
-		Raw("SELECT hash FROM blocks WHERE hash IN (?)", hashes).
-		Scan(&result).
-		Error
-	return
 }
 
 // Search returns blocks that match search filters
@@ -98,45 +91,10 @@ func (s BlocksStore) Search(search BlockSearch) ([]model.Block, error) {
 
 // AvgTimes returns recent blocks averages
 func (s BlocksStore) AvgTimes(limit int64) ([]byte, error) {
-	return jsonquery.MustObject(s.db, sqlBlockTimes, limit)
+	return jsonquery.MustObject(s.db, queries.BlocksTimes, limit)
 }
 
 // Stats returns block stats for a given interval
 func (s BlocksStore) Stats(period uint, interval string) ([]byte, error) {
-	return jsonquery.MustArray(s.db, sqlBlocksStats, period, interval)
+	return jsonquery.MustArray(s.db, queries.BlocksStats, period, interval)
 }
-
-var (
-	sqlBlockTimes = `
-		SELECT
-			MIN(height) start_height,
-			MAX(height) end_height,
-			MIN(time) start_time,
-			MAX(time) end_time,
-			COUNT(*) count,
-			EXTRACT(EPOCH FROM MAX(time) - MIN(time)) AS diff,
-			EXTRACT(EPOCH FROM ((MAX(time) - MIN(time)) / COUNT(*))) AS avg
-		FROM
-			(
-				SELECT * FROM blocks
-				ORDER BY height DESC
-				LIMIT ?
-			) t`
-
-	sqlBlocksStats = `
-		SELECT
-			time,
-			block_time_avg,
-			blocks_count,
-			validators_count,
-			snarkers_count,
-			transactions_count,
-			jobs_count
-		FROM
-			chain_stats
-		WHERE
-			bucket = $2
-		ORDER BY
-			time DESC
-		LIMIT $1`
-)

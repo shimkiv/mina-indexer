@@ -6,5 +6,6 @@ import (
 )
 
 func RunCleanup(cfg *config.Config, db *store.Store) error {
+	// Nothing to cleanup right now!
 	return nil
 }

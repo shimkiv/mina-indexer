@@ -1,13 +1,14 @@
 package mapper
 
 import (
-	"github.com/figment-networks/mina-indexer/coda"
+	"github.com/figment-networks/mina-indexer/client/graph"
 	"github.com/figment-networks/mina-indexer/model"
+	"github.com/figment-networks/mina-indexer/model/types"
 	"github.com/figment-networks/mina-indexer/model/util"
 )
 
-// Account returns an account model constructed from the coda input
-func Account(block *coda.Block, input *coda.Account) (*model.Account, error) {
+// Account returns an account model constructed from the graph input
+func Account(block *graph.Block, input *graph.Account) (*model.Account, error) {
 	height := BlockHeight(block)
 	time := BlockTime(block)
 
@@ -17,8 +18,8 @@ func Account(block *coda.Block, input *coda.Account) (*model.Account, error) {
 		StartTime:      time,
 		LastHeight:     height,
 		LastTime:       time,
-		Balance:        input.Balance.Total,
-		BalanceUnknown: input.Balance.Unknown,
+		Balance:        types.NewAmount(input.Balance.Total),
+		BalanceUnknown: types.NewAmount(input.Balance.Unknown),
 	}
 
 	if input.Delegate != nil && *input.Delegate != input.PublicKey {
@@ -26,32 +27,30 @@ func Account(block *coda.Block, input *coda.Account) (*model.Account, error) {
 	}
 
 	if input.Nonce != nil {
-		acc.Nonce = util.MustInt64(*input.Nonce)
+		acc.Nonce = util.MustUInt64(*input.Nonce)
 	}
 
 	return acc, acc.Validate()
 }
 
 // Accounts returns accounts models references from the block data
-func Accounts(block *coda.Block) ([]model.Account, error) {
-	codaAccounts := []*coda.Account{
+func Accounts(block *graph.Block) ([]model.Account, error) {
+	if block == nil {
+		return nil, nil
+	}
+
+	graphAccounts := []*graph.Account{
 		block.CreatorAccount,
 		block.CreatorAccount.DelegateAccount,
 	}
-	for _, t := range block.Transactions.UserCommands {
-		codaAccounts = append(codaAccounts,
-			t.FromAccount, t.FromAccount.DelegateAccount,
-			t.ToAccount, t.ToAccount.DelegateAccount,
-		)
-	}
 
 	accounts := map[string]*model.Account{}
-	for _, codaAcc := range codaAccounts {
-		if codaAcc == nil {
+	for _, graphAcc := range graphAccounts {
+		if graphAcc == nil {
 			continue
 		}
 
-		acc, err := Account(block, codaAcc)
+		acc, err := Account(block, graphAcc)
 		if err != nil {
 			return nil, err
 		}

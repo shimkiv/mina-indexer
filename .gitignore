@@ -4,7 +4,7 @@ mina-indexer
 *.log
 .env*
 tmp
-scripts
+*.sh
 Procfile
 ./config.json
 migrations/migrations.go

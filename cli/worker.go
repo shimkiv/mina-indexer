@@ -2,21 +2,26 @@ package cli
 
 import (
 	"context"
-	"log"
 	"sync"
 	"time"
 
-	"github.com/figment-networks/mina-indexer/coda"
+	log "github.com/sirupsen/logrus"
+
+	"github.com/figment-networks/mina-indexer/client/archive"
+	"github.com/figment-networks/mina-indexer/client/graph"
 	"github.com/figment-networks/mina-indexer/config"
 	"github.com/figment-networks/mina-indexer/store"
 	"github.com/figment-networks/mina-indexer/worker"
 )
 
 func startSyncWorker(wg *sync.WaitGroup, cfg *config.Config, db *store.Store) context.CancelFunc {
-	wg.Add(1)
 	ctx, cancel := context.WithCancel(context.Background())
-	client := coda.NewDefaultClient(cfg.CodaEndpoint)
+	client := graph.NewDefaultClient(cfg.CodaEndpoint)
+	archiveClient := archive.NewDefaultClient(cfg.ArchiveEndpoint)
+	syncWorker := worker.NewSyncWorker(cfg, db, client, archiveClient)
 	timer := time.NewTimer(cfg.SyncDuration())
+
+	wg.Add(1)
 
 	go func() {
 		defer func() {
@@ -27,9 +32,12 @@ func startSyncWorker(wg *sync.WaitGroup, cfg *config.Config, db *store.Store) co
 		for {
 			select {
 			case <-timer.C:
-				n, _ := worker.RunSync(cfg, db, client)
-				if n > 10 {
-					timer.Reset(time.Millisecond * 100)
+				lag, err := syncWorker.Run()
+				if err != nil {
+					log.WithError(err).Error("sync failed")
+				}
+				if lag > 10 {
+					timer.Reset(time.Second)
 				} else {
 					timer.Reset(cfg.SyncDuration())
 				}
@@ -67,9 +75,10 @@ func startCleanupWorker(wg *sync.WaitGroup, cfg *config.Config, db *store.Store)
 }
 
 func startWorker(cfg *config.Config) error {
-	log.Println("using coda endpoint", cfg.CodaEndpoint)
-	log.Println("sync will run every", cfg.SyncInterval)
-	log.Println("cleanup will run every", cfg.CleanupInterval)
+	log.Info("using mina graph endpoint: ", cfg.CodaEndpoint)
+	log.Info("using mina archive endpoint: ", cfg.ArchiveEndpoint)
+	log.Info("sync will run every: ", cfg.SyncInterval)
+	log.Info("cleanup will run every: ", cfg.CleanupInterval)
 
 	db, err := initStore(cfg)
 	if err != nil {
@@ -84,7 +93,7 @@ func startWorker(cfg *config.Config) error {
 
 	s := <-initSignals()
 
-	log.Println("received signal", s)
+	log.Info("received signal", s)
 	cancelSync()
 	cancelCleanup()
 

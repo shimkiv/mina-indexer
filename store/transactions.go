@@ -3,9 +3,11 @@ package store
 import (
 	"fmt"
 	"strings"
+	"time"
 
-	"github.com/figment-networks/indexing-engine/store/jsonquery"
+	"github.com/figment-networks/indexing-engine/store/bulk"
 	"github.com/figment-networks/mina-indexer/model"
+	"github.com/figment-networks/mina-indexer/store/queries"
 )
 
 // TransactionsStore handles operations on transactions
@@ -45,19 +47,14 @@ func (s TransactionsStore) ByAccount(account string) ([]model.Transaction, error
 }
 
 // ByHeight returns transactions for a given height
-func (s TransactionsStore) ByHeight(height uint64) ([]model.Transaction, error) {
-	return s.Search(TransactionSearch{Height: height, Limit: 100})
-}
-
-// Types returns the list of available transactions types
-func (s TransactionsStore) Types() ([]byte, error) {
-	return jsonquery.MustObject(s.db, sqlTransactionTypes)
+func (s TransactionsStore) ByHeight(height uint64, limit uint) ([]model.Transaction, error) {
+	return s.Search(TransactionSearch{Height: height, Limit: limit})
 }
 
 // Search returns a list of transactions that matches the filters
 func (s TransactionsStore) Search(search TransactionSearch) ([]model.Transaction, error) {
 	scope := s.db.
-		Order("id DESC").
+		Order("time DESC").
 		Limit(search.Limit)
 
 	if search.BeforeID > 0 {
@@ -70,7 +67,7 @@ func (s TransactionsStore) Search(search TransactionSearch) ([]model.Transaction
 		scope = scope.Where("block_hash = ?", search.BlockHash)
 	}
 	if search.Height > 0 {
-		scope = scope.Where("height = ?", search.Height)
+		scope = scope.Where("block_height = ?", search.Height)
 	}
 	if search.Type != "" {
 		scope = scope.Where("type IN (?)", strings.Split(search.Type, ","))
@@ -101,16 +98,33 @@ func (s TransactionsStore) Search(search TransactionSearch) ([]model.Transaction
 	return result, err
 }
 
-var (
-	sqlTransactionTypes = `
-		SELECT
-  		ARRAY_AGG(e.enumlabel) AS types
-		FROM
-  		pg_type t
-		JOIN pg_enum e
-			ON t.oid = e.enumtypid
-		JOIN pg_catalog.pg_namespace n
-			ON n.oid = t.typnamespace
-		WHERE
-			t.typname = 'e_tx_type'`
-)
+func (s TransactionsStore) Import(records []model.Transaction) error {
+	if len(records) == 0 {
+		return nil
+	}
+
+	return bulk.Import(s.db, queries.TransactionsImport, len(records), func(idx int) bulk.Row {
+		tx := records[idx]
+		now := time.Now()
+
+		return bulk.Row{
+			tx.Type,
+			tx.Hash,
+			tx.BlockHash,
+			tx.BlockHeight,
+			tx.Time,
+			tx.Nonce,
+			tx.Sender,
+			tx.Receiver,
+			tx.Amount,
+			tx.Fee,
+			tx.Memo,
+			tx.Status,
+			tx.FailureReason,
+			tx.SequenceNumber,
+			tx.SecondarySequenceNumber,
+			now,
+			now,
+		}
+	})
+}

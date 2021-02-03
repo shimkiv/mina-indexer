@@ -6,7 +6,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/figment-networks/mina-indexer/coda"
+	"github.com/figment-networks/mina-indexer/client/graph"
 	"github.com/figment-networks/mina-indexer/config"
 	"github.com/figment-networks/mina-indexer/model"
 	"github.com/figment-networks/mina-indexer/store"
@@ -21,7 +21,7 @@ func RunInit(cfg *config.Config, db *store.Store) error {
 		return errors.New("accounts table should be empty before the genesis import")
 	}
 
-	genesis, err := coda.ReadGenesisFile(cfg.GenesisFile)
+	genesis, err := graph.ReadGenesisFile(cfg.GenesisFile)
 	if err != nil {
 		return err
 	}
@@ -34,8 +34,8 @@ func RunInit(cfg *config.Config, db *store.Store) error {
 
 	for _, a := range genesis.Accounts {
 		acc := model.Account{
-			PublicKey:   a.PK,
-			Balance:     a.Balance,
+			PublicKey: a.PK,
+			//Balance:     a.Balance,
 			Delegate:    a.Delegate,
 			StartHeight: height,
 			StartTime:   now,

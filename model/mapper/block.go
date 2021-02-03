@@ -1,38 +1,31 @@
 package mapper
 
 import (
-	"github.com/figment-networks/mina-indexer/coda"
+	"time"
+
+	"github.com/figment-networks/mina-indexer/client/archive"
 	"github.com/figment-networks/mina-indexer/model"
-	"github.com/figment-networks/mina-indexer/model/util"
+	"github.com/figment-networks/mina-indexer/model/types"
 )
 
-// Block returns a block model constructed from the coda input
-func Block(input *coda.Block) (*model.Block, error) {
-	if err := blockCheck(input); err != nil {
-		return nil, err
-	}
-
+func BlockFromArchive(input *archive.Block) (*model.Block, error) {
 	block := &model.Block{
-		Height:            BlockHeight(input),
-		Time:              BlockTime(input),
+		Canonical:         true,
+		Height:            input.Height,
+		Time:              time.Unix(input.Timestamp/1000, 0),
 		Creator:           input.Creator,
 		Hash:              input.StateHash,
-		ParentHash:        input.ProtocolState.PreviousStateHash,
-		LedgerHash:        input.ProtocolState.BlockchainState.SnarkedLedgerHash,
-		TransactionsCount: len(input.Transactions.UserCommands),
-		FeeTransfersCount: len(input.Transactions.FeeTransfer),
-		Coinbase:          util.MustUInt64(input.Transactions.Coinbase),
-		TotalCurrency:     util.MustUInt64(input.ProtocolState.ConsensusState.TotalCurrency),
-		Epoch:             util.MustInt64(input.ProtocolState.ConsensusState.Epoch),
-		Slot:              util.MustInt64(input.ProtocolState.ConsensusState.Slot),
-		SnarkJobsCount:    len(input.SnarkJobs),
+		ParentHash:        input.ParentHash,
+		LedgerHash:        input.LedgerHash,
+		SnarkedLedgerHash: input.SnarkedLedgerHash,
+		Slot:              int(input.GlobalSlot),
+		TransactionsCount: len(input.UserCommands) + len(input.InternalCommands),
 	}
 
-	snarkers := map[string]bool{}
-	for _, j := range input.SnarkJobs {
-		if !snarkers[j.Prover] {
-			snarkers[j.Prover] = true
-			block.SnarkersCount++
+	for _, cmd := range input.InternalCommands {
+		if cmd.Type == model.TxTypeCoinbase {
+			block.Coinbase = types.NewInt64Amount(cmd.Fee)
+			break
 		}
 	}
 

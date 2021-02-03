@@ -5,7 +5,10 @@ import (
 
 	"github.com/figment-networks/indexing-engine/store/bulk"
 	"github.com/figment-networks/indexing-engine/store/jsonquery"
+
 	"github.com/figment-networks/mina-indexer/model"
+	"github.com/figment-networks/mina-indexer/model/types"
+	"github.com/figment-networks/mina-indexer/store/queries"
 )
 
 // ValidatorsStore handles operations on validators
@@ -14,7 +17,7 @@ type ValidatorsStore struct {
 }
 
 func (s ValidatorsStore) Index() ([]byte, error) {
-	return jsonquery.MustArray(s.db, sqlValidatorsIndex)
+	return jsonquery.MustArray(s.db, queries.ValidatorsIndex)
 }
 
 // FindAll returns all available validators
@@ -25,35 +28,50 @@ func (s ValidatorsStore) FindAll() (result []model.Validator, err error) {
 
 // CreateIfNotExists creates the validator if it does not exist
 func (s ValidatorsStore) CreateIfNotExists(validator *model.Validator) error {
-	_, err := s.FindByAccount(validator.Account)
+	_, err := s.FindByPublicKey(validator.PublicKey)
 	if isNotFound(err) {
 		return s.Create(validator)
 	}
 	return nil
 }
 
-// FindByAccount returns a validator record associated with a key
-func (s ValidatorsStore) FindByAccount(key string) (*model.Validator, error) {
+// FindByPublicKey returns a validator record associated with a key
+func (s ValidatorsStore) FindByPublicKey(key string) (*model.Validator, error) {
 	result := &model.Validator{}
-	err := findBy(s.db, result, "account", key)
+	err := findBy(s.db, result, "public_key", key)
 	return result, checkErr(err)
 }
 
+// UpdateStake updates the stake amount of the validator
+func (s ValidatorsStore) UpdateStake(key string, amount types.Amount) error {
+	return s.db.Exec("UPDATE validators SET stake = ? WHERE public_key = ?", amount, key).Error
+}
+
+// UpdateIdentity updates the identity name of the validator
+func (s ValidatorsStore) UpdateIdentity(key string, name string) error {
+	return s.db.Exec(
+		"UPDATE validators SET identity_name = ? WHERE public_key = ?",
+		name, key,
+	).Error
+}
+
+// Import creates or updates validator records in bulk
 func (s ValidatorsStore) Import(records []model.Validator) error {
 	if len(records) == 0 {
 		return nil
 	}
 
-	return bulk.Import(s.db, sqlValidatorsImport, len(records), func(idx int) bulk.Row {
+	return bulk.Import(s.db, queries.ValidatorsImport, len(records), func(idx int) bulk.Row {
 		r := records[idx]
 		now := time.Now()
 
 		return bulk.Row{
-			r.Account,
+			r.PublicKey,
 			r.StartHeight,
 			r.StartTime,
 			r.LastHeight,
 			r.LastTime,
+			r.Stake,
 			r.BlocksProposed,
 			r.BlocksCreated,
 			0,
@@ -63,43 +81,3 @@ func (s ValidatorsStore) Import(records []model.Validator) error {
 		}
 	})
 }
-
-var (
-	sqlValidatorsIndex = `
-		SELECT
-			validators.*,
-			accounts.balance AS account_balance,
-			accounts.balance_unknown AS account_balance_unknown
-		FROM
-			validators
-		LEFT JOIN accounts
-			ON accounts.public_key = validators.account
-		ORDER BY
-			blocks_created DESC`
-
-	sqlValidatorsImport = `
-		INSERT INTO validators (
-			account,
-			start_height,
-			start_time,
-			last_height,
-			last_time,
-			blocks_proposed,
-			blocks_created,
-			delegated_accounts,
-			delegated_balance,
-			created_at,
-			updated_at
-		)
-		VALUES
-			@values
-		ON CONFLICT (account) DO UPDATE
-		SET
-			last_height        = excluded.last_height,
-			last_time          = excluded.last_time,
-			blocks_proposed    = excluded.blocks_proposed,
-			blocks_created     = COALESCE((SELECT COUNT(1) FROM blocks WHERE creator = excluded.account), 0),
-			delegated_accounts = COALESCE((SELECT COUNT(1) FROM accounts WHERE delegate = excluded.account), 0),
-			delegated_balance  = COALESCE((SELECT SUM(balance::NUMERIC) FROM accounts WHERE delegate = excluded.account), 0),
-			updated_at         = excluded.updated_at`
-)

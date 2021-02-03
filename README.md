@@ -5,7 +5,6 @@ Blockchain data indexer and API service for Coda blockchain protocol
 ## Requirements
 
 - PostgreSQL 10.x+
-- TimescaleDB
 - Go 1.13+
 
 ## Installation

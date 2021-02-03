@@ -28,9 +28,11 @@ var (
 type Config struct {
 	AppEnv           string `json:"app_env" envconfig:"APP_ENV" default:"development"`
 	CodaEndpoint     string `json:"coda_endpoint" envconfig:"CODA_ENDPOINT"`
+	ArchiveEndpoint  string `json:"archive_endpoint" envconfig:"ARCHIVE_ENDPOINT"`
 	GenesisFile      string `json:"genesis_file" envconfig:"GENESIS_FILE"`
+	IdentityFile     string `json:"identity_file" envconfig:"IDENTITY_FILE"`
 	ServerAddr       string `json:"server_addr" envconfig:"SERVER_ADDR" default:"0.0.0.0"`
-	ServerPort       int    `json:"server_port" envconfig:"SERVER_PORT" default:"8081"`
+	ServerPort       int    `json:"server_port" envconfig:"SERVER_PORT" default:"8080"`
 	SyncInterval     string `json:"sync_interval" envconfig:"SYNC_INTERVAL" default:"10s"`
 	CleanupInterval  string `json:"cleanup_interval" envconfig:"CLEANUP_INTERVAL" default:"10m"`
 	CleanupThreshold int    `json:"cleanup_threshold" envconfig:"CLEANUP_THRESHOLD" default:"1000"`

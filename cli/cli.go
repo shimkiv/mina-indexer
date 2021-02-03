@@ -62,6 +62,8 @@ func startCommand(cfg *config.Config, name string) error {
 		return runSync(cfg)
 	case "status":
 		return startStatus(cfg)
+	case "update-identity":
+		return runUpdateIdentity(cfg)
 	default:
 		return fmt.Errorf("%s is not a valid command", name)
 	}

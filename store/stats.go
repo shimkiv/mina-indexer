@@ -8,6 +8,7 @@ import (
 	"github.com/figment-networks/indexing-engine/store/jsonquery"
 	"github.com/figment-networks/mina-indexer/model"
 	"github.com/figment-networks/mina-indexer/model/util"
+	"github.com/figment-networks/mina-indexer/store/queries"
 )
 
 const (
@@ -35,7 +36,7 @@ func (s StatsStore) CreateChainStats(bucket string, ts time.Time) error {
 	}
 
 	return s.db.Exec(
-		s.prepareBucket(sqlChainStatsImport, bucket),
+		s.prepareBucket(queries.ChainStatsImport, bucket),
 		start, end,
 	).Error
 }
@@ -49,7 +50,7 @@ func (s StatsStore) CreateValidatorStats(validator *model.Validator, bucket stri
 
 	return s.db.Exec(
 		s.prepareBucket(sqlValidatorStatsImport, bucket),
-		start, end, validator.Account,
+		start, end, validator.PublicKey,
 	).Error
 }
 
@@ -76,7 +77,7 @@ func (s StatsStore) CreateTransactionsStats(bucket string, ts time.Time) error {
 	}
 
 	return s.db.Exec(
-		s.prepareBucket(sqlTransactionsStatsImport, bucket),
+		s.prepareBucket(queries.TransactionStatsImport, bucket),
 		start, end,
 	).Error
 }
@@ -105,105 +106,6 @@ func (s StatsStore) prepareBucket(q, bucket string) string {
 
 var (
 	sqlChainStatsDelete = `DELETE FROM chain_stats WHERE time = ? AND BUCKET = '@bucket';`
-
-	sqlChainStatsImport = `
-		INSERT INTO chain_stats (
-			time,
-			bucket,
-			block_time_avg,
-			blocks_count,
-			blocks_total_count,
-			transactions_count,
-			fee_transfers_count,
-			validators_count,
-			accounts_count,
-			epochs_count,
-			slots_count,
-			snarkers_count, snarkers_avg, snarkers_min, snarkers_max,
-			jobs_count, jobs_min, jobs_max, jobs_avg,
-			coinbase_max, coinbase_min, coinbase_diff,
-			total_currency_max, total_currency_min, total_currency_diff
-		)
-		SELECT
-			DATE_TRUNC('@bucket', time) AS time,
-			'@bucket' AS bucket,
-
-			ROUND(EXTRACT(EPOCH FROM (MAX(time) - MIN(time)) / COUNT(1))::NUMERIC, 2) AS block_time_avg,
-			COUNT(1) AS blocks_count,
-			(SELECT COUNT(1) FROM blocks) AS total_blocks_count,
-
-			SUM(transactions_count) AS transactions_count,
-			SUM(fee_transfers_count) AS fee_transfers_count,
-
-			COUNT(DISTINCT(creator)) AS validators_count,
-			(SELECT COUNT(1) FROM accounts) AS accounts_count,
-			COUNT(DISTINCT(epoch)) AS epochs_count,
-			COUNT(DISTINCT(slot)) AS slots_count,
-
-			(SELECT COUNT(1) FROM snarkers) AS snarkers_count,
-			ROUND(AVG(snarkers_count), 4) AS snarkers_avg,
-			MIN(snarkers_count) AS snarkers_min,
-			MAX(snarkers_count) AS snarkers_max,
-
-			SUM(snark_jobs_count) AS jobs_count,
-			MIN(snark_jobs_count) AS jobs_min,
-			MAX(snark_jobs_count) AS jobs_max,
-			ROUND(AVG(snark_jobs_count), 4) AS jobs_avg,
-
-			MAX(coinbase) AS coinbase_max,
-			MIN(coinbase) AS coinbase_min,
-			(MAX(coinbase) - MIN(coinbase)) AS coinbase_diff,
-
-			MAX(total_currency) AS total_currency_max,
-			MIN(total_currency) AS total_currency_min,
-			(MAX(total_currency) - MIN(total_currency)) AS total_currency_diff
-		FROM
-			blocks
-		WHERE
-			time >= $1 AND time <= $2
-		GROUP BY
-			DATE_TRUNC('@bucket', time);`
-
-	sqlTransactionsStatsImport = `
-		INSERT INTO transactions_stats (
-			time, bucket,
-			payments_count, payments_amount,
-			delegations_count, delegations_amount,
-			block_rewards_count, block_rewards_amount,
-			fees_count, fees_amount,
-			snark_fees_count, snark_fees_amount
-		)
-		SELECT
-  		DATE_TRUNC('@bucket', time) AS time,
-  		'@bucket' AS bucket,
-  		COUNT(1) FILTER (WHERE type = 'payment') AS payments_count,
-  		COALESCE(SUM(amount) FILTER (WHERE type = 'payment'), 0) AS payments_amount,
-  		COUNT(1) FILTER (WHERE type = 'delegation') AS delegations_count,
-  		COALESCE(SUM(amount) FILTER (WHERE type = 'delegation'), 0) AS delegations_amount,
-  		COUNT(1) FILTER (WHERE type = 'block_reward') AS block_rewards_count,
-  		COALESCE(SUM(amount) FILTER (WHERE type = 'block_reward'), 0) AS block_rewards_amount,
-  		COUNT(1) FILTER (WHERE type = 'fee') AS fees_count,
-  		COALESCE(SUM(amount) FILTER (WHERE type = 'fee'), 0) AS fees_amount,
-  		COUNT(1) FILTER (WHERE type = 'snark_fee') AS snark_fees_count,
-  		COALESCE(SUM(amount) FILTER (WHERE type = 'snark_fee'), 0) AS snark_fees_amount
-		FROM
-			transactions
-		WHERE
-			time >= $1 AND time <= $2
-		GROUP BY
-			DATE_TRUNC('@bucket', time)
-		ON CONFLICT (time, bucket) DO UPDATE
-		SET
-			payments_count       = excluded.payments_count,
-			payments_amount      = excluded.payments_amount,
-			delegations_count    = excluded.delegations_count,
-			delegations_amount   = excluded.delegations_amount,
-			block_rewards_count  = excluded.block_rewards_count,
-			block_rewards_amount = excluded.block_rewards_amount,
-			fees_count           = excluded.fees_count,
-			fees_amount          = excluded.fees_amount,
-			snark_fees_count     = excluded.snark_fees_count,
-			snark_fees_amount    = excluded.snark_fees_amount`
 
 	sqlTransactionsStats = `
 		SELECT
@@ -250,7 +152,7 @@ var (
 		VALUES (
 			DATE_TRUNC('@bucket', $1::timestamp),
 			'@bucket',
-			(SELECT id FROM validators WHERE account = $3 LIMIT 1),
+			(SELECT id FROM validators WHERE public_key = $3 LIMIT 1),
 			(SELECT COUNT(1) FROM blocks WHERE time >= $1 AND time <= $2 AND creator = $3),
 			(SELECT COUNT(1) FROM accounts WHERE delegate = $3),
 			(SELECT COALESCE(SUM(balance::numeric), 0) FROM accounts WHERE delegate = $3)
