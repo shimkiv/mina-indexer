@@ -2,13 +2,13 @@ package worker
 
 import (
 	"errors"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 
 	"github.com/figment-networks/mina-indexer/client/graph"
 	"github.com/figment-networks/mina-indexer/config"
 	"github.com/figment-networks/mina-indexer/model"
+	"github.com/figment-networks/mina-indexer/model/types"
 	"github.com/figment-networks/mina-indexer/store"
 )
 
@@ -25,22 +25,19 @@ func RunInit(cfg *config.Config, db *store.Store) error {
 	if err != nil {
 		return err
 	}
-	log.Info("genesis accounts found:", len(genesis.Accounts))
+	log.Info("genesis accounts found:", len(genesis.Ledger.Accounts))
 
-	// These are default start/end attributes and might not be correct
-	// TODO: make the end height/time optional?
-	height := uint64(0)
-	now := time.Now()
-
-	for _, a := range genesis.Accounts {
+	for _, a := range genesis.Ledger.Accounts {
 		acc := model.Account{
-			PublicKey: a.PK,
-			//Balance:     a.Balance,
-			Delegate:    a.Delegate,
-			StartHeight: height,
-			StartTime:   now,
-			LastHeight:  height,
-			LastTime:    now,
+			PublicKey:      a.PK,
+			Balance:        types.NewInt64Amount(0),
+			BalanceUnknown: types.NewInt64Amount(0),
+			Stake:          types.NewFloatAmount(a.Balance),
+			Delegate:       a.Delegate,
+			StartHeight:    0,
+			StartTime:      genesis.Config.Timestamp,
+			LastHeight:     0,
+			LastTime:       genesis.Config.Timestamp,
 		}
 
 		log.WithField("pk", a.PK).Info("importing account")

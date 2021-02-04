@@ -3,10 +3,18 @@ package graph
 import (
 	"encoding/json"
 	"os"
+	"time"
 )
 
 type Genesis struct {
-	Accounts []GenesisAccount
+	Config struct {
+		Timestamp time.Time `json:"genesis_state_timestamp"`
+	} `json:"genesis"`
+	Ledger struct {
+		Name        string           `json:"name"`
+		NumAccounts int              `json:"num_accounts"`
+		Accounts    []GenesisAccount `json:"accounts"`
+	} `json:"ledger"`
 }
 
 type GenesisAccount struct {
@@ -24,9 +32,10 @@ func ReadGenesisFile(path string) (*Genesis, error) {
 	}
 	defer f.Close()
 
-	accounts := []GenesisAccount{}
-	if err := json.NewDecoder(f).Decode(&accounts); err != nil {
+	genesis := &Genesis{}
+
+	if err := json.NewDecoder(f).Decode(genesis); err != nil {
 		return nil, err
 	}
-	return &Genesis{accounts}, nil
+	return genesis, nil
 }

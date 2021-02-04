@@ -16,6 +16,7 @@ build: queries migrations
 # Install third-party tools
 setup:
 	go get -u github.com/jessevdk/go-assets-builder
+	go get -u github.com/sosedoff/sqlembed
 
 # Generate static migrations file
 migrations:

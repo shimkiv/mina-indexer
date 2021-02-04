@@ -4,6 +4,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math/big"
 )
 
@@ -34,6 +35,13 @@ func NewAmount(src string) Amount {
 func NewInt64Amount(val int64) Amount {
 	n := big.NewInt(val)
 	return Amount{Int: n}
+}
+
+func NewFloatAmount(val string) Amount {
+	var n float64
+	fmt.Sscanf(val, "%f", &n)
+
+	return NewInt64Amount(int64(n * 1000000000))
 }
 
 // MarshalJSON returns a JSON representation of amount

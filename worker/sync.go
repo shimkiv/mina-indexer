@@ -3,7 +3,6 @@ package worker
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -157,11 +156,7 @@ func (w SyncWorker) processStakingLedger() error {
 	}
 
 	for _, item := range ledger {
-		var balance float64
-		fmt.Sscanf(item.Balance, "%f", &balance)
-
-		amount := types.NewInt64Amount(int64(balance * 1000000000))
-
+		amount := types.NewFloatAmount(item.Balance)
 		if err := w.db.Validators.UpdateStake(item.Pk, amount); err != nil {
 			return err
 		}
