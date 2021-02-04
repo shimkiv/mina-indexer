@@ -43,6 +43,10 @@ func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block) (*Data, error
 		return nil, err
 	}
 	block.SnarkJobsCount = len(snarkJobs)
+	block.SnarkJobsFees = types.NewInt64Amount(0)
+	for _, job := range snarkJobs {
+		block.SnarkJobsFees = block.SnarkJobsFees.Add(job.Fee)
+	}
 
 	// // Prepare accounts
 	accounts, err := mapper.Accounts(graphBlock)

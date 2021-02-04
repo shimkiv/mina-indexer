@@ -17,7 +17,7 @@ CREATE TABLE blocks (
   transactions_fees    CHAIN_CURRENCY DEFAULT 0,
   snarkers_count       INTEGER NOT NULL DEFAULT 0,
   snark_jobs_count     INTEGER NOT NULL DEFAULT 0,
-  snark_jobs_fees      CHAIN_CURRENCY,
+  snark_jobs_fees      CHAIN_CURRENCY DEFAULT 0,
 
   PRIMARY KEY (id)
 );

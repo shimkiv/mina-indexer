@@ -5,7 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/figment-networks/indexing-engine/store/jsonquery"
 	"github.com/figment-networks/mina-indexer/model"
 	"github.com/figment-networks/mina-indexer/model/util"
 	"github.com/figment-networks/mina-indexer/store/queries"
@@ -67,24 +66,6 @@ func (s StatsStore) ValidatorStats(validator *model.Validator, period uint, inte
 		Error
 
 	return result, err
-}
-
-// CreateTransactionsStats creates a new transaction stats record
-func (s StatsStore) CreateTransactionsStats(bucket string, ts time.Time) error {
-	start, end, err := s.getTimeRange(bucket, ts)
-	if err != nil {
-		return err
-	}
-
-	return s.db.Exec(
-		s.prepareBucket(queries.TransactionStatsImport, bucket),
-		start, end,
-	).Error
-}
-
-// TransactionsStats returns transactions stats for a given timeframe
-func (s StatsStore) TransactionsStats(period uint, interval string) ([]byte, error) {
-	return jsonquery.MustArray(s.db, sqlTransactionsStats, period, interval)
 }
 
 // getTimeRange returns the start/end time for a given time bucket

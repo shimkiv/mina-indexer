@@ -54,7 +54,6 @@ func New(db *store.Store, cfg *config.Config) *Server {
 	s.GET("/validators", s.GetValidators)
 	s.GET("/validators/:id", s.GetValidator)
 	s.GET("/snarkers/", s.GetSnarkers)
-	s.GET("/transactions_stats", timeBucketMiddleware(), s.GetTransactionsStats)
 	s.GET("/transactions", s.GetTransactions)
 	s.GET("/transactions/:id", s.GetTransaction)
 	s.GET("/accounts/:id", s.GetAccount)
@@ -311,16 +310,6 @@ func (s *Server) GetSnarkers(c *gin.Context) {
 		return
 	}
 	jsonOk(c, snarkers)
-}
-
-func (s *Server) GetTransactionsStats(c *gin.Context) {
-	tb := c.MustGet("timebucket").(timeBucket)
-	result, err := s.db.Stats.TransactionsStats(tb.Period, tb.Interval)
-	if shouldReturn(c, err) {
-		return
-	}
-
-	jsonOk(c, result)
 }
 
 // GetTransactions returns transactions by height
