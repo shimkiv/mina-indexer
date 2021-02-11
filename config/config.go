@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/kelseyhightower/envconfig"
@@ -17,6 +19,7 @@ const (
 
 var (
 	errEndpointRequired        = errors.New("Coda API endpoint is required")
+	errEndpointInvalid         = errors.New("Coda API endpoint is invalid")
 	errDatabaseRequired        = errors.New("Database credentials are required")
 	errSyncIntervalRequired    = errors.New("Sync interval is required")
 	errSyncIntervalInvalid     = errors.New("Sync interval is invalid")
@@ -50,6 +53,13 @@ type Config struct {
 func (c *Config) Validate() error {
 	if c.CodaEndpoint == "" {
 		return errEndpointRequired
+	}
+	codaURL, err := url.Parse(c.CodaEndpoint)
+	if err != nil {
+		return errEndpointInvalid
+	}
+	if !strings.Contains(codaURL.Path, "graphql") {
+		return errEndpointInvalid
 	}
 
 	if c.DatabaseURL == "" {

@@ -25,26 +25,26 @@ INSERT INTO chain_stats (
 SELECT
 	DATE_TRUNC('@bucket', blocks.time),
 	'@bucket',
-	ROUND(EXTRACT(EPOCH FROM (MAX(blocks.time) - MIN(blocks.time)) / COUNT(1))::NUMERIC, 2),
-	COUNT(1),
+	ROUND(EXTRACT(EPOCH FROM (MAX(blocks.time) - MIN(blocks.time)) / COUNT(DISTINCT blocks.height))::NUMERIC, 2),
+	COUNT(DISTINCT blocks.height),
 	(SELECT COUNT(1) FROM blocks),
 	COUNT(DISTINCT(creator)),
 	(SELECT COUNT(1) FROM accounts),
 	COUNT(DISTINCT(epoch)),
 	COUNT(DISTINCT(slot)),
 	(SELECT COUNT(1) FROM snarkers),
-	SUM(blocks.snark_jobs_count),
-  SUM(blocks.snark_jobs_fees),
-	AVG(blocks.coinbase),
-	AVG(blocks.total_currency),
+	COALESCE(SUM(blocks.snark_jobs_count), 0),
+  COALESCE(SUM(blocks.snark_jobs_fees), 0),
+	COALESCE(AVG(blocks.coinbase), 0),
+	COALESCE(AVG(blocks.total_currency), 0),
   COUNT(transactions),
-  SUM(transactions.amount),
+  COALESCE(SUM(transactions.amount), 0),
 	COUNT(transactions) FILTER (WHERE type = 'payment'),
-	SUM(transactions.amount) FILTER (WHERE type = 'payment'),
+	COALESCE(SUM(transactions.amount) FILTER (WHERE type = 'payment'), 0),
   COUNT(transactions) FILTER (WHERE type = 'fee_transfer'),
-	SUM(transactions.amount) FILTER (WHERE type = 'fee_transfer'),
+	COALESCE(SUM(transactions.amount) FILTER (WHERE type = 'fee_transfer'), 0),
   COUNT(transactions) FILTER (WHERE type = 'coinbase'),
-	SUM(transactions.amount) FILTER (WHERE type = 'coinbase')
+	COALESCE(SUM(transactions.amount) FILTER (WHERE type = 'coinbase'), 0)
 FROM
 	blocks
 LEFT JOIN transactions
