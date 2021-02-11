@@ -16,7 +16,7 @@ func startStatus(cfg *config.Config) error {
 	}
 	defer db.Close()
 
-	client := graph.NewClient(http.DefaultClient, cfg.CodaEndpoint)
+	client := graph.NewClient(http.DefaultClient, cfg.MinaEndpoint)
 	status, err := client.GetDaemonStatus(context.Background())
 	if err != nil {
 		return err

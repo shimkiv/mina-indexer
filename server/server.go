@@ -28,7 +28,7 @@ func New(db *store.Store, cfg *config.Config) *Server {
 		Engine: gin.New(),
 
 		db:          db,
-		graphClient: graph.NewDefaultClient(cfg.CodaEndpoint),
+		graphClient: graph.NewDefaultClient(cfg.MinaEndpoint),
 	}
 
 	s.Use(gin.Recovery())

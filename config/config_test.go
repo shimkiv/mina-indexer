@@ -37,7 +37,7 @@ func TestValidate(t *testing.T) {
 	config := Config{}
 	assert.Equal(t, config.Validate(), errEndpointRequired)
 
-	config.CodaEndpoint = "http://localhost:3085/graphql"
+	config.MinaEndpoint = "http://localhost:3085/graphql"
 	assert.Equal(t, config.Validate(), errDatabaseRequired)
 
 	config.DatabaseURL = "database"

@@ -16,7 +16,7 @@ import (
 
 func startSyncWorker(wg *sync.WaitGroup, cfg *config.Config, db *store.Store) context.CancelFunc {
 	ctx, cancel := context.WithCancel(context.Background())
-	client := graph.NewDefaultClient(cfg.CodaEndpoint)
+	client := graph.NewDefaultClient(cfg.MinaEndpoint)
 	archiveClient := archive.NewDefaultClient(cfg.ArchiveEndpoint)
 	syncWorker := worker.NewSyncWorker(cfg, db, client, archiveClient)
 	timer := time.NewTimer(cfg.SyncDuration())
@@ -75,7 +75,7 @@ func startCleanupWorker(wg *sync.WaitGroup, cfg *config.Config, db *store.Store)
 }
 
 func startWorker(cfg *config.Config) error {
-	log.Info("using mina graph endpoint: ", cfg.CodaEndpoint)
+	log.Info("using mina graph endpoint: ", cfg.MinaEndpoint)
 	log.Info("using mina archive endpoint: ", cfg.ArchiveEndpoint)
 	log.Info("sync will run every: ", cfg.SyncInterval)
 	log.Info("cleanup will run every: ", cfg.CleanupInterval)

@@ -30,7 +30,7 @@ var (
 // Config holds the configration data
 type Config struct {
 	AppEnv           string `json:"app_env" envconfig:"APP_ENV" default:"development"`
-	CodaEndpoint     string `json:"coda_endpoint" envconfig:"CODA_ENDPOINT"`
+	MinaEndpoint     string `json:"mina_endpoint" envconfig:"MINA_ENDPOINT"`
 	ArchiveEndpoint  string `json:"archive_endpoint" envconfig:"ARCHIVE_ENDPOINT"`
 	GenesisFile      string `json:"genesis_file" envconfig:"GENESIS_FILE"`
 	IdentityFile     string `json:"identity_file" envconfig:"IDENTITY_FILE"`
@@ -51,10 +51,10 @@ type Config struct {
 
 // Validate returns an error if config is invalid
 func (c *Config) Validate() error {
-	if c.CodaEndpoint == "" {
+	if c.MinaEndpoint == "" {
 		return errEndpointRequired
 	}
-	codaURL, err := url.Parse(c.CodaEndpoint)
+	codaURL, err := url.Parse(c.MinaEndpoint)
 	if err != nil {
 		return errEndpointInvalid
 	}

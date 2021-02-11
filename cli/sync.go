@@ -15,7 +15,7 @@ func runSync(cfg *config.Config) error {
 	defer db.Close()
 
 	archiveClient := archive.NewDefaultClient(cfg.ArchiveEndpoint)
-	graphClient := graph.NewDefaultClient(cfg.CodaEndpoint)
+	graphClient := graph.NewDefaultClient(cfg.MinaEndpoint)
 	graphClient.SetDebug(cfg.LogLevel == "debug")
 
 	syncWorker := worker.NewSyncWorker(cfg, db, graphClient, archiveClient)
