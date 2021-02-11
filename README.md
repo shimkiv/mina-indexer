@@ -23,7 +23,7 @@ Example:
 {
   "app_env": "production",
   "mina_endpoint": "http://YOUR_NODE_IP:3085/graphql",
-  "archive_endpoint": "http://YOUR_NODE_IP:3089",
+  "archive_endpoint": "http://YOUR_NODE_IP:3088",
   "server_addr": "127.0.0.1",
   "server_port": 555,
   "database_url": "postgres://user:pass@host/dbname",
