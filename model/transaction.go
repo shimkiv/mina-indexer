@@ -2,54 +2,61 @@ package model
 
 import (
 	"errors"
-	"fmt"
 	"time"
+
+	"github.com/figment-networks/mina-indexer/model/types"
 )
 
 const (
-	TxTypePayment     = "payment"
-	TxTypeDelegation  = "delegation"
-	TxTypeFee         = "fee"
-	TxTypeSnarkFee    = "snark_fee"
-	TxTypeBlockReward = "block_reward"
+	// Transaction types
+	TxTypePayment             = "payment"
+	TxTypeDelegation          = "delegation"
+	TxTypeCoinbase            = "coinbase"
+	TxTypeCoinbaseFeeTransfer = "fee_transfer_via_coinbase"
+	TxTypeFeeTransfer         = "fee_transfer"
+	TxTypeSnarkFee            = "snark_fee"
+
+	// Transaction statuses
+	TxStatusApplied = "applied"
+	TxStatusFailed  = "failed"
 )
 
 var (
 	TxTypes = []string{
 		TxTypePayment,
 		TxTypeDelegation,
-		TxTypeBlockReward,
-		TxTypeFee,
+		TxTypeCoinbase,
+		TxTypeCoinbaseFeeTransfer,
+		TxTypeFeeTransfer,
 		TxTypeSnarkFee,
 	}
 )
 
 // Transaction contains the blockchain transaction details
 type Transaction struct {
-	ID        int64     `json:"id"`
-	Type      string    `json:"type"`
-	Hash      string    `json:"hash"`
-	BlockHash string    `json:"block_hash"`
-	Height    uint64    `json:"height"`
-	Time      time.Time `json:"time"`
-	Sender    *string   `json:"sender"`
-	Receiver  string    `json:"receiver"`
-	Amount    uint64    `json:"amount"`
-	Fee       uint64    `json:"fee"`
-	Nonce     *int      `json:"nonce"`
-	Memo      *string   `json:"memo"`
-	CreatedAt time.Time `json:"-"`
-	UpdatedAt time.Time `json:"-"`
+	ID                      int          `json:"id"`
+	Hash                    string       `json:"hash"`
+	Type                    string       `json:"type"`
+	BlockHash               string       `json:"block_hash"`
+	BlockHeight             uint64       `json:"block_height"`
+	Time                    time.Time    `json:"time"`
+	Sender                  *string      `json:"sender"`
+	Receiver                string       `json:"receiver"`
+	Amount                  types.Amount `json:"amount"`
+	Fee                     types.Amount `json:"fee"`
+	Nonce                   *int         `json:"nonce"`
+	Memo                    *string      `json:"memo"`
+	Status                  string       `json:"status"`
+	FailureReason           *string      `json:"failure_reason"`
+	SequenceNumber          *int         `json:"sequence_number"`
+	SecondarySequenceNumber *int         `json:"secondary_sequence_number"`
+	CreatedAt               time.Time    `json:"-"`
+	UpdatedAt               time.Time    `json:"-"`
 }
 
 // TableName returns the model table name
 func (Transaction) TableName() string {
 	return "transactions"
-}
-
-// String returns transaction text representation
-func (t Transaction) String() string {
-	return fmt.Sprintf("type=%v hash=%v height=%v", t.Type, t.Hash, t.Height)
 }
 
 // Validate returns an error if transaction is invalid
@@ -63,7 +70,7 @@ func (t Transaction) Validate() error {
 	if t.Hash == "" {
 		return errors.New("hash is required")
 	}
-	if t.Height <= 0 {
+	if t.BlockHeight <= 0 {
 		return errors.New("height is invalid")
 	}
 	if t.Time.IsZero() {
@@ -71,9 +78,6 @@ func (t Transaction) Validate() error {
 	}
 	if t.Receiver == "" {
 		return errors.New("receiver is required")
-	}
-	if t.Amount < 0 {
-		return errors.New("amount is invalid")
 	}
 	return nil
 }

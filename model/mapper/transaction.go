@@ -3,12 +3,13 @@ package mapper
 import (
 	"fmt"
 
-	"github.com/figment-networks/mina-indexer/coda"
+	"github.com/figment-networks/mina-indexer/client/graph"
 	"github.com/figment-networks/mina-indexer/model"
+	"github.com/figment-networks/mina-indexer/model/types"
 	"github.com/figment-networks/mina-indexer/model/util"
 )
 
-func UserTransaction(block *coda.Block, t *coda.UserCommand) (*model.Transaction, error) {
+func UserTransaction(block *graph.Block, t *graph.UserCommand) (*model.Transaction, error) {
 	ttype := model.TxTypePayment
 	if t.IsDelegation {
 		ttype = model.TxTypeDelegation
@@ -20,71 +21,74 @@ func UserTransaction(block *coda.Block, t *coda.UserCommand) (*model.Transaction
 	}
 
 	tran := &model.Transaction{
-		Type:      ttype,
-		Time:      BlockTime(block),
-		Height:    BlockHeight(block),
-		Hash:      t.ID,
-		BlockHash: block.StateHash,
-		Sender:    &t.From,
-		Receiver:  t.To,
-		Amount:    util.MustUInt64(t.Amount),
-		Fee:       util.MustUInt64(t.Fee),
-		Nonce:     &t.Nonce,
-		Memo:      memoText,
+		Type:        ttype,
+		Hash:        t.Hash,
+		Time:        BlockTime(block),
+		BlockHeight: BlockHeight(block),
+		BlockHash:   block.StateHash,
+		Sender:      &t.From,
+		Receiver:    t.To,
+		Amount:      types.NewAmount(t.Amount),
+		Fee:         types.NewAmount(t.Fee),
+		Nonce:       &t.Nonce,
+		Memo:        memoText,
 	}
 
 	return tran, tran.Validate()
 }
 
-func BlockRewardTransaction(block *coda.Block) (*model.Transaction, error) {
+func BlockRewardTransaction(block *graph.Block) (*model.Transaction, error) {
 	t := &model.Transaction{
-		Type:      model.TxTypeBlockReward,
-		BlockHash: block.StateHash,
-		Hash:      util.SHA1(block.StateHash + block.Transactions.CoinbaseReceiver.PublicKey),
-		Height:    BlockHeight(block),
-		Time:      BlockTime(block),
-		Receiver:  block.Transactions.CoinbaseReceiver.PublicKey,
-		Amount:    util.MustUInt64(block.Transactions.Coinbase),
+		Type:        model.TxTypeCoinbase,
+		Hash:        util.SHA1(block.StateHash + block.Transactions.CoinbaseReceiver.PublicKey),
+		Time:        BlockTime(block),
+		BlockHash:   block.StateHash,
+		BlockHeight: BlockHeight(block),
+		Receiver:    block.Transactions.CoinbaseReceiver.PublicKey,
+		Amount:      types.NewAmount(block.Transactions.Coinbase),
+		Fee:         types.NewInt64Amount(0),
 	}
 
 	return t, t.Validate()
 }
 
-func FeeTransaction(block *coda.Block, transfer *coda.FeeTransfer) (*model.Transaction, error) {
+func FeeTransaction(block *graph.Block, transfer *graph.FeeTransfer) (*model.Transaction, error) {
 	uid := fmt.Sprintf("%s%s%s", block.StateHash, transfer.Recipient, transfer.Fee)
 
 	t := &model.Transaction{
-		Type:      model.TxTypeFee,
-		BlockHash: block.StateHash,
-		Hash:      util.SHA1(uid),
-		Height:    BlockHeight(block),
-		Time:      BlockTime(block),
-		Receiver:  transfer.Recipient,
-		Amount:    util.MustUInt64(transfer.Fee),
+		Type:        model.TxTypeFeeTransfer,
+		Hash:        util.SHA1(uid),
+		Time:        BlockTime(block),
+		BlockHash:   block.StateHash,
+		BlockHeight: BlockHeight(block),
+		Receiver:    transfer.Recipient,
+		Amount:      types.NewAmount(transfer.Fee),
+		Fee:         types.NewInt64Amount(0),
 	}
 
 	return t, t.Validate()
 }
 
-func SnarkFeeTransaction(block *coda.Block, transfer *coda.FeeTransfer) (*model.Transaction, error) {
+func SnarkFeeTransaction(block *graph.Block, transfer *graph.FeeTransfer) (*model.Transaction, error) {
 	uid := fmt.Sprintf("%s%s%s", block.StateHash, transfer.Recipient, transfer.Fee)
 
 	t := &model.Transaction{
-		Type:      model.TxTypeSnarkFee,
-		BlockHash: block.StateHash,
-		Hash:      util.SHA1(uid),
-		Height:    BlockHeight(block),
-		Time:      BlockTime(block),
-		Sender:    &block.Creator,
-		Receiver:  transfer.Recipient,
-		Amount:    util.MustUInt64(transfer.Fee),
+		Type:        model.TxTypeSnarkFee,
+		Hash:        util.SHA1(uid),
+		Time:        BlockTime(block),
+		BlockHash:   block.StateHash,
+		BlockHeight: BlockHeight(block),
+		Sender:      &block.Creator,
+		Receiver:    transfer.Recipient,
+		Amount:      types.NewAmount(transfer.Fee),
+		Fee:         types.NewInt64Amount(0),
 	}
 
 	return t, t.Validate()
 }
 
 // Transactions returns a list of transactions from the coda input
-func Transactions(block *coda.Block) ([]model.Transaction, error) {
+func Transactions(block *graph.Block) ([]model.Transaction, error) {
 	if block.Transactions == nil {
 		return nil, nil
 	}
@@ -134,27 +138,6 @@ func Transactions(block *coda.Block) ([]model.Transaction, error) {
 		}
 
 		result = append(result, *feeTx)
-	}
-
-	return result, nil
-}
-
-func FeeTransfers(block *coda.Block) ([]model.FeeTransfer, error) {
-	if block.Transactions == nil {
-		return nil, nil
-	}
-	if block.Transactions.FeeTransfer == nil {
-		return nil, nil
-	}
-
-	transfers := block.Transactions.FeeTransfer
-	result := make([]model.FeeTransfer, len(transfers))
-
-	for i, t := range transfers {
-		result[i].Height = BlockHeight(block)
-		result[i].Time = BlockTime(block)
-		result[i].Recipient = t.Recipient
-		result[i].Amount = util.MustUInt64(t.Fee)
 	}
 
 	return result, nil

@@ -9,13 +9,28 @@ import (
 
 // Import creates new database records for the chain data
 func Import(db *store.Store, data *Data) error {
-	log.WithField("count", 1).Debug("creating accounts")
-	if err := db.Accounts.Import(data.Accounts); err != nil {
+	log.Debug("creating block")
+
+	existing, err := db.Blocks.FindByHash(data.Block.Hash)
+	if err != nil {
+		if err != store.ErrNotFound {
+			return err
+		}
+		existing = nil
+	}
+
+	if existing != nil {
+		data.Block.ID = existing.ID
+		err = db.Blocks.Update(data.Block)
+	} else {
+		err = db.Blocks.Create(data.Block)
+	}
+	if err != nil {
 		return err
 	}
 
-	log.Debug("creating block")
-	if err := db.Blocks.Create(data.Block); err != nil {
+	log.WithField("count", len(data.Accounts)).Debug("creating accounts")
+	if err := db.Accounts.Import(data.Accounts); err != nil {
 		return err
 	}
 
@@ -25,20 +40,7 @@ func Import(db *store.Store, data *Data) error {
 	}
 
 	log.WithField("count", len(data.Transactions)).Debug("creating transactions")
-	for _, t := range data.Transactions {
-		et, _ := db.Transactions.FindByHash(t.Hash)
-		if et.ID > 0 {
-			log.WithField("id", et.Hash).Debug("transaction already exists")
-			continue
-		}
-
-		if err := db.Transactions.Create(&t); err != nil {
-			return err
-		}
-	}
-
-	log.WithField("count", len(data.FeeTransfers)).Debug("creating fee transfers")
-	if err := db.FeeTransfers.Import(data.FeeTransfers); err != nil {
+	if err := db.Transactions.Import(data.Transactions); err != nil {
 		return err
 	}
 

@@ -9,7 +9,7 @@ import (
 	"github.com/pressly/goose"
 
 	"github.com/figment-networks/mina-indexer/config"
-	"github.com/figment-networks/mina-indexer/migrations"
+	"github.com/figment-networks/mina-indexer/store/migrations"
 )
 
 func startMigrations(cmd string, cfg *config.Config) error {

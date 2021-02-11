@@ -1,12 +1,11 @@
 # mina-indexer
 
-Blockchain data indexer and API service for Coda blockchain protocol
+Blockchain data indexer and API service for Mina blockchain protocol
 
 ## Requirements
 
 - PostgreSQL 10.x+
-- TimescaleDB
-- Go 1.13+
+- Go 1.15+
 
 ## Installation
 
@@ -23,7 +22,8 @@ Example:
 ```json
 {
   "app_env": "production",
-  "coda_endpoint": "http://YOUR_NODE_IP:3085/graphql",
+  "mina_endpoint": "http://YOUR_NODE_IP:3085/graphql",
+  "archive_endpoint": "http://YOUR_NODE_IP:3089",
   "server_addr": "127.0.0.1",
   "server_port": 555,
   "database_url": "postgres://user:pass@host/dbname",
@@ -34,15 +34,17 @@ Example:
 
 ### Environment Variables
 
-- `APP_ENV`          - Application environment (`development`)
-- `DATABASE_URL`     - PostgreSQL database URL
-- `CODA_ENDPOINT`    - Coda GraphQL Endpoint
-- `SERVER_ADDR`      - Server listen addr (`0.0.0.0`)
-- `SERVER_PORT`      - Server listen port (`8081`)
-- `SYNC_INTERVAL`    - Data sync interval (`10s`)
-- `CLEANUP_INTERVAL` - Data cleanup interval (`10min`)
-- `DEBUG`            - Turn on debugging mode (`false`)
-
+| Name               | Description             | Default
+|--------------------|-------------------------|-------------------
+| `DATABASE_URL`     | PostgreSQL database URL
+| `MINA_ENDPOINT`    | Mina GraphQL Endpoint
+| `ARCHIVE_ENDPOINT` | Mina Archive API Endpoint
+| `APP_ENV`          | Application environment | `development`
+| `SERVER_ADDR`      | Server listen address   | `0.0.0.0`
+| `SERVER_PORT`      | Server listen port      | `8080`
+| `SYNC_INTERVAL`    | Data sync interval      | `10s`
+| `CLEANUP_INTERVAL` | Data cleanup interval   | `10min`
+| `LOG_LEVEL`        | Application log level   | `info`
 
 ## Running Application
 

@@ -1,17 +1,18 @@
 package mapper
 
 import (
-	"github.com/figment-networks/mina-indexer/coda"
+	"github.com/figment-networks/mina-indexer/client/graph"
 	"github.com/figment-networks/mina-indexer/model"
 	"github.com/figment-networks/mina-indexer/model/util"
 )
 
-func Snarker(block *coda.Block, job *coda.CompletedWork) (*model.Snarker, error) {
+// Snarker returns a snarker model constructed from the graph input
+func Snarker(block *graph.Block, job *graph.CompletedWork) (*model.Snarker, error) {
 	height := BlockHeight(block)
 	time := BlockTime(block)
 
 	snarker := &model.Snarker{
-		Account:     job.Prover,
+		PublicKey:   job.Prover,
 		Fee:         util.MustUInt64(job.Fee),
 		JobsCount:   1,
 		WorksCount:  len(job.WorkIds),
@@ -21,14 +22,17 @@ func Snarker(block *coda.Block, job *coda.CompletedWork) (*model.Snarker, error)
 		LastTime:    time,
 	}
 
-	if err := snarker.Validate(); err != nil {
-		return nil, err
-	}
-	return snarker, nil
+	return snarker, snarker.Validate()
 }
 
-func Snarkers(block *coda.Block) ([]model.Snarker, error) {
+// Snarkers returns a collection of snarker models constructed from the graph input
+func Snarkers(block *graph.Block) ([]model.Snarker, error) {
+	if block == nil {
+		return nil, nil
+	}
+
 	snarkers := map[string]*model.Snarker{}
+
 	for _, job := range block.SnarkJobs {
 		if snarkers[job.Prover] == nil {
 			s, err := Snarker(block, job)

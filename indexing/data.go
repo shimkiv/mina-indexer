@@ -1,6 +1,8 @@
 package indexing
 
-import "github.com/figment-networks/mina-indexer/model"
+import (
+	"github.com/figment-networks/mina-indexer/model"
+)
 
 // Data contains all the records processed for a height
 type Data struct {
@@ -9,6 +11,5 @@ type Data struct {
 	Accounts     []model.Account
 	Snarkers     []model.Snarker
 	Transactions []model.Transaction
-	FeeTransfers []model.FeeTransfer
-	SnarkJobs    []model.Job
+	SnarkJobs    []model.SnarkJob
 }

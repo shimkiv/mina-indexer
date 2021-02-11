@@ -1,12 +1,14 @@
 package server
 
 import (
+	"context"
 	"errors"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 
-	"github.com/figment-networks/mina-indexer/coda"
+	"github.com/figment-networks/mina-indexer/client/graph"
 	"github.com/figment-networks/mina-indexer/config"
 	"github.com/figment-networks/mina-indexer/model"
 	"github.com/figment-networks/mina-indexer/store"
@@ -16,18 +18,21 @@ import (
 type Server struct {
 	*gin.Engine
 
-	api *coda.Client
-	db  *store.Store
+	graphClient *graph.Client
+	db          *store.Store
 }
 
 // New returns a new server instance
 func New(db *store.Store, cfg *config.Config) *Server {
 	s := &Server{
-		Engine: gin.Default(),
+		Engine: gin.New(),
 
-		db:  db,
-		api: coda.NewDefaultClient(cfg.CodaEndpoint),
+		db:          db,
+		graphClient: graph.NewDefaultClient(cfg.MinaEndpoint),
 	}
+
+	s.Use(gin.Recovery())
+	s.Use(requestLoggerMiddleware(logrus.StandardLogger()))
 
 	if cfg.IsDevelopment() {
 		s.Use(corsMiddleware())
@@ -43,13 +48,12 @@ func New(db *store.Store, cfg *config.Config) *Server {
 	s.GET("/block", s.GetCurrentBlock)
 	s.GET("/blocks", s.GetBlocks)
 	s.GET("/blocks/:id", s.GetBlock)
+	s.GET("/blocks/:id/transactions", s.GetBlockTransactions)
 	s.GET("/block_times", s.GetBlockTimes)
 	s.GET("/block_stats", timeBucketMiddleware(), s.GetBlockStats)
 	s.GET("/validators", s.GetValidators)
 	s.GET("/validators/:id", s.GetValidator)
 	s.GET("/snarkers/", s.GetSnarkers)
-	s.GET("/transactions_stats", timeBucketMiddleware(), s.GetTransactionsStats)
-	s.GET("/transaction_types", s.GetTransactionTypes)
 	s.GET("/transactions", s.GetTransactions)
 	s.GET("/transactions/:id", s.GetTransaction)
 	s.GET("/accounts/:id", s.GetAccount)
@@ -76,6 +80,18 @@ func (s Server) GetStatus(c *gin.Context) {
 		"sync_status": "stale",
 	}
 
+	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(time.Second*5))
+	defer cancel()
+
+	daemonStatus, err := s.graphClient.GetDaemonStatus(ctx)
+	if err == nil {
+		data["node_version"] = daemonStatus.CommitID
+		data["node_status"] = daemonStatus.SyncStatus
+	} else {
+		logrus.WithError(err).Error("node status fetch failed")
+		data["node_status_error"] = true
+	}
+
 	if block, err := s.db.Blocks.Recent(); err == nil {
 		data["last_block_time"] = block.Time
 		data["last_block_height"] = block.Height
@@ -83,6 +99,8 @@ func (s Server) GetStatus(c *gin.Context) {
 		if time.Since(block.Time).Minutes() <= 30 {
 			data["sync_status"] = "current"
 		}
+	} else {
+		logrus.WithError(err).Error("recent block fetch failed")
 	}
 
 	jsonOk(c, data)
@@ -115,15 +133,6 @@ func (s *Server) GetBlock(c *gin.Context) {
 	var block *model.Block
 	var err error
 
-	if c.Query("raw") == "1" {
-		block, err := s.api.GetBlock(c.Param("id"))
-		if shouldReturn(c, err) {
-			return
-		}
-		jsonOk(c, block)
-		return
-	}
-
 	id := resourceID(c, "id")
 	if id.IsNumeric() {
 		if id.UInt64() == 0 {
@@ -147,12 +156,7 @@ func (s *Server) GetBlock(c *gin.Context) {
 		return
 	}
 
-	transactions, err := s.db.Transactions.ByHeight(block.Height)
-	if shouldReturn(c, err) {
-		return
-	}
-
-	transfers, err := s.db.FeeTransfers.FindByHeight(block.Height)
+	transactions, err := s.db.Transactions.ByHeight(block.Height, uint(block.TransactionsCount))
 	if shouldReturn(c, err) {
 		return
 	}
@@ -163,12 +167,37 @@ func (s *Server) GetBlock(c *gin.Context) {
 	}
 
 	jsonOk(c, gin.H{
-		"block":         block,
-		"creator":       creator,
-		"transactions":  transactions,
-		"fee_transfers": transfers,
-		"snark_jobs":    jobs,
+		"block":        block,
+		"creator":      creator,
+		"transactions": transactions,
+		"snark_jobs":   jobs,
 	})
+}
+
+func (s *Server) GetBlockTransactions(c *gin.Context) {
+	var block *model.Block
+	var err error
+
+	id := resourceID(c, "id")
+	if id.IsNumeric() {
+		if id.UInt64() == 0 {
+			badRequest(c, errors.New("height must be greater than 0"))
+			return
+		}
+		block, err = s.db.Blocks.FindByHeight(id.UInt64())
+	} else {
+		block, err = s.db.Blocks.FindByHash(id.String())
+	}
+	if shouldReturn(c, err) {
+		return
+	}
+
+	transactions, err := s.db.Transactions.ByHeight(block.Height, uint(block.TransactionsCount))
+	if shouldReturn(c, err) {
+		return
+	}
+
+	jsonOk(c, transactions)
 }
 
 // GetBlocks returns a list of available blocks matching the filter
@@ -246,7 +275,7 @@ func (s *Server) GetValidators(c *gin.Context) {
 
 // GetValidator renders the validator details
 func (s *Server) GetValidator(c *gin.Context) {
-	validator, err := s.db.Validators.FindByAccount(c.Param("id"))
+	validator, err := s.db.Validators.FindByPublicKey(c.Param("id"))
 	if shouldReturn(c, err) {
 		return
 	}
@@ -256,7 +285,7 @@ func (s *Server) GetValidator(c *gin.Context) {
 		return
 	}
 
-	delegations, err := s.db.Accounts.AllByDelegator(validator.Account)
+	delegations, err := s.db.Accounts.AllByDelegator(validator.PublicKey)
 	if shouldReturn(c, err) {
 		return
 	}
@@ -283,24 +312,6 @@ func (s *Server) GetSnarkers(c *gin.Context) {
 	jsonOk(c, snarkers)
 }
 
-func (s *Server) GetTransactionsStats(c *gin.Context) {
-	tb := c.MustGet("timebucket").(timeBucket)
-	result, err := s.db.Stats.TransactionsStats(tb.Period, tb.Interval)
-	if shouldReturn(c, err) {
-		return
-	}
-
-	jsonOk(c, result)
-}
-
-func (s *Server) GetTransactionTypes(c *gin.Context) {
-	result, err := s.db.Transactions.Types()
-	if shouldReturn(c, err) {
-		return
-	}
-	jsonOk(c, result)
-}
-
 // GetTransactions returns transactions by height
 func (s *Server) GetTransactions(c *gin.Context) {
 	search := store.TransactionSearch{}
@@ -324,8 +335,10 @@ func (s *Server) GetTransactions(c *gin.Context) {
 
 // GetAccount returns account for by hash or ID
 func (s *Server) GetAccount(c *gin.Context) {
-	var acc *model.Account
-	var err error
+	var (
+		acc *model.Account
+		err error
+	)
 
 	id := resourceID(c, "id")
 	if id.IsNumeric() {

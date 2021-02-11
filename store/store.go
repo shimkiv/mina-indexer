@@ -13,14 +13,12 @@ import (
 type Store struct {
 	db *gorm.DB
 
-	Heights      HeightsStore
 	Blocks       BlocksStore
 	Accounts     AccountsStore
 	Validators   ValidatorsStore
 	Transactions TransactionsStore
 	Jobs         JobsStore
 	Snarkers     SnarkersStore
-	FeeTransfers FeeTransfersStore
 	Stats        StatsStore
 }
 
@@ -54,20 +52,14 @@ func New(connStr string) (*Store, error) {
 	return &Store{
 		db: conn,
 
-		Heights:      NewHeightsStore(conn),
 		Blocks:       NewBlocksStore(conn),
 		Accounts:     NewAccountsStore(conn),
 		Validators:   NewValidatorsStore(conn),
 		Transactions: NewTransactionsStore(conn),
 		Snarkers:     NewSnarkersStore(conn),
 		Jobs:         NewJobsStore(conn),
-		FeeTransfers: NewFeeTransfersStore(conn),
 		Stats:        NewStatsStore(conn),
 	}, nil
-}
-
-func NewHeightsStore(db *gorm.DB) HeightsStore {
-	return HeightsStore{scoped(db, model.Height{})}
 }
 
 func NewBlocksStore(db *gorm.DB) BlocksStore {
@@ -91,11 +83,7 @@ func NewSnarkersStore(db *gorm.DB) SnarkersStore {
 }
 
 func NewJobsStore(db *gorm.DB) JobsStore {
-	return JobsStore{scoped(db, model.Job{})}
-}
-
-func NewFeeTransfersStore(db *gorm.DB) FeeTransfersStore {
-	return FeeTransfersStore{scoped(db, model.FeeTransfer{})}
+	return JobsStore{scoped(db, model.SnarkJob{})}
 }
 
 func NewStatsStore(db *gorm.DB) StatsStore {

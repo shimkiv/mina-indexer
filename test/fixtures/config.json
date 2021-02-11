@@ -1,6 +1,6 @@
 {
-  "database_url": "postgres://localhost/db",
-  "coda_endpoint": "http://endpoint",
-  "sync_interval": "10s",
-  "cleanup_interval": "10m"
+"database_url": "postgres://localhost/db",
+"mina_endpoint": "http://endpoint",
+"sync_interval": "10s",
+"cleanup_interval": "10m"
 }

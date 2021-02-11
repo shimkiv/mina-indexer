@@ -13,7 +13,7 @@ func TestFromEnv(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, modeDevelopment, config.AppEnv)
 	assert.Equal(t, "0.0.0.0", config.ServerAddr)
-	assert.Equal(t, 8081, config.ServerPort)
+	assert.Equal(t, 8080, config.ServerPort)
 	assert.Equal(t, "10s", config.SyncInterval)
 	assert.Equal(t, "10m", config.CleanupInterval)
 	assert.Equal(t, 1000, config.CleanupThreshold)
@@ -37,7 +37,7 @@ func TestValidate(t *testing.T) {
 	config := Config{}
 	assert.Equal(t, config.Validate(), errEndpointRequired)
 
-	config.CodaEndpoint = "endpoint"
+	config.MinaEndpoint = "http://localhost:3085/graphql"
 	assert.Equal(t, config.Validate(), errDatabaseRequired)
 
 	config.DatabaseURL = "database"

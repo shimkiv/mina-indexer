@@ -2,30 +2,31 @@ package model
 
 import (
 	"errors"
-	"fmt"
 	"time"
+
+	"github.com/figment-networks/mina-indexer/model/types"
 )
 
 // Block model contains block data
 type Block struct {
-	Model
-
-	AppVersion        string    `json:"-"`
-	Height            uint64    `json:"height"`
-	Time              time.Time `json:"time"`
-	Hash              string    `json:"hash"`
-	ParentHash        string    `json:"parent_hash"`
-	LedgerHash        string    `json:"ledger_hash"`
-	Creator           string    `json:"creator"`
-	Coinbase          uint64    `json:"coinbase"`
-	TotalCurrency     uint64    `json:"total_currency"`
-	Epoch             int64     `json:"epoch"`
-	Slot              int64     `json:"slot"`
-	TransactionsCount int       `json:"transactions_count"`
-	FeeTransfersCount int       `json:"fee_transfers_count"`
-	SnarkersCount     int       `json:"snarkers_count"`
-	SnarkJobsCount    int       `json:"snark_jobs_count"`
-	SnarkJobsFees     uint64    `json:"snark_jobs_fees"`
+	ID                int          `json:"-"`
+	Height            uint64       `json:"height"`
+	Hash              string       `json:"hash"`
+	ParentHash        string       `json:"parent_hash"`
+	Time              time.Time    `json:"time"`
+	Canonical         bool         `json:"canonical"`
+	LedgerHash        string       `json:"ledger_hash"`
+	SnarkedLedgerHash string       `json:"snarked_ledger_hash"`
+	Creator           string       `json:"creator"`
+	Coinbase          types.Amount `json:"coinbase"`
+	TotalCurrency     types.Amount `json:"total_currency"`
+	Epoch             int          `json:"epoch"`
+	Slot              int          `json:"slot"`
+	TransactionsCount int          `json:"transactions_count"`
+	TransactionsFees  int          `json:"transactions_fees"`
+	SnarkersCount     int          `json:"snarkers_count"`
+	SnarkJobsCount    int          `json:"snark_jobs_count"`
+	SnarkJobsFees     types.Amount `json:"snark_jobs_fees"`
 }
 
 // BlockIntervalStat contains block count stats for a given time interval
@@ -49,11 +50,6 @@ type BlockAvgStat struct {
 // TableName returns the model table name
 func (Block) TableName() string {
 	return "blocks"
-}
-
-// String returns a text representation of a block
-func (b Block) String() string {
-	return fmt.Sprintf("height=%v hash=%v", b.Height, b.Hash)
 }
 
 // Validate returns an error if block data is invalid

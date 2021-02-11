@@ -1,11 +1,11 @@
 .DS_Store
-coda-indexer
 mina-indexer
 *.log
 .env*
 tmp
-scripts
+*.sh
 Procfile
 ./config.json
-migrations/migrations.go
+store/migrations/migrations.go
+store/queries/queries.go
 archive-proxy/queries/*.go

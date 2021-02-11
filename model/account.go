@@ -3,29 +3,25 @@ package model
 import (
 	"errors"
 	"time"
+
+	"github.com/figment-networks/mina-indexer/model/types"
 )
 
 // Account contains the account details
 type Account struct {
-	Model
-
-	// Name represents a reference to the account owner, it does not exist
-	// on the chain and should be imported from the annotated ledger.
-	// Name *string `json:"name"`
-
-	PublicKey      string  `json:"public_key"`
-	Delegate       *string `json:"delegate"`
-	Balance        string  `json:"balance"`
-	BalanceUnknown string  `json:"balance_unknown"`
-	Nonce          int64   `json:"nonce"`
-	//VotingFor      string  `json:"voting_for"`
-	//TxSent         int     `json:"tx_sent"`
-	//TxReceived     int     `json:"tx_received"`
-
-	StartHeight uint64    `json:"start_height"`
-	StartTime   time.Time `json:"start_time"`
-	LastHeight  uint64    `json:"last_height"`
-	LastTime    time.Time `json:"last_time"`
+	ID             string       `json:"-"`
+	PublicKey      string       `json:"public_key"`
+	Delegate       *string      `json:"delegate"`
+	Balance        types.Amount `json:"balance"`
+	BalanceUnknown types.Amount `json:"balance_unknown"`
+	Stake          types.Amount `json:"stake"`
+	Nonce          uint64       `json:"nonce"`
+	StartHeight    uint64       `json:"start_height"`
+	StartTime      time.Time    `json:"start_time"`
+	LastHeight     uint64       `json:"last_height"`
+	LastTime       time.Time    `json:"last_time"`
+	CreatedAt      time.Time    `json:"-"`
+	UpdatedAt      time.Time    `json:"-"`
 }
 
 // String returns account text representation
@@ -37,9 +33,6 @@ func (acc Account) String() string {
 func (acc Account) Validate() error {
 	if acc.PublicKey == "" {
 		return errors.New("public key is required")
-	}
-	if acc.Balance == "" {
-		return errors.New("balance is required")
 	}
 	return nil
 }

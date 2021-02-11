@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/kelseyhightower/envconfig"
@@ -17,6 +19,7 @@ const (
 
 var (
 	errEndpointRequired        = errors.New("Coda API endpoint is required")
+	errEndpointInvalid         = errors.New("Coda API endpoint is invalid")
 	errDatabaseRequired        = errors.New("Database credentials are required")
 	errSyncIntervalRequired    = errors.New("Sync interval is required")
 	errSyncIntervalInvalid     = errors.New("Sync interval is invalid")
@@ -27,10 +30,12 @@ var (
 // Config holds the configration data
 type Config struct {
 	AppEnv           string `json:"app_env" envconfig:"APP_ENV" default:"development"`
-	CodaEndpoint     string `json:"coda_endpoint" envconfig:"CODA_ENDPOINT"`
+	MinaEndpoint     string `json:"mina_endpoint" envconfig:"MINA_ENDPOINT"`
+	ArchiveEndpoint  string `json:"archive_endpoint" envconfig:"ARCHIVE_ENDPOINT"`
 	GenesisFile      string `json:"genesis_file" envconfig:"GENESIS_FILE"`
+	IdentityFile     string `json:"identity_file" envconfig:"IDENTITY_FILE"`
 	ServerAddr       string `json:"server_addr" envconfig:"SERVER_ADDR" default:"0.0.0.0"`
-	ServerPort       int    `json:"server_port" envconfig:"SERVER_PORT" default:"8081"`
+	ServerPort       int    `json:"server_port" envconfig:"SERVER_PORT" default:"8080"`
 	SyncInterval     string `json:"sync_interval" envconfig:"SYNC_INTERVAL" default:"10s"`
 	CleanupInterval  string `json:"cleanup_interval" envconfig:"CLEANUP_INTERVAL" default:"10m"`
 	CleanupThreshold int    `json:"cleanup_threshold" envconfig:"CLEANUP_THRESHOLD" default:"1000"`
@@ -46,8 +51,15 @@ type Config struct {
 
 // Validate returns an error if config is invalid
 func (c *Config) Validate() error {
-	if c.CodaEndpoint == "" {
+	if c.MinaEndpoint == "" {
 		return errEndpointRequired
+	}
+	codaURL, err := url.Parse(c.MinaEndpoint)
+	if err != nil {
+		return errEndpointInvalid
+	}
+	if !strings.Contains(codaURL.Path, "graphql") {
+		return errEndpointInvalid
 	}
 
 	if c.DatabaseURL == "" {
