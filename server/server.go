@@ -31,17 +31,13 @@ func New(db *store.Store, cfg *config.Config) *Server {
 		graphClient: graph.NewDefaultClient(cfg.MinaEndpoint),
 	}
 
-	s.Use(gin.Recovery())
-	s.Use(requestLoggerMiddleware(logrus.StandardLogger()))
+	s.initMiddleware(cfg)
+	s.initRoutes()
 
-	if cfg.IsDevelopment() {
-		s.Use(corsMiddleware())
-	}
+	return s
+}
 
-	if cfg.RollbarToken != "" {
-		s.Use(rollbarMiddleware())
-	}
-
+func (s *Server) initRoutes() {
 	s.GET("/health", s.GetHealth)
 	s.GET("/status", s.GetStatus)
 	s.GET("/height", s.GetCurrentHeight)
@@ -57,8 +53,19 @@ func New(db *store.Store, cfg *config.Config) *Server {
 	s.GET("/transactions", s.GetTransactions)
 	s.GET("/transactions/:id", s.GetTransaction)
 	s.GET("/accounts/:id", s.GetAccount)
+}
 
-	return s
+func (s *Server) initMiddleware(cfg *config.Config) {
+	s.Use(gin.Recovery())
+	s.Use(requestLoggerMiddleware(logrus.StandardLogger()))
+
+	if cfg.IsDevelopment() {
+		s.Use(corsMiddleware())
+	}
+
+	if cfg.RollbarToken != "" {
+		s.Use(rollbarMiddleware())
+	}
 }
 
 // GetHealth renders the server health status
@@ -202,9 +209,14 @@ func (s *Server) GetBlockTransactions(c *gin.Context) {
 
 // GetBlocks returns a list of available blocks matching the filter
 func (s *Server) GetBlocks(c *gin.Context) {
-	search := store.BlockSearch{}
+	search := &store.BlockSearch{}
 
-	if err := c.BindQuery(&search); err != nil {
+	if err := c.BindQuery(search); err != nil {
+		badRequest(c, err)
+		return
+	}
+
+	if err := search.Validate(); err != nil {
 		badRequest(c, err)
 		return
 	}

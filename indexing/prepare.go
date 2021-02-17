@@ -48,7 +48,7 @@ func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block) (*Data, error
 		block.SnarkJobsFees = block.SnarkJobsFees.Add(job.Fee)
 	}
 
-	// // Prepare accounts
+	// Prepare accounts
 	accounts, err := mapper.Accounts(graphBlock)
 	if err != nil {
 		return nil, err

@@ -26,15 +26,6 @@ func (s ValidatorsStore) FindAll() (result []model.Validator, err error) {
 	return
 }
 
-// CreateIfNotExists creates the validator if it does not exist
-func (s ValidatorsStore) CreateIfNotExists(validator *model.Validator) error {
-	_, err := s.FindByPublicKey(validator.PublicKey)
-	if isNotFound(err) {
-		return s.Create(validator)
-	}
-	return nil
-}
-
 // FindByPublicKey returns a validator record associated with a key
 func (s ValidatorsStore) FindByPublicKey(key string) (*model.Validator, error) {
 	result := &model.Validator{}
