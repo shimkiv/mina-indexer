@@ -57,6 +57,7 @@ func requestLoggerMiddleware(logger *logrus.Logger) gin.HandlerFunc {
 		msg := ""
 
 		field := logger.WithFields(logrus.Fields{
+			"id":       c.GetHeader("x-request-id"),
 			"method":   c.Request.Method,
 			"client":   c.ClientIP(),
 			"status":   status,

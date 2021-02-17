@@ -20,15 +20,17 @@ type Server struct {
 
 	graphClient *graph.Client
 	db          *store.Store
+	log         *logrus.Logger
 }
 
 // New returns a new server instance
-func New(db *store.Store, cfg *config.Config) *Server {
+func New(db *store.Store, cfg *config.Config, logger *logrus.Logger) *Server {
 	s := &Server{
 		Engine: gin.New(),
 
 		db:          db,
 		graphClient: graph.NewDefaultClient(cfg.MinaEndpoint),
+		log:         logger,
 	}
 
 	s.initMiddleware(cfg)
@@ -70,21 +72,26 @@ func (s *Server) initMiddleware(cfg *config.Config) {
 
 // GetHealth renders the server health status
 func (s Server) GetHealth(c *gin.Context) {
+	resp := HealthResponse{Healthy: true}
+
 	if err := s.db.Test(); err != nil {
-		jsonError(c, 500, "unhealthy")
+		s.log.WithError(err).Error("database check error")
+		resp.Healthy = false
+		jsonResponse(c, 500, resp)
 		return
 	}
-	jsonOk(c, gin.H{"healthy": true})
+
+	jsonOk(c, resp)
 }
 
 // GetStatus returns the status of the service
 func (s Server) GetStatus(c *gin.Context) {
-	data := gin.H{
-		"app_name":    config.AppName,
-		"app_version": config.AppVersion,
-		"git_commit":  config.GitCommit,
-		"go_version":  config.GoVersion,
-		"sync_status": "stale",
+	resp := StatusResponse{
+		AppName:    config.AppName,
+		AppVersion: config.AppVersion,
+		GitCommit:  config.GitCommit,
+		GoVersion:  config.GoVersion,
+		SyncStatus: "stale",
 	}
 
 	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(time.Second*5))
@@ -92,25 +99,25 @@ func (s Server) GetStatus(c *gin.Context) {
 
 	daemonStatus, err := s.graphClient.GetDaemonStatus(ctx)
 	if err == nil {
-		data["node_version"] = daemonStatus.CommitID
-		data["node_status"] = daemonStatus.SyncStatus
+		resp.NodeVersion = daemonStatus.CommitID
+		resp.NodeStatus = string(daemonStatus.SyncStatus)
 	} else {
 		logrus.WithError(err).Error("node status fetch failed")
-		data["node_status_error"] = true
+		resp.NodeError = true
 	}
 
 	if block, err := s.db.Blocks.Recent(); err == nil {
-		data["last_block_time"] = block.Time
-		data["last_block_height"] = block.Height
+		resp.LastBlockTime = block.Time
+		resp.LastBlockHeight = block.Height
 
 		if time.Since(block.Time).Minutes() <= 30 {
-			data["sync_status"] = "current"
+			resp.SyncStatus = "current"
 		}
 	} else {
 		logrus.WithError(err).Error("recent block fetch failed")
 	}
 
-	jsonOk(c, data)
+	jsonOk(c, resp)
 }
 
 // GetCurrentHeight returns the current blockchain height
@@ -120,9 +127,9 @@ func (s *Server) GetCurrentHeight(c *gin.Context) {
 		return
 	}
 
-	jsonOk(c, gin.H{
-		"height": block.Height,
-		"time":   block.Time,
+	jsonOk(c, HeightResponse{
+		Height: block.Height,
+		Time:   block.Time,
 	})
 }
 
@@ -173,11 +180,11 @@ func (s *Server) GetBlock(c *gin.Context) {
 		return
 	}
 
-	jsonOk(c, gin.H{
-		"block":        block,
-		"creator":      creator,
-		"transactions": transactions,
-		"snark_jobs":   jobs,
+	jsonOk(c, BlockResponse{
+		Block:        block,
+		Creator:      creator,
+		Transactions: transactions,
+		SnarkJobs:    jobs,
 	})
 }
 
@@ -307,11 +314,11 @@ func (s *Server) GetValidator(c *gin.Context) {
 		return
 	}
 
-	jsonOk(c, gin.H{
-		"validator":   validator,
-		"account":     account,
-		"delegations": delegations,
-		"stats":       stats,
+	jsonOk(c, ValidatorResponse{
+		Validator:   validator,
+		Account:     account,
+		Delegations: delegations,
+		Stats:       stats,
 	})
 }
 
