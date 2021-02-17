@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -102,11 +103,14 @@ func initLog(cfg *config.Config) error {
 	switch cfg.LogFormat {
 	case "text":
 		log.SetFormatter(&log.TextFormatter{
-			DisableColors: true,
-			FullTimestamp: true,
+			DisableColors:   true,
+			FullTimestamp:   true,
+			TimestampFormat: time.RFC3339,
 		})
 	case "json":
-		log.SetFormatter(&log.JSONFormatter{})
+		log.SetFormatter(&log.JSONFormatter{
+			TimestampFormat: time.RFC3339,
+		})
 	default:
 		return errors.New("invalid log format: " + cfg.LogFormat)
 	}

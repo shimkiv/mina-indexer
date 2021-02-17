@@ -54,13 +54,14 @@ func requestLoggerMiddleware(logger *logrus.Logger) gin.HandlerFunc {
 
 		status := c.Writer.Status()
 		duration := time.Since(start)
-		msg := c.Request.URL.Path
+		msg := ""
 
 		field := logger.WithFields(logrus.Fields{
 			"method":   c.Request.Method,
 			"client":   c.ClientIP(),
 			"status":   status,
 			"duration": duration.Milliseconds(),
+			"path":     c.Request.URL.Path,
 			"params":   c.Request.URL.Query(),
 		})
 
