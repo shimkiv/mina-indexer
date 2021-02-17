@@ -40,6 +40,10 @@ func serverError(c *gin.Context, err interface{}) {
 	jsonError(c, http.StatusInternalServerError, err)
 }
 
+func jsonResponse(c *gin.Context, code int, data interface{}) {
+	c.JSON(code, data)
+}
+
 // jsonOk renders a successful response
 func jsonOk(c *gin.Context, data interface{}) {
 	switch data.(type) {
@@ -60,7 +64,8 @@ func shouldReturn(c *gin.Context, err error) bool {
 	if err == store.ErrNotFound {
 		notFound(c, err)
 	} else {
-		serverError(c, err)
+		c.Error(err)
+		serverError(c, "server error")
 	}
 
 	return true
