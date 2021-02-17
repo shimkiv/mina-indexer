@@ -102,7 +102,7 @@ func initLog(cfg *config.Config) error {
 	switch cfg.LogFormat {
 	case "text":
 		log.SetFormatter(&log.TextFormatter{
-			DisableColors: false,
+			DisableColors: true,
 			FullTimestamp: true,
 		})
 	case "json":
