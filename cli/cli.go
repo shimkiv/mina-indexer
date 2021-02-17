@@ -1,11 +1,13 @@
 package cli
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -34,7 +36,9 @@ func Run() {
 		terminate(err)
 	}
 
-	initLog(cfg)
+	if err := initLog(cfg); err != nil {
+		terminate(err)
+	}
 
 	config.InitRollbar(cfg)
 	defer config.TrackRecovery()
@@ -95,11 +99,21 @@ func initConfig(path string) (*config.Config, error) {
 	return cfg, nil
 }
 
-func initLog(cfg *config.Config) {
-	log.SetFormatter(&log.TextFormatter{
-		DisableColors: true,
-		FullTimestamp: true,
-	})
+func initLog(cfg *config.Config) error {
+	switch cfg.LogFormat {
+	case "text":
+		log.SetFormatter(&log.TextFormatter{
+			DisableColors:   true,
+			FullTimestamp:   true,
+			TimestampFormat: time.RFC3339,
+		})
+	case "json":
+		log.SetFormatter(&log.JSONFormatter{
+			TimestampFormat: time.RFC3339,
+		})
+	default:
+		return errors.New("invalid log format: " + cfg.LogFormat)
+	}
 
 	switch cfg.LogLevel {
 	case "debug":
@@ -110,7 +124,11 @@ func initLog(cfg *config.Config) {
 		log.SetLevel(log.WarnLevel)
 	case "error":
 		log.SetLevel(log.ErrorLevel)
+	default:
+		return errors.New("invalid log level: " + cfg.LogLevel)
 	}
+
+	return nil
 }
 
 func initStore(cfg *config.Config) (*store.Store, error) {

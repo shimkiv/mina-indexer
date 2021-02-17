@@ -42,6 +42,7 @@ type Config struct {
 	DatabaseURL      string `json:"database_url" envconfig:"DATABASE_URL"`
 	DumpDir          string `json:"dump_dir" envconfig:"DUMP_DIR"`
 	LogLevel         string `json:"log_level" envconfig:"LOG_LEVEL" default:"info"`
+	LogFormat        string `json:"log_format" envconfig:"LOG_FORMAT" default:"text"`
 	RollbarToken     string `json:"rollbar_token" envconfig:"ROLLBAR_TOKEN"`
 	RollbarNamespace string `json:"rollbar_namespace" envconfig:"ROLLBAR_NAMESPACE"`
 
