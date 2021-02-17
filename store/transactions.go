@@ -15,15 +15,6 @@ type TransactionsStore struct {
 	baseStore
 }
 
-// CreateIfNotExists creates the transaction if it does not exist
-func (s TransactionsStore) CreateIfNotExists(t *model.Transaction) error {
-	_, err := s.FindByHash(t.Hash)
-	if isNotFound(err) {
-		return s.Create(t)
-	}
-	return nil
-}
-
 // FindBy returns transactions by a given key and value
 func (s TransactionsStore) FindBy(key string, value interface{}) (*model.Transaction, error) {
 	result := &model.Transaction{}

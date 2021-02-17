@@ -13,24 +13,6 @@ type BlocksStore struct {
 	baseStore
 }
 
-// BlockSearch contains a block search params
-type BlockSearch struct {
-	Creator string `form:"creator"`
-
-	Order       string `form:"order"`
-	OrderColumn string `form:"order_column"`
-	Limit       int    `form:"limit"`
-}
-
-// CreateIfNotExists creates the block if it does not exist
-func (s BlocksStore) CreateIfNotExists(block *model.Block) error {
-	_, err := s.FindByHash(block.Hash)
-	if isNotFound(err) {
-		return s.Create(block)
-	}
-	return nil
-}
-
 // FindBy returns a block for a matching attribute
 func (s BlocksStore) FindBy(key string, value interface{}) (*model.Block, error) {
 	result := &model.Block{}
@@ -61,32 +43,26 @@ func (s BlocksStore) Recent() (*model.Block, error) {
 }
 
 // Search returns blocks that match search filters
-func (s BlocksStore) Search(search BlockSearch) ([]model.Block, error) {
-	if search.Limit <= 0 {
-		search.Limit = 25
-	}
-	if search.Limit > 1000 {
-		search.Limit = 1000
-	}
-	if search.OrderColumn == "" {
-		search.OrderColumn = "id"
-	}
-	if search.Order == "" {
-		search.Order = "DESC"
-	}
-
+func (s BlocksStore) Search(search *BlockSearch) ([]model.Block, error) {
 	result := []model.Block{}
 
 	scope := s.db.
-		Order(fmt.Sprintf("%s %s", search.OrderColumn, search.Order)).
+		Order(fmt.Sprintf("%s %s", search.Sort, search.Order)).
 		Limit(search.Limit)
+
+	if search.MinHeight > 0 {
+		scope = scope.Where("height >= ?", search.MinHeight)
+	}
+
+	if search.MaxHeight > 0 {
+		scope = scope.Where("height <= ?", search.MaxHeight)
+	}
 
 	if search.Creator != "" {
 		scope = scope.Where("creator = ?", search.Creator)
 	}
 
-	err := scope.Find(&result).Error
-	return result, err
+	return result, scope.Find(&result).Error
 }
 
 // AvgTimes returns recent blocks averages
