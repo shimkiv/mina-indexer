@@ -45,6 +45,7 @@ Example:
 | `SYNC_INTERVAL`    | Data sync interval      | `10s`
 | `CLEANUP_INTERVAL` | Data cleanup interval   | `10min`
 | `LOG_LEVEL`        | Application log level   | `info`
+| `LOG_FORMAT`       | Application log format  | `text`. Available: `text`, `json`
 
 ## Running Application
 
