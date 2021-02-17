@@ -54,17 +54,18 @@ func requestLoggerMiddleware(logger *logrus.Logger) gin.HandlerFunc {
 
 		status := c.Writer.Status()
 		duration := time.Since(start)
-		msg := "request"
+		msg := c.Request.URL.Path
 
-		field := logger.
-			WithField("method", c.Request.Method).
-			WithField("client", c.ClientIP()).
-			WithField("status", status).
-			WithField("duration", duration.Milliseconds()).
-			WithField("path", c.Request.URL.Path)
+		field := logger.WithFields(logrus.Fields{
+			"method":   c.Request.Method,
+			"client":   c.ClientIP(),
+			"status":   status,
+			"duration": duration.Milliseconds(),
+			"params":   c.Request.URL.Query(),
+		})
 
 		if err := c.Errors.Last(); err != nil {
-			msg = err.Error()
+			field = field.WithError(err)
 		}
 
 		switch {
