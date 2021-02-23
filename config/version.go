@@ -4,7 +4,7 @@ import "fmt"
 
 var (
 	AppName    = "mina-indexer"
-	AppVersion = "0.3.0.beta1"
+	AppVersion = "0.3.0.beta2"
 	GitCommit  = "-"
 	GoVersion  = "-"
 )
