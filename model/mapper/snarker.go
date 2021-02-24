@@ -12,7 +12,7 @@ func Snarker(block *graph.Block, job *graph.CompletedWork) (*model.Snarker, erro
 	time := BlockTime(block)
 
 	snarker := &model.Snarker{
-		PublicKey:   job.Prover,
+		Account:     job.Prover,
 		Fee:         util.MustUInt64(job.Fee),
 		JobsCount:   1,
 		WorksCount:  len(job.WorkIds),

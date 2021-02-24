@@ -7,7 +7,7 @@ import (
 
 type Snarker struct {
 	ID          int       `json:"-"`
-	PublicKey   string    `json:"public_key"`
+	Account     string    `json:"public_key"`
 	Fee         uint64    `json:"fee"`
 	JobsCount   int       `json:"jobs_count"`
 	WorksCount  int       `json:"works_count"`
@@ -20,7 +20,7 @@ type Snarker struct {
 }
 
 func (s Snarker) Validate() error {
-	if s.PublicKey == "" {
+	if s.Account == "" {
 		return errors.New("public key is required")
 	}
 	return nil

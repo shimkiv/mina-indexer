@@ -29,7 +29,7 @@ func (s SnarkersStore) Import(records []model.Snarker) error {
 		r := records[idx]
 
 		return bulk.Row{
-			r.PublicKey,
+			r.Account,
 			r.Fee,
 			r.JobsCount,
 			r.WorksCount,
