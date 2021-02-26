@@ -26,6 +26,7 @@ type TransactionSearch struct {
 	Memo      string `form:"memo"`
 	StartTime string `form:"start_time"`
 	EndTime   string `form:"end_time"`
+	Status    string `form:"status"`
 	Limit     uint   `form:"limit"`
 
 	startTime *time.Time
@@ -76,6 +77,10 @@ func (s *TransactionSearch) Validate() error {
 
 	if s.startTime != nil && s.endTime != nil && s.endTime.Before(*s.startTime) {
 		return errors.New("end time must be greater than start time")
+	}
+
+	if s.Status != "" && !(s.Status == "applied" || s.Status == "failed") {
+		return errors.New("invalid transaction status")
 	}
 
 	if s.Limit == 0 {

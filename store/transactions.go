@@ -76,6 +76,9 @@ func (s TransactionsStore) Search(search TransactionSearch) ([]model.Transaction
 	if len(search.Memo) > 2 {
 		scope = scope.Where("memo ILIKE ?", fmt.Sprintf("%%%s%%", search.Memo))
 	}
+	if search.Status != "" {
+		scope = scope.Where("status = ?", search.Status)
+	}
 	if search.startTime != nil {
 		scope = scope.Where("time >= ?", search.startTime)
 	}
