@@ -9,7 +9,7 @@ import (
 
 // Validator stores the block producer information
 type Validator struct {
-	ID                int          `json:"id"`
+	ID                int          `json:"-"`
 	IdentityName      *string      `json:"identity_name"`
 	PublicKey         string       `json:"public_key"`
 	BlocksCreated     int          `json:"blocks_created"`
@@ -21,8 +21,8 @@ type Validator struct {
 	StartTime         time.Time    `json:"start_time"`
 	LastHeight        uint64       `json:"last_height"`
 	LastTime          time.Time    `json:"last_time"`
-	CreatedAt         time.Time    `json:"created_at"`
-	UpdatedAt         time.Time    `json:"updated_at"`
+	CreatedAt         time.Time    `json:"-"`
+	UpdatedAt         time.Time    `json:"-"`
 }
 
 type ValidatorStat struct {
