@@ -13,7 +13,8 @@ SELECT
   fee_transfers_count,
   fee_transfers_amount::TEXT fee_transfers_amount,
   coinbase_count,
-  coinbase_amount::TEXT coinbase_amount
+  coinbase_amount::TEXT coinbase_amount,
+  total_currency::TEXT total_currency
 FROM
   chain_stats
 WHERE
