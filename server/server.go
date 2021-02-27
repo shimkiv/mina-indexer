@@ -49,6 +49,7 @@ func (s *Server) initRoutes() {
 	s.GET("/blocks/:id/transactions", s.GetBlockTransactions)
 	s.GET("/block_times", s.GetBlockTimes)
 	s.GET("/block_stats", timeBucketMiddleware(), s.GetBlockStats)
+	s.GET("/chain_stats", timeBucketMiddleware(), s.GetBlockStats)
 	s.GET("/validators", s.GetValidators)
 	s.GET("/validators/:id", s.GetValidator)
 	s.GET("/snarkers/", s.GetSnarkers)
