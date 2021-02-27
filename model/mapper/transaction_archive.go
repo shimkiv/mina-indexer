@@ -6,6 +6,7 @@ import (
 	"github.com/figment-networks/mina-indexer/client/archive"
 	"github.com/figment-networks/mina-indexer/model"
 	"github.com/figment-networks/mina-indexer/model/types"
+	"github.com/figment-networks/mina-indexer/model/util"
 )
 
 func TransactionsFromArchive(block *archive.Block) ([]model.Transaction, error) {
@@ -31,6 +32,11 @@ func TransactionsFromArchive(block *archive.Block) ([]model.Transaction, error) 
 	}
 
 	for _, cmd := range block.UserCommands {
+		var memoText *string
+		if text := util.ParseMemoText(cmd.Memo); len(text) > 0 {
+			memoText = &text
+		}
+
 		result[idx] = model.Transaction{
 			Type:           cmd.Type,
 			Hash:           cmd.Hash,
@@ -45,7 +51,7 @@ func TransactionsFromArchive(block *archive.Block) ([]model.Transaction, error) 
 			FailureReason:  cmd.FailureReason,
 			SequenceNumber: &cmd.SequenceNo,
 			Nonce:          &cmd.Nonce,
-			Memo:           &cmd.Memo,
+			Memo:           memoText,
 		}
 		idx++
 	}

@@ -155,9 +155,20 @@ func (w SyncWorker) processStakingLedger() error {
 		return err
 	}
 
+	totalStake := map[string]types.Amount{}
+
 	for _, item := range ledger {
-		amount := types.NewFloatAmount(item.Balance)
-		if err := w.db.Validators.UpdateStake(item.Pk, amount); err != nil {
+		balance := types.NewFloatAmount(item.Balance)
+
+		if _, ok := totalStake[item.Delegate]; !ok {
+			totalStake[item.Delegate] = types.NewAmount("0")
+		} else {
+			totalStake[item.Delegate] = totalStake[item.Delegate].Add(balance)
+		}
+	}
+
+	for pk, stake := range totalStake {
+		if err := w.db.Validators.UpdateStake(pk, stake); err != nil {
 			return err
 		}
 	}

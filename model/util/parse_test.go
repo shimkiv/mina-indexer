@@ -14,6 +14,7 @@ func TestParseMemoText(t *testing.T) {
 		"E4YM2vTHhWEg66xpj52JErHUBU4pZ1yageL4TVDDpTTSsv8mK6YaH": "",
 		"E4YXJXbj1YBnwfCF3LDb8muzU7u8VWD32yHc7cAnRgduLi2pUsx8U": "Hello",
 		"E4YiyKK5dkD5mj4A6FnoZ77929s6vFCteoXnxSHbEMHUPpnzEs9kH": "I am a memo",
+		"E4YoBsLAeXCBHfU1puDrjpVsNyGM9sTj5HpZoiZpddaboj453bBMA": "timsmith#2774",
 	}
 	for given, expected := range examples {
 		assert.Equal(t, expected, ParseMemoText(given))
