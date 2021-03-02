@@ -52,6 +52,7 @@ func (s *Server) initRoutes() {
 	s.GET("/chain_stats", timeBucketMiddleware(), s.GetBlockStats)
 	s.GET("/validators", s.GetValidators)
 	s.GET("/validators/:id", s.GetValidator)
+	s.GET("/validators/:id/stats", timeBucketMiddleware(), s.GetValidatorStats)
 	s.GET("/snarkers/", s.GetSnarkers)
 	s.GET("/transactions", s.GetTransactions)
 	s.GET("/transactions/:id", s.GetTransaction)
@@ -310,7 +311,12 @@ func (s *Server) GetValidator(c *gin.Context) {
 		return
 	}
 
-	stats, err := s.db.Stats.ValidatorStats(validator, 90, store.BucketDay)
+	stats30d, err := s.db.Stats.ValidatorStats(validator, 30, store.BucketDay)
+	if shouldReturn(c, err) {
+		return
+	}
+
+	stats24h, err := s.db.Stats.ValidatorStats(validator, 48, store.BucketHour)
 	if shouldReturn(c, err) {
 		return
 	}
@@ -319,8 +325,27 @@ func (s *Server) GetValidator(c *gin.Context) {
 		Validator:   validator,
 		Account:     account,
 		Delegations: delegations,
-		Stats:       stats,
+		Stats:       stats30d,
+		StatsHourly: stats24h,
+		StatsDaily:  stats30d,
 	})
+}
+
+// GetValidatorStats renders validator stats for a given time bucket
+func (s *Server) GetValidatorStats(c *gin.Context) {
+	tb := c.MustGet("timebucket").(timeBucket)
+
+	validator, err := s.db.Validators.FindByPublicKey(c.Param("id"))
+	if shouldReturn(c, err) {
+		return
+	}
+
+	stats, err := s.db.Stats.ValidatorStats(validator, tb.Period, tb.Interval)
+	if shouldReturn(c, err) {
+		return
+	}
+
+	jsonOk(c, stats)
 }
 
 // GetSnarkers renders all existing snarkers
