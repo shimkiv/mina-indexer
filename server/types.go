@@ -40,4 +40,6 @@ type ValidatorResponse struct {
 	Account     *model.Account        `json:"account"`
 	Delegations []model.Account       `json:"delegations"`
 	Stats       []model.ValidatorStat `json:"stats"`
+	StatsHourly []model.ValidatorStat `json:"stats_hourly"`
+	StatsDaily  []model.ValidatorStat `json:"stats_daily"`
 }
