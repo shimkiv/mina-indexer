@@ -7,6 +7,14 @@ import (
 
 // Finalize generates summary records
 func Finalize(db *store.Store, data *Data) error {
+	if err := db.Validators.UpdateStaking(); err != nil {
+		return err
+	}
+
+	if err := db.Accounts.UpdateStaking(); err != nil {
+		return err
+	}
+
 	ts := data.Block.Time
 	buckets := []string{store.BucketHour, store.BucketDay}
 

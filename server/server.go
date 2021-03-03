@@ -53,10 +53,12 @@ func (s *Server) initRoutes() {
 	s.GET("/validators", s.GetValidators)
 	s.GET("/validators/:id", s.GetValidator)
 	s.GET("/validators/:id/stats", timeBucketMiddleware(), s.GetValidatorStats)
+	s.GET("/delegations", s.GetDelegations)
 	s.GET("/snarkers/", s.GetSnarkers)
 	s.GET("/transactions", s.GetTransactions)
 	s.GET("/transactions/:id", s.GetTransaction)
 	s.GET("/accounts/:id", s.GetAccount)
+	s.GET("/ledger", s.GetLedger)
 }
 
 func (s *Server) initMiddleware(cfg *config.Config) {
@@ -306,8 +308,10 @@ func (s *Server) GetValidator(c *gin.Context) {
 		return
 	}
 
-	delegations, err := s.db.Accounts.AllByDelegator(validator.PublicKey)
-	if shouldReturn(c, err) {
+	delegations, err := s.db.Staking.FindDelegations(store.FindDelegationsParams{
+		Delegate: validator.PublicKey,
+	})
+	if err != store.ErrNotFound && shouldReturn(c, err) {
 		return
 	}
 
@@ -346,6 +350,19 @@ func (s *Server) GetValidatorStats(c *gin.Context) {
 	}
 
 	jsonOk(c, stats)
+}
+
+// GetDelegations rendes all existing delegations
+func (s *Server) GetDelegations(c *gin.Context) {
+	delegations, err := s.db.Staking.FindDelegations(store.FindDelegationsParams{
+		PublicKey: c.Query("public_key"),
+		Delegate:  c.Query("delegate"),
+	})
+	if err != store.ErrNotFound && shouldReturn(c, err) {
+		return
+	}
+
+	jsonOk(c, delegations)
 }
 
 // GetSnarkers renders all existing snarkers
@@ -396,4 +413,22 @@ func (s *Server) GetAccount(c *gin.Context) {
 	}
 
 	jsonOk(c, acc)
+}
+
+// GetLedger records the current epoch ledger records
+func (s *Server) GetLedger(c *gin.Context) {
+	ledger, err := s.db.Staking.LastLedger()
+	if shouldReturn(c, err) {
+		return
+	}
+
+	records, err := s.db.Staking.LedgerRecords(ledger.ID)
+	if shouldReturn(c, err) {
+		return
+	}
+
+	jsonOk(c, LedgerResponse{
+		Ledger:  ledger,
+		Records: records,
+	})
 }

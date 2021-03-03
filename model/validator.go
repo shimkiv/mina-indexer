@@ -30,7 +30,7 @@ type ValidatorStat struct {
 	Bucket              string `json:"bucket"`
 	BlocksProducedCount int    `json:"blocks_produced_count"`
 	DelegationsCount    int    `json:"delegations_count"`
-	DelegationsAmount   int64  `json:"delegations_amount"`
+	DelegationsAmount   string `json:"delegations_amount"`
 }
 
 // Validate returns an error if validator is invalid

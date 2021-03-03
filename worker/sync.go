@@ -3,6 +3,7 @@ package worker
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -11,7 +12,7 @@ import (
 	"github.com/figment-networks/mina-indexer/client/graph"
 	"github.com/figment-networks/mina-indexer/config"
 	"github.com/figment-networks/mina-indexer/indexing"
-	"github.com/figment-networks/mina-indexer/model/types"
+	"github.com/figment-networks/mina-indexer/model/mapper"
 	"github.com/figment-networks/mina-indexer/store"
 )
 
@@ -22,7 +23,12 @@ type SyncWorker struct {
 	archiveClient *archive.Client
 }
 
-func NewSyncWorker(cfg *config.Config, db *store.Store, graphClient *graph.Client, archiveClient *archive.Client) SyncWorker {
+func NewSyncWorker(
+	cfg *config.Config,
+	db *store.Store,
+	graphClient *graph.Client,
+	archiveClient *archive.Client,
+) SyncWorker {
 	return SyncWorker{
 		cfg:           cfg,
 		db:            db,
@@ -33,6 +39,12 @@ func NewSyncWorker(cfg *config.Config, db *store.Store, graphClient *graph.Clien
 
 func (w SyncWorker) Run() (int, error) {
 	status, err := w.checkNodeStatus()
+	if err != nil {
+		return 0, err
+	}
+
+	log.Debug("processing delegations")
+	_, err = w.processStakingLedger()
 	if err != nil {
 		return 0, err
 	}
@@ -84,9 +96,7 @@ func (w SyncWorker) Run() (int, error) {
 		log.WithField("lag", lag).Info("sync finished")
 	}
 
-	w.processStakingLedger()
-
-	return lag, nil
+	return lag, err
 }
 
 func (w SyncWorker) processBlock(hash string) error {
@@ -149,29 +159,46 @@ func (w SyncWorker) checkNodeStatus() (*graph.DaemonStatus, error) {
 	return status, nil
 }
 
-func (w SyncWorker) processStakingLedger() error {
+func (w SyncWorker) processStakingLedger() (*mapper.LedgerData, error) {
+	tip, err := w.graphClient.ConsensusTip()
+	if err != nil {
+		return nil, err
+	}
+
+	var epoch int
+	fmt.Sscanf(tip.ProtocolState.ConsensusState.Epoch, "%d", &epoch)
+
+	// Find ledger for current epoch. Ledger only changes once per epoch.
+	currentLedger, err := w.db.Staking.FindLedger(epoch)
+	if err != nil && err != store.ErrNotFound {
+		return nil, err
+	}
+
+	// We already have current epoch ledger, no need to import it.
+	if currentLedger != nil && currentLedger.EntriesCount > 0 {
+		return nil, nil
+	}
+
 	ledger, err := w.archiveClient.StakingLedger("current")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	totalStake := map[string]types.Amount{}
-
-	for _, item := range ledger {
-		balance := types.NewFloatAmount(item.Balance)
-
-		if _, ok := totalStake[item.Delegate]; !ok {
-			totalStake[item.Delegate] = types.NewAmount("0")
-		} else {
-			totalStake[item.Delegate] = totalStake[item.Delegate].Add(balance)
-		}
+	ledgerData, err := mapper.Ledger(tip, ledger)
+	if err != nil {
+		return nil, err
 	}
 
-	for pk, stake := range totalStake {
-		if err := w.db.Validators.UpdateStake(pk, stake); err != nil {
-			return err
-		}
+	err = w.db.Staking.CreateLedger(ledgerData.Ledger)
+	if err != nil {
+		return nil, err
+	}
+	ledgerData.UpdateLedgerID()
+
+	err = w.db.Staking.CreateLedgerEntries(ledgerData.Entries)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	return ledgerData, nil
 }

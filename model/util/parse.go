@@ -29,6 +29,11 @@ func ParseTime(input string) (*time.Time, error) {
 	return &t, nil
 }
 
+func ParseInt(input string) (int, error) {
+	val, err := ParseInt64(input)
+	return int(val), err
+}
+
 // MustInt64 returns an Int64 value without an error
 func MustInt64(input string) int64 {
 	v, err := ParseInt64(input)

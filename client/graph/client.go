@@ -243,3 +243,15 @@ func (c Client) GetAccount(publicKey string) (*Account, error) {
 	}
 	return &result.Account, nil
 }
+
+func (c Client) ConsensusTip() (*Block, error) {
+	var result struct {
+		Blocks []Block `json:"bestChain"`
+	}
+
+	if err := c.Query(queryBestTip, &result); err != nil {
+		return nil, err
+	}
+
+	return &result.Blocks[0], nil
+}

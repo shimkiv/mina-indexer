@@ -38,8 +38,13 @@ type BlockResponse struct {
 type ValidatorResponse struct {
 	Validator   *model.Validator      `json:"validator"`
 	Account     *model.Account        `json:"account"`
-	Delegations []model.Account       `json:"delegations"`
+	Delegations []model.Delegation    `json:"delegations"`
 	Stats       []model.ValidatorStat `json:"stats"`
 	StatsHourly []model.ValidatorStat `json:"stats_hourly"`
 	StatsDaily  []model.ValidatorStat `json:"stats_daily"`
+}
+
+type LedgerResponse struct {
+	Ledger  *model.Ledger       `json:"ledger"`
+	Records []model.LedgerEntry `json:"entries"`
 }

@@ -72,7 +72,7 @@ type StakingInfo struct {
 	Pk       string `json:"pk"`
 	Balance  string `json:"balance"`
 	Delegate string `json:"delegate"`
-	Timing   struct {
+	Timing   *struct {
 		InitialMinimumBalance string `json:"initial_minimum_balance"`
 		CliffTime             string `json:"cliff_time"`
 		CliffAmount           string `json:"cliff_amount"`
@@ -84,7 +84,7 @@ type StakingInfo struct {
 	} `json:"token_permissions"`
 	ReceiptChainHash string `json:"receipt_chain_hash"`
 	VotingFor        string `json:"voting_for"`
-	Permissions      struct {
+	Permissions      *struct {
 		Stake              bool   `json:"stake"`
 		EditState          string `json:"edit_state"`
 		Send               string `json:"send"`

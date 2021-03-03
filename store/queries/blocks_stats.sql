@@ -14,7 +14,10 @@ SELECT
   fee_transfers_amount::TEXT fee_transfers_amount,
   coinbase_count,
   coinbase_amount::TEXT coinbase_amount,
-  total_currency::TEXT total_currency
+  total_currency::TEXT total_currency,
+  staked_amount::TEXT staked_amount,
+  delegations_count,
+  delegations_amount::TEXT delegations_amount
 FROM
   chain_stats
 WHERE

@@ -72,6 +72,10 @@ func (s AccountsStore) All() ([]model.Account, error) {
 	return result, checkErr(err)
 }
 
+func (s AccountsStore) UpdateStaking() error {
+	return s.db.Exec(queries.AccountsUpdateStaking).Error
+}
+
 func (s AccountsStore) Import(records []model.Account) error {
 	if len(records) == 0 {
 		return nil
