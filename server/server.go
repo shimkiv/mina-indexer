@@ -54,7 +54,7 @@ func (s *Server) initRoutes() {
 	s.GET("/validators/:id", s.GetValidator)
 	s.GET("/validators/:id/stats", timeBucketMiddleware(), s.GetValidatorStats)
 	s.GET("/delegations", s.GetDelegations)
-	s.GET("/snarkers/", s.GetSnarkers)
+	s.GET("/snarkers", s.GetSnarkers)
 	s.GET("/transactions", s.GetTransactions)
 	s.GET("/transactions/:id", s.GetTransaction)
 	s.GET("/accounts/:id", s.GetAccount)
