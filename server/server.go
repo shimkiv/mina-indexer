@@ -307,6 +307,9 @@ func (s *Server) GetValidator(c *gin.Context) {
 	if shouldReturn(c, err) {
 		return
 	}
+	if err != store.ErrNotFound && shouldReturn(c, err) {
+		return
+	}
 
 	delegations, err := s.db.Staking.FindDelegations(store.FindDelegationsParams{
 		Delegate: validator.PublicKey,

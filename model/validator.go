@@ -9,20 +9,19 @@ import (
 
 // Validator stores the block producer information
 type Validator struct {
-	ID                int          `json:"-"`
-	IdentityName      *string      `json:"identity_name"`
-	PublicKey         string       `json:"public_key"`
-	BlocksCreated     int          `json:"blocks_created"`
-	BlocksProposed    int          `json:"blocks_proposed"`
-	DelegatedAccounts int          `json:"delegated_accounts"`
-	DelegatedBalance  types.Amount `json:"delegated_balance"`
-	Stake             types.Amount `json:"stake"`
-	StartHeight       uint64       `json:"start_height"`
-	StartTime         time.Time    `json:"start_time"`
-	LastHeight        uint64       `json:"last_height"`
-	LastTime          time.Time    `json:"last_time"`
-	CreatedAt         time.Time    `json:"-"`
-	UpdatedAt         time.Time    `json:"-"`
+	ID             int          `json:"-"`
+	IdentityName   *string      `json:"identity_name"`
+	PublicKey      string       `json:"public_key"`
+	BlocksCreated  int          `json:"blocks_created"`
+	BlocksProposed int          `json:"blocks_proposed"`
+	Stake          types.Amount `json:"stake"`
+	Delegations    int          `json:"delegations"`
+	StartHeight    uint64       `json:"start_height"`
+	StartTime      time.Time    `json:"start_time"`
+	LastHeight     uint64       `json:"last_height"`
+	LastTime       time.Time    `json:"last_time"`
+	CreatedAt      time.Time    `json:"-"`
+	UpdatedAt      time.Time    `json:"-"`
 }
 
 type ValidatorStat struct {
