@@ -7,11 +7,10 @@ CREATE TABLE IF NOT EXISTS validators (
   start_time         CHAIN_TIME,
   last_height        CHAIN_HEIGHT,
   last_time          CHAIN_TIME,
-  stake              CHAIN_CURRENCY,
   blocks_created     INTEGER NOT NULL DEFAULT 0,
   blocks_proposed    INTEGER NOT NULL DEFAULT 0,
-  delegated_accounts INTEGER NOT NULL DEFAULT 0,
-  delegated_balance  CHAIN_CURRENCY,
+  stake              CHAIN_CURRENCY DEFAULT 0,
+  delegations        INTEGER DEFAULT 0,
   created_at         CHAIN_TIME,
   updated_at         CHAIN_TIME,
 

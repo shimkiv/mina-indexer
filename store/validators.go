@@ -7,7 +7,6 @@ import (
 	"github.com/figment-networks/indexing-engine/store/jsonquery"
 
 	"github.com/figment-networks/mina-indexer/model"
-	"github.com/figment-networks/mina-indexer/model/types"
 	"github.com/figment-networks/mina-indexer/store/queries"
 )
 
@@ -33,9 +32,8 @@ func (s ValidatorsStore) FindByPublicKey(key string) (*model.Validator, error) {
 	return result, checkErr(err)
 }
 
-// UpdateStake updates the stake amount of the validator
-func (s ValidatorsStore) UpdateStake(key string, amount types.Amount) error {
-	return s.db.Exec("UPDATE validators SET stake = ? WHERE public_key = ?", amount, key).Error
+func (s ValidatorsStore) UpdateStaking() error {
+	return s.db.Exec(queries.ValidatorsUpdateStaking).Error
 }
 
 // UpdateIdentity updates the identity name of the validator
@@ -62,11 +60,8 @@ func (s ValidatorsStore) Import(records []model.Validator) error {
 			r.StartTime,
 			r.LastHeight,
 			r.LastTime,
-			r.Stake,
 			r.BlocksProposed,
 			r.BlocksCreated,
-			0,
-			0,
 			now,
 			now,
 		}

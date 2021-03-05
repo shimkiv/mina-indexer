@@ -48,7 +48,7 @@ func (s StatsStore) CreateValidatorStats(validator *model.Validator, bucket stri
 	}
 
 	return s.db.Exec(
-		s.prepareBucket(sqlValidatorStatsImport, bucket),
+		s.prepareBucket(queries.ValidatorsCreateStats, bucket),
 		start, end, validator.PublicKey,
 	).Error
 }
@@ -87,60 +87,4 @@ func (s StatsStore) prepareBucket(q, bucket string) string {
 
 var (
 	sqlChainStatsDelete = `DELETE FROM chain_stats WHERE time = ? AND BUCKET = '@bucket';`
-
-	sqlTransactionsStats = `
-		SELECT
-			time,
-			payments_count,
-			payments_amount,
-			delegations_count,
-			delegations_amount,
-			block_rewards_count,
-			block_rewards_amount,
-			fees_count,
-			fees_amount,
-			snark_fees_count,
-			snark_fees_amount
-		FROM
-			transactions_stats
-		WHERE
-			bucket = $2
-		ORDER BY
-			time DESC
-		LIMIT $1`
-
-	sqlValidatorStats = `
-		SELECT
-			blocks_produced_count,
-			delegations_count,
-			delegations_amount
-		FROM
-			validator_stats
-		WHERE
-			validator_id = $1
-			AND bucket = $2
-		LIMIT $3`
-
-	sqlValidatorStatsImport = `
-		INSERT INTO validator_stats (
-			time,
-			bucket,
-			validator_id,
-			blocks_produced_count,
-			delegations_count,
-			delegations_amount
-		)
-		VALUES (
-			DATE_TRUNC('@bucket', $1::timestamp),
-			'@bucket',
-			(SELECT id FROM validators WHERE public_key = $3 LIMIT 1),
-			(SELECT COUNT(1) FROM blocks WHERE time >= $1 AND time <= $2 AND creator = $3),
-			(SELECT COUNT(1) FROM accounts WHERE delegate = $3),
-			(SELECT COALESCE(SUM(balance::numeric), 0) FROM accounts WHERE delegate = $3)
-		)
-		ON CONFLICT (time, bucket, validator_id) DO UPDATE
-		SET
-			blocks_produced_count = excluded.blocks_produced_count,
-			delegations_count     = excluded.delegations_count,
-			delegations_amount    = excluded.delegations_amount`
 )

@@ -33,6 +33,24 @@ var (
 				stateHash
 				protocolState {
 					consensusState {
+						epoch
+						epochCount
+						slot
+						blockHeight
+					}
+				}
+			}
+		}`
+
+	queryBestTip = `
+		query {
+			bestChain(maxLength: 1) {
+				stateHash
+				protocolState {
+					consensusState {
+						epoch
+						epochCount
+						slot
 						blockHeight
 					}
 				}

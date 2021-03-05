@@ -18,6 +18,7 @@ func BlockFromArchive(input *archive.Block) (*model.Block, error) {
 		ParentHash:        input.ParentHash,
 		LedgerHash:        input.LedgerHash,
 		SnarkedLedgerHash: input.SnarkedLedgerHash,
+		Epoch:             int(input.GlobalSlot) / 7140,
 		Slot:              int(input.GlobalSlot),
 		TransactionsCount: len(input.UserCommands) + len(input.InternalCommands),
 	}

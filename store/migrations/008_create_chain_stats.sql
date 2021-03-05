@@ -22,6 +22,9 @@ CREATE TABLE chain_stats (
   fee_transfers_amount CHAIN_CURRENCY DEFAULT 0,
   coinbase_count       INTEGER DEFAULT 0,
   coinbase_amount      CHAIN_CURRENCY DEFAULT 0,
+  staked_amount        CHAIN_CURRENCY DEFAULT 0,
+  delegations_count    INTEGER DEFAULT 0,
+  delegations_amount   CHAIN_CURRENCY DEFAULT 0,
 
   PRIMARY KEY (time, bucket)
 );

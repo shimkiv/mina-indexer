@@ -20,6 +20,7 @@ type Store struct {
 	Jobs         JobsStore
 	Snarkers     SnarkersStore
 	Stats        StatsStore
+	Staking      StakingStore
 }
 
 // Test checks the connection status
@@ -59,6 +60,7 @@ func New(connStr string) (*Store, error) {
 		Snarkers:     NewSnarkersStore(conn),
 		Jobs:         NewJobsStore(conn),
 		Stats:        NewStatsStore(conn),
+		Staking:      NewStakingStore(conn),
 	}, nil
 }
 
@@ -88,4 +90,8 @@ func NewJobsStore(db *gorm.DB) JobsStore {
 
 func NewStatsStore(db *gorm.DB) StatsStore {
 	return StatsStore{baseStore{db: db}}
+}
+
+func NewStakingStore(db *gorm.DB) StakingStore {
+	return StakingStore{scoped(db, nil)}
 }

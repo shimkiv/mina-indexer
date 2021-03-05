@@ -1,3 +1,11 @@
+WITH current_ledger AS (
+  SELECT * FROM ledger_entries
+  WHERE ledger_id = (
+    SELECT id FROM ledgers
+    WHERE epoch = (SELECT MAX(epoch) FROM blocks WHERE time >= $1 AND time <= $2)
+    LIMIT 1
+  )
+)
 INSERT INTO chain_stats (
 	time,
 	bucket,
@@ -20,7 +28,10 @@ INSERT INTO chain_stats (
   fee_transfers_count,
   fee_transfers_amount,
   coinbase_count,
-  coinbase_amount
+  coinbase_amount,
+  staked_amount,
+  delegations_count,
+  delegations_amount
 )
 SELECT
 	DATE_TRUNC('@bucket', blocks.time),
@@ -30,8 +41,8 @@ SELECT
 	(SELECT COUNT(1) FROM blocks),
 	COUNT(DISTINCT(creator)),
 	(SELECT COUNT(1) FROM accounts),
-	COUNT(DISTINCT(epoch)),
-	COUNT(DISTINCT(slot)),
+	COUNT(DISTINCT(blocks.epoch)),
+	COUNT(DISTINCT(blocks.slot)),
 	(SELECT COUNT(1) FROM snarkers),
 	COALESCE(SUM(blocks.snark_jobs_count), 0),
   COALESCE(SUM(blocks.snark_jobs_fees), 0),
@@ -44,7 +55,10 @@ SELECT
   COUNT(transactions) FILTER (WHERE type = 'fee_transfer'),
 	COALESCE(SUM(transactions.amount) FILTER (WHERE type = 'fee_transfer'), 0),
   COUNT(transactions) FILTER (WHERE type = 'coinbase'),
-	COALESCE(SUM(transactions.amount) FILTER (WHERE type = 'coinbase'), 0)
+	COALESCE(SUM(transactions.amount) FILTER (WHERE type = 'coinbase'), 0),
+  COALESCE((SELECT SUM(balance) FROM current_ledger), 0),
+  COALESCE((SELECT COUNT(1) FROM current_ledger WHERE delegation IS TRUE), 0),
+  COALESCE((SELECT SUM(balance) FROM current_ledger WHERE delegation IS TRUE), 0)
 FROM
 	blocks
 LEFT JOIN transactions
