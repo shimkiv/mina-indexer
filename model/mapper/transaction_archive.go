@@ -18,7 +18,7 @@ func TransactionsFromArchive(block *archive.Block) ([]model.Transaction, error) 
 	for _, cmd := range block.InternalCommands {
 		result[idx] = model.Transaction{
 			Type:                    cmd.Type,
-			Hash:                    cmd.ID,
+			Hash:                    util.SHA1(cmd.ID),
 			BlockHash:               block.StateHash,
 			BlockHeight:             blockHeight,
 			Time:                    blockTime,

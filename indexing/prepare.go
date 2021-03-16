@@ -29,6 +29,7 @@ func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block) (*Data, error
 	if err != nil {
 		return nil, err
 	}
+	block.TransactionsCount = len(transactions)
 
 	// Prepare snarkers
 	snarkers, err := mapper.Snarkers(graphBlock)

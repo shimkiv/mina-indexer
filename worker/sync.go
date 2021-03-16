@@ -77,8 +77,14 @@ func (w SyncWorker) Run() (int, error) {
 		return 0, err
 	}
 
+	// Remove the last block from the response. Last block in the chain is not 100%
+	// canonical until we get the next block with the right parent hash.
+	if lastBlock != nil && len(blocks) > 0 {
+		blocks = blocks[0 : len(blocks)-1]
+	}
+
 	// Check if the only block we received is the most recent indexed one
-	if len(blocks) == 1 && lastBlock != nil && blocks[0].StateHash == lastBlock.Hash {
+	if len(blocks) == 0 || (len(blocks) == 1 && lastBlock != nil && blocks[0].StateHash == lastBlock.Hash) {
 		log.Info("no more blocks to process")
 		return 0, nil
 	}
