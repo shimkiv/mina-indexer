@@ -63,6 +63,7 @@ FROM
 	blocks
 LEFT JOIN transactions
   ON transactions.block_hash = blocks.hash
+  AND transactions.status = 'applied'
 WHERE
 	blocks.time >= $1 AND blocks.time <= $2
 GROUP BY

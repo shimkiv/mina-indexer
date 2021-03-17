@@ -8,6 +8,7 @@ WITH current_delegations AS (
       LIMIT 1
     )
     AND delegate = $3
+    AND delegation IS TRUE
 )
 INSERT INTO validator_stats (
 	time,

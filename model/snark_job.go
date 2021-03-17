@@ -9,7 +9,7 @@ import (
 
 // SnarkJob contains a completed SNARK job details
 type SnarkJob struct {
-	ID         int          `json:"id"`
+	ID         int          `json:"-"`
 	Height     uint64       `json:"height"`
 	Time       time.Time    `json:"time"`
 	Prover     string       `json:"prover"`

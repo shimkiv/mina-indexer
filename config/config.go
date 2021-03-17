@@ -36,7 +36,7 @@ type Config struct {
 	IdentityFile     string `json:"identity_file" envconfig:"IDENTITY_FILE"`
 	ServerAddr       string `json:"server_addr" envconfig:"SERVER_ADDR" default:"0.0.0.0"`
 	ServerPort       int    `json:"server_port" envconfig:"SERVER_PORT" default:"8080"`
-	SyncInterval     string `json:"sync_interval" envconfig:"SYNC_INTERVAL" default:"10s"`
+	SyncInterval     string `json:"sync_interval" envconfig:"SYNC_INTERVAL" default:"60s"`
 	CleanupInterval  string `json:"cleanup_interval" envconfig:"CLEANUP_INTERVAL" default:"10m"`
 	CleanupThreshold int    `json:"cleanup_threshold" envconfig:"CLEANUP_THRESHOLD" default:"1000"`
 	DatabaseURL      string `json:"database_url" envconfig:"DATABASE_URL"`
