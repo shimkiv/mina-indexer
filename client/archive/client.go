@@ -80,7 +80,9 @@ func (c Client) Block(hash string) (*Block, error) {
 
 // StakingLedger returns the staking ledger records
 func (c Client) StakingLedger(ledgerType string) ([]StakingInfo, error) {
-	resp, err := c.client.Get(c.endpoint + "/staking_ledger?=type" + ledgerType)
+	path := fmt.Sprintf("%s/staking_ledger?type=%s", c.endpoint, ledgerType)
+
+	resp, err := c.client.Get(path)
 	if err != nil {
 		return nil, err
 	}

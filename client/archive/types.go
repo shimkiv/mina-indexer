@@ -1,5 +1,10 @@
 package archive
 
+const (
+	LedgerTypeCurrent = "current"
+	LedgerTypeStaged  = "staged"
+)
+
 type BlocksRequest struct {
 	Canonical   bool
 	StartHeight uint

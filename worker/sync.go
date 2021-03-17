@@ -185,7 +185,7 @@ func (w SyncWorker) processStakingLedger() (*mapper.LedgerData, error) {
 		return nil, nil
 	}
 
-	ledger, err := w.archiveClient.StakingLedger("current")
+	ledger, err := w.archiveClient.StakingLedger(archive.LedgerTypeCurrent)
 	if err != nil {
 		return nil, err
 	}
