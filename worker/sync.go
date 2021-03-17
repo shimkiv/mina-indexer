@@ -12,6 +12,7 @@ import (
 	"github.com/figment-networks/mina-indexer/client/graph"
 	"github.com/figment-networks/mina-indexer/config"
 	"github.com/figment-networks/mina-indexer/indexing"
+	"github.com/figment-networks/mina-indexer/model"
 	"github.com/figment-networks/mina-indexer/model/mapper"
 	"github.com/figment-networks/mina-indexer/store"
 )
@@ -38,18 +39,20 @@ func NewSyncWorker(
 }
 
 func (w SyncWorker) Run() (int, error) {
+	log.Info("starting sync")
+
 	status, err := w.checkNodeStatus()
 	if err != nil {
 		return 0, err
 	}
 
-	log.Debug("processing delegations")
+	log.Info("processing staking ledger")
 	_, err = w.processStakingLedger()
 	if err != nil {
 		return 0, err
 	}
 
-	log.Debug("fetching the most recent indexed block")
+	log.Info("fetching the most recent indexed block")
 	lastBlock, err := w.db.Blocks.Recent()
 	if err != nil {
 		log.Debug("latest indexed block is not found")
@@ -93,6 +96,12 @@ func (w SyncWorker) Run() (int, error) {
 		if err := w.processBlock(block.StateHash); err != nil {
 			return 0, err
 		}
+	}
+
+	log.Info("processing staging ledger")
+	if err := w.processStagingLedger(); err != nil {
+		log.WithError(err).Error("staging ledger processing failed")
+		// do not abort here
 	}
 
 	var lag int
@@ -207,4 +216,36 @@ func (w SyncWorker) processStakingLedger() (*mapper.LedgerData, error) {
 	}
 
 	return ledgerData, nil
+}
+
+func (w SyncWorker) processStagingLedger() error {
+	tip, err := w.graphClient.ConsensusTip()
+	if err != nil {
+		log.WithError(err).Error("consensus tip fetch failed")
+		return err
+	}
+
+	block, err := w.graphClient.GetBlock(tip.StateHash)
+	if err != nil {
+		log.WithError(err).Error("block fetch failed")
+		return err
+	}
+
+	ledger, err := w.archiveClient.StakingLedger(archive.LedgerTypeStaged)
+	if err != nil {
+		log.WithError(err).Error("staged ledger fetch failed")
+		return err
+	}
+
+	accounts := []model.Account{}
+	for _, entry := range ledger {
+		account, err := mapper.AccountFromStagedLedger(block, &entry)
+		if err != nil {
+			log.WithError(err).Error("account init failed")
+			continue
+		}
+		accounts = append(accounts, *account)
+	}
+
+	return w.db.Accounts.Import(accounts)
 }

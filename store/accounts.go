@@ -77,26 +77,44 @@ func (s AccountsStore) UpdateStaking() error {
 }
 
 func (s AccountsStore) Import(records []model.Account) error {
-	if len(records) == 0 {
+	n := len(records)
+	if n == 0 {
 		return nil
 	}
 
-	return bulk.Import(s.db, queries.AccountsImport, len(records), func(idx int) bulk.Row {
-		acc := records[idx]
-		now := time.Now()
+	batchSize := 250
 
-		return bulk.Row{
-			acc.PublicKey,
-			acc.Delegate,
-			acc.Balance,
-			acc.BalanceUnknown,
-			acc.Nonce,
-			acc.StartHeight,
-			acc.StartTime,
-			acc.LastHeight,
-			acc.LastTime,
-			now,
-			now,
+	for idx := 0; idx < n; idx += batchSize {
+		endIdx := idx + batchSize
+		if endIdx > n {
+			endIdx = n
 		}
-	})
+
+		batch := records[idx:endIdx]
+
+		err := bulk.Import(s.db, queries.AccountsImport, len(batch), func(rowIdx int) bulk.Row {
+			acc := batch[rowIdx]
+			now := time.Now()
+
+			return bulk.Row{
+				acc.PublicKey,
+				acc.Delegate,
+				acc.Balance,
+				acc.BalanceUnknown,
+				acc.Nonce,
+				acc.StartHeight,
+				acc.StartTime,
+				acc.LastHeight,
+				acc.LastTime,
+				now,
+				now,
+			}
+		})
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

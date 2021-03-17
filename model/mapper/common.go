@@ -16,7 +16,6 @@ var (
 
 // BlockHeight returns a parsed block height
 func BlockHeight(input *graph.Block) uint64 {
-	// NOTE: graph's height starts at height=2!
 	return util.MustUInt64(input.ProtocolState.ConsensusState.BlockHeight)
 }
 

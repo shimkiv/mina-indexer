@@ -1,6 +1,7 @@
 package mapper
 
 import (
+	"github.com/figment-networks/mina-indexer/client/archive"
 	"github.com/figment-networks/mina-indexer/client/graph"
 	"github.com/figment-networks/mina-indexer/model"
 	"github.com/figment-networks/mina-indexer/model/types"
@@ -66,4 +67,28 @@ func Accounts(block *graph.Block) ([]model.Account, error) {
 	}
 
 	return result, nil
+}
+
+func AccountFromStagedLedger(block *graph.Block, entry *archive.StakingInfo) (*model.Account, error) {
+	height := BlockHeight(block)
+	time := BlockTime(block)
+
+	account := &model.Account{
+		PublicKey:      entry.Pk,
+		Balance:        types.NewFloatAmount(entry.Balance),
+		BalanceUnknown: types.NewFloatAmount(entry.Balance),
+		StartHeight:    height,
+		StartTime:      time,
+		LastHeight:     height,
+		LastTime:       time,
+	}
+
+	if entry.Pk != entry.Delegate {
+		delegate := entry.Delegate
+		account.Delegate = &delegate
+	} else {
+		account.Delegate = nil
+	}
+
+	return account, nil
 }
