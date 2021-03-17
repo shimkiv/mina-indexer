@@ -14,7 +14,7 @@ func TestFromEnv(t *testing.T) {
 	assert.Equal(t, modeDevelopment, config.AppEnv)
 	assert.Equal(t, "0.0.0.0", config.ServerAddr)
 	assert.Equal(t, 8080, config.ServerPort)
-	assert.Equal(t, "10s", config.SyncInterval)
+	assert.Equal(t, "60s", config.SyncInterval)
 	assert.Equal(t, "10m", config.CleanupInterval)
 	assert.Equal(t, 1000, config.CleanupThreshold)
 }
