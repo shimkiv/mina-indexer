@@ -32,6 +32,8 @@ func TransactionsFromArchive(block *archive.Block) ([]model.Transaction, error) 
 	}
 
 	for _, cmd := range block.UserCommands {
+		sender := cmd.Sender
+
 		var memoText *string
 		if text := util.ParseMemoText(cmd.Memo); len(text) > 0 {
 			memoText = &text
@@ -43,7 +45,7 @@ func TransactionsFromArchive(block *archive.Block) ([]model.Transaction, error) 
 			BlockHash:      block.StateHash,
 			BlockHeight:    blockHeight,
 			Time:           blockTime,
-			Sender:         &cmd.Sender,
+			Sender:         &sender,
 			Receiver:       cmd.Receiver,
 			Amount:         types.NewInt64Amount(cmd.Amount),
 			Fee:            types.NewInt64Amount(cmd.Fee),
