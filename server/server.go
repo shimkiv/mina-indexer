@@ -98,7 +98,9 @@ func (s Server) GetStatus(c *gin.Context) {
 		SyncStatus: "stale",
 	}
 
-	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(time.Second*5))
+	// Fetch node status as quickly as possible.
+	// We don't care if node's sync status is reported as error at this point.
+	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(time.Second*2))
 	defer cancel()
 
 	daemonStatus, err := s.graphClient.GetDaemonStatus(ctx)
