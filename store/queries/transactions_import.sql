@@ -21,4 +21,10 @@ VALUES @values
 
 ON CONFLICT (hash) DO UPDATE
 SET
-  updated_at = excluded.updated_at
+  sender         = excluded.sender,
+  receiver       = excluded.receiver,
+  amount         = excluded.amount,
+  fee            = excluded.fee,
+  status         = excluded.status,
+  failure_reason = excluded.failure_reason,
+  updated_at     = excluded.updated_at
