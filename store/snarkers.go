@@ -14,7 +14,11 @@ type SnarkersStore struct {
 
 func (s SnarkersStore) All() ([]model.Snarker, error) {
 	result := []model.Snarker{}
-	err := s.db.Find(&result).Error
+	err := s.db.
+		Model(&model.Snarker{}).
+		Order("jobs_count DESC").
+		Find(&result).
+		Error
 	return result, checkErr(err)
 }
 
