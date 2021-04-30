@@ -79,7 +79,7 @@ func readIdentityFile(src string, handler func(identity) error) error {
 			}
 		}
 	default:
-		return errors.New("unsupports file extension")
+		return errors.New("unsupported file extension")
 	}
 
 	return nil
