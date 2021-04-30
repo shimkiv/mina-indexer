@@ -2,14 +2,21 @@ package cli
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"errors"
 	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/figment-networks/mina-indexer/config"
 	"github.com/figment-networks/mina-indexer/store"
 	"github.com/sirupsen/logrus"
 )
+
+type identity struct {
+	PublicKey string `json:"public_key"`
+	Name      string `json:"name"`
+}
 
 func runUpdateIdentity(cfg *config.Config) error {
 	if cfg.IdentityFile == "" {
@@ -24,33 +31,55 @@ func runUpdateIdentity(cfg *config.Config) error {
 
 	db.SetDebugMode(true)
 
-	f, err := os.Open(cfg.IdentityFile)
+	return readIdentityFile(cfg.IdentityFile, func(item identity) error {
+		err := db.Validators.UpdateIdentity(item.PublicKey, item.Name)
+
+		logrus.
+			WithField("pk", item.PublicKey).
+			WithField("name", item.Name).
+			WithError(err).
+			Info("identity updated")
+
+		return err
+	})
+}
+
+func readIdentityFile(src string, handler func(identity) error) error {
+	f, err := os.Open(src)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
-	reader := csv.NewReader(f)
+	switch filepath.Ext(filepath.Base(src)) {
+	case ".csv":
+		reader := csv.NewReader(f)
 
-	for {
-		row, err := reader.Read()
-		if err != nil {
-			if err == io.EOF {
-				break
+		for {
+			row, err := reader.Read()
+			if err != nil {
+				if err == io.EOF {
+					break
+				}
+				return err
 			}
+
+			if err := handler(identity{row[0], row[1]}); err != nil {
+				return err
+			}
+		}
+	case ".json":
+		identities := []identity{}
+		if err := json.NewDecoder(f).Decode(&identities); err != nil {
 			return err
 		}
-
-		if err := db.Validators.UpdateIdentity(row[1], row[0]); err != nil {
-			logrus.
-				WithField("pk", row[1]).
-				WithField("name", row[0]).
-				WithError(err).
-				Error("cant update validator identity")
-			continue
+		for _, identityItem := range identities {
+			if err := handler(identityItem); err != nil {
+				return err
+			}
 		}
-
-		logrus.WithField("pk", row[1]).WithField("name", row[0]).Info("identity updated")
+	default:
+		return errors.New("unsupported file extension")
 	}
 
 	return nil
