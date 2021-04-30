@@ -31,7 +31,7 @@ func runUpdateIdentity(cfg *config.Config) error {
 
 	db.SetDebugMode(true)
 
-	return readIdentityFile(cfg.IdentityFile, func(item identity) {
+	return readIdentityFile(cfg.IdentityFile, func(item identity) error {
 		err := db.Validators.UpdateIdentity(item.PublicKey, item.Name)
 
 		logrus.
@@ -39,10 +39,12 @@ func runUpdateIdentity(cfg *config.Config) error {
 			WithField("name", item.Name).
 			WithError(err).
 			Info("identity updated")
+
+		return err
 	})
 }
 
-func readIdentityFile(src string, handler func(identity)) error {
+func readIdentityFile(src string, handler func(identity) error) error {
 	f, err := os.Open(src)
 	if err != nil {
 		return err
@@ -62,7 +64,9 @@ func readIdentityFile(src string, handler func(identity)) error {
 				return err
 			}
 
-			handler(identity{row[0], row[1]})
+			if err := handler(identity{row[0], row[1]}); err != nil {
+				return err
+			}
 		}
 	case ".json":
 		identities := []identity{}
@@ -70,7 +74,9 @@ func readIdentityFile(src string, handler func(identity)) error {
 			return err
 		}
 		for _, identityItem := range identities {
-			handler(identityItem)
+			if err := handler(identityItem); err != nil {
+				return err
+			}
 		}
 	default:
 		return errors.New("unsupports file extension")
