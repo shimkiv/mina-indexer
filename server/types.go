@@ -44,6 +44,10 @@ type ValidatorResponse struct {
 	StatsDaily  []model.ValidatorStat `json:"stats_daily"`
 }
 
+type LedgerRequest struct {
+	Epoch *int `form:"epoch"`
+}
+
 type LedgerResponse struct {
 	Ledger  *model.Ledger       `json:"ledger"`
 	Records []model.LedgerEntry `json:"entries"`
