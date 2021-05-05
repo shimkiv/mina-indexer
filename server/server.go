@@ -422,7 +422,22 @@ func (s *Server) GetAccount(c *gin.Context) {
 
 // GetLedger records the current epoch ledger records
 func (s *Server) GetLedger(c *gin.Context) {
-	ledger, err := s.db.Staking.LastLedger()
+	var (
+		ledger *model.Ledger
+		err    error
+	)
+
+	input := &LedgerRequest{}
+	if err := c.Bind(input); err != nil {
+		badRequest(c, err)
+		return
+	}
+
+	if epoch := input.Epoch; epoch != nil {
+		ledger, err = s.db.Staking.FindLedger(*epoch)
+	} else {
+		ledger, err = s.db.Staking.LastLedger()
+	}
 	if shouldReturn(c, err) {
 		return
 	}
