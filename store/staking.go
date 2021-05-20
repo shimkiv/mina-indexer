@@ -57,6 +57,19 @@ func (s StakingStore) FindLedger(epoch int) (*model.Ledger, error) {
 	return ledger, checkErr(err)
 }
 
+// AllLedgers returns all existing ledgers
+func (s StakingStore) AllLedgers() ([]model.Ledger, error) {
+	result := []model.Ledger{}
+
+	err := s.db.
+		Model(&model.Ledger{}).
+		Order("epoch ASC").
+		Find(&result).
+		Error
+
+	return result, err
+}
+
 // LastLedger returns the most recent ledger record
 func (s StakingStore) LastLedger() (*model.Ledger, error) {
 	ledger := &model.Ledger{}
