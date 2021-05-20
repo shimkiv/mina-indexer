@@ -58,6 +58,7 @@ func (s *Server) initRoutes() {
 	s.GET("/transactions", s.GetTransactions)
 	s.GET("/transactions/:id", s.GetTransaction)
 	s.GET("/accounts/:id", s.GetAccount)
+	s.GET("/ledgers", s.GetLedgers)
 	s.GET("/ledger", s.GetLedger)
 }
 
@@ -418,6 +419,15 @@ func (s *Server) GetAccount(c *gin.Context) {
 	}
 
 	jsonOk(c, acc)
+}
+
+// GetLedgers returns a list of all existing ledgers
+func (s *Server) GetLedgers(c *gin.Context) {
+	ledgers, err := s.db.Staking.AllLedgers()
+	if shouldReturn(c, err) {
+		return
+	}
+	jsonOk(c, ledgers)
 }
 
 // GetLedger records the current epoch ledger records
