@@ -23,3 +23,21 @@ func CalculateWeight(balance types.Amount, totalStakedAmount types.Amount) (big.
 
 	return *new(big.Float).Quo(w, t), nil
 }
+
+// CalculateDelegatorReward calculates delegator reward
+func CalculateDelegatorReward(weight big.Float, blockReward types.Amount) (types.Amount, error) {
+	br, ok := new(big.Float).SetString(blockReward.String())
+	if !ok {
+		return types.Amount{}, errors.New("error with stake amount")
+	}
+
+	// %5 validator fee
+	br = br.Mul(br, big.NewFloat(0.95))
+	if !ok {
+		return types.Amount{}, errors.New("error with stake amount")
+	}
+
+	res := new(big.Float)
+	res.Mul(br, &weight)
+	return types.NewAmount(res.String()), nil
+}

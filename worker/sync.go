@@ -140,6 +140,10 @@ func (w SyncWorker) processBlock(hash string) error {
 		return err
 	}
 
+	if err := indexing.RewardCalculation(w.db, data); err != nil {
+		return err
+	}
+
 	if err := indexing.Import(w.db, data); err != nil {
 		return err
 	}

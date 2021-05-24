@@ -57,13 +57,19 @@ func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block) (*Data, error
 		return nil, err
 	}
 
+	delegatorBlockRewards, err := mapper.DelegatorBlockRewards(accounts)
+	if err != nil {
+		return nil, err
+	}
+
 	data := &Data{
-		Block:        block,
-		Validator:    validator,
-		Accounts:     accounts,
-		Transactions: transactions,
-		Snarkers:     snarkers,
-		SnarkJobs:    snarkJobs,
+		Block:                 block,
+		Validator:             validator,
+		Accounts:              accounts,
+		DelegatorBlockRewards: delegatorBlockRewards,
+		Transactions:          transactions,
+		Snarkers:              snarkers,
+		SnarkJobs:             snarkJobs,
 	}
 
 	return data, nil

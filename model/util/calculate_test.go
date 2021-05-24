@@ -46,3 +46,36 @@ func TestCalculateWeight(t *testing.T) {
 		})
 	}
 }
+
+func TestCalculateDelegatorReward(t *testing.T) {
+	w, _ := new(big.Float).SetString("0.3")
+	type args struct {
+		weight      big.Float
+		blockReward types.Amount
+	}
+	tests := []struct {
+		name    string
+		args    args
+		result  types.Amount
+		wantErr bool
+	}{
+		{
+			name: "successful",
+			args: args{
+				weight:      *w,
+				blockReward: types.NewInt64Amount(100),
+			},
+			result: types.NewAmount("28"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res, err := CalculateDelegatorReward(tt.args.weight, tt.args.blockReward)
+			if err != nil {
+				assert.True(t, tt.wantErr)
+			} else {
+				assert.Equal(t, res.String(), tt.result.String())
+			}
+		})
+	}
+}
