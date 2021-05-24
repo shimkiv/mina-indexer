@@ -1,6 +1,7 @@
 package model
 
 import (
+	"math/big"
 	"time"
 
 	"github.com/figment-networks/mina-indexer/model/types"
@@ -27,6 +28,7 @@ type LedgerEntry struct {
 	Delegate                    string       `json:"delegate"`
 	Delegation                  bool         `json:"delegation"`
 	Balance                     types.Amount `json:"balance"`
+	Weight                      big.Float    `json:"weight"`
 	TimingInitialMinimumBalance types.Amount `json:"timing_initial_minimum_balance"`
 	TimingCliffTime             *int         `json:"timing_cliff_time"`
 	TimingCliffAmount           types.Amount `json:"timing_cliff_amount"`
