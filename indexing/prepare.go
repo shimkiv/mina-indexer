@@ -24,6 +24,8 @@ func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block) (*Data, error
 		return nil, err
 	}
 
+	block.CoinbaseRewards = mapper.CoinbaseReward(graphBlock)
+	block.TransactionsFees = mapper.TransactionFees(graphBlock)
 	// Prepare transaction records
 	transactions, err := mapper.TransactionsFromArchive(archiveBlock)
 	if err != nil {
