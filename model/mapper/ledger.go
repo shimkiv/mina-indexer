@@ -22,6 +22,17 @@ func (data *LedgerData) UpdateLedgerID() {
 	}
 }
 
+func (data *LedgerData) SetWeights() error {
+	for idx := range data.Entries {
+		w, err := util.CalculateWeight(data.Entries[idx].Balance, data.Ledger.StakedAmount)
+		if err != nil {
+			return err
+		}
+		data.Entries[idx].Weight = w
+	}
+	return nil
+}
+
 func Ledger(tip *graph.Block, records []archive.StakingInfo) (*LedgerData, error) {
 	ledgerRecord := &model.Ledger{
 		EntriesCount:      len(records),

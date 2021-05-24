@@ -4,6 +4,7 @@ INSERT INTO ledger_entries (
   delegate,
   delegation,
   balance,
+  weight,
   timing_initial_minimum_balance,
   timing_cliff_time,
   timing_cliff_amount,
