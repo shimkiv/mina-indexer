@@ -2,8 +2,9 @@ package util
 
 import (
 	"errors"
-	"github.com/figment-networks/mina-indexer/model/types"
 	"math/big"
+
+	"github.com/figment-networks/mina-indexer/model/types"
 )
 
 // CalculateWeight calculates weight

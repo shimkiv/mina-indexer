@@ -1,8 +1,9 @@
 package model
 
 import (
-	"github.com/figment-networks/mina-indexer/model/types"
 	"time"
+
+	"github.com/figment-networks/mina-indexer/model/types"
 )
 
 // DelegatorBlockReward contains the delegator reward details earned at a specific height

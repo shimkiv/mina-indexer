@@ -1,10 +1,11 @@
 package util
 
 import (
-	"github.com/figment-networks/mina-indexer/model/types"
-	"github.com/stretchr/testify/assert"
 	"math/big"
 	"testing"
+
+	"github.com/figment-networks/mina-indexer/model/types"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCalculateWeight(t *testing.T) {
