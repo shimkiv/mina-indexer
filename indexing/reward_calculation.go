@@ -2,10 +2,12 @@ package indexing
 
 import (
 	"errors"
+	"math/big"
+
+	log "github.com/sirupsen/logrus"
+
 	"github.com/figment-networks/mina-indexer/model/util"
 	"github.com/figment-networks/mina-indexer/store"
-	log "github.com/sirupsen/logrus"
-	"math/big"
 )
 
 // RewardCalculation calculates rewards
