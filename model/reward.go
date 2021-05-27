@@ -10,7 +10,7 @@ import (
 type BlockReward struct {
 	ID              string       `json:"-"`
 	PublicKey       string       `json:"public_key"`
-	Delegate        *string      `json:"delegate"`
+	Delegate        string       `json:"delegate"`
 	BlockHeight     uint64       `json:"block_height"`
 	BlockTime       time.Time    `json:"block_time"`
 	Reward          types.Amount `json:"reward"`
