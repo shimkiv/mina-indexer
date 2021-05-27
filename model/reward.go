@@ -6,18 +6,19 @@ import (
 	"github.com/figment-networks/mina-indexer/model/types"
 )
 
-// DelegatorBlockReward contains the delegator reward details earned at a specific height
-type DelegatorBlockReward struct {
-	ID          string       `json:"-"`
-	PublicKey   string       `json:"public_key"`
-	Delegate    *string      `json:"delegate"`
-	BlockHeight uint64       `json:"block_height"`
-	BlockTime   time.Time    `json:"block_time"`
-	Reward      types.Amount `json:"reward"`
+// BlockReward contains the reward details earned at a specific height
+type BlockReward struct {
+	ID              string       `json:"-"`
+	PublicKey       string       `json:"public_key"`
+	Delegate        *string      `json:"delegate"`
+	BlockHeight     uint64       `json:"block_height"`
+	BlockTime       time.Time    `json:"block_time"`
+	Reward          types.Amount `json:"reward"`
+	RewardOwnerType string       `json:"reward_owner_type"`
 }
 
 // String returns account text representation
-func (dbr DelegatorBlockReward) String() string {
+func (dbr BlockReward) String() string {
 	return dbr.PublicKey
 }
 
@@ -27,11 +28,15 @@ type RewardsSummary struct {
 }
 
 type TimeInterval uint
+type RewardOwnerType string
 
 const (
 	TimeIntervalDaily TimeInterval = iota
 	TimeIntervalMonthly
 	TimeIntervalYearly
+
+	RewardOwnerTypeValidator RewardOwnerType = "validator"
+	RewardOwnerTypeDelegator RewardOwnerType = "delegator"
 )
 
 var (
@@ -39,6 +44,11 @@ var (
 		"daily":   TimeIntervalDaily,
 		"monthly": TimeIntervalMonthly,
 		"yearly":  TimeIntervalYearly,
+	}
+
+	RewardOwnerTypes = map[string]RewardOwnerType{
+		"validator": RewardOwnerTypeValidator,
+		"delegator": RewardOwnerTypeDelegator,
 	}
 )
 
@@ -58,4 +68,9 @@ func (k TimeInterval) String() string {
 	default:
 		return "unknown"
 	}
+}
+
+func GetTypeForRewardOwnerType(s string) (RewardOwnerType, bool) {
+	t, ok := RewardOwnerTypes[s]
+	return t, ok
 }

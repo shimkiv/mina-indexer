@@ -387,7 +387,7 @@ func (s Server) GetDelegatorRewards(c *gin.Context) {
 		}
 	}
 
-	resp, err := s.db.DelegatorRewards.FetchRewardsByInterval(c.Param("id"), params.ValidatorId, params.From, params.To, interval)
+	resp, err := s.db.Rewards.FetchRewardsByInterval(c.Param("id"), params.ValidatorId, params.From, params.To, interval)
 	if shouldReturn(c, err) {
 		return
 	}

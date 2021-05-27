@@ -24,6 +24,8 @@ func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block) (*Data, error
 		return nil, err
 	}
 
+	validatorBlockReward, _ := mapper.ValidatorBlockReward(validator)
+
 	block.CoinbaseRewards = mapper.CoinbaseReward(graphBlock)
 	block.TransactionsFees = mapper.TransactionFees(graphBlock)
 	// Prepare transaction records
@@ -65,6 +67,7 @@ func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block) (*Data, error
 	data := &Data{
 		Block:                 block,
 		Validator:             validator,
+		ValidatorBlockReward:  validatorBlockReward,
 		Accounts:              accounts,
 		DelegatorBlockRewards: delegatorBlockRewards,
 		Transactions:          transactions,
