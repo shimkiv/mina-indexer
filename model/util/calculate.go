@@ -33,7 +33,7 @@ func CalculateValidatorReward(blockReward types.Amount) (types.Amount, error) {
 	}
 
 	// %5 validator fee
-	vr = vr.Mul(vr, big.NewFloat(0.5))
+	vr = vr.Mul(vr, big.NewFloat(0.05))
 	if !ok {
 		return types.Amount{}, errors.New("error with validator reward amount")
 	}

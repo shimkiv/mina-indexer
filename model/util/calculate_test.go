@@ -80,3 +80,34 @@ func TestCalculateDelegatorReward(t *testing.T) {
 		})
 	}
 }
+
+
+func TestCalculateValidatorReward(t *testing.T) {
+	type args struct {
+		blockReward types.Amount
+	}
+	tests := []struct {
+		name    string
+		args    args
+		result  types.Amount
+		wantErr bool
+	}{
+		{
+			name: "successful",
+			args: args{
+				blockReward: types.NewInt64Amount(100),
+			},
+			result: types.NewAmount("5"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res, err := CalculateValidatorReward(tt.args.blockReward)
+			if err != nil {
+				assert.True(t, tt.wantErr)
+			} else {
+				assert.Equal(t, res.String(), tt.result.String())
+			}
+		})
+	}
+}
