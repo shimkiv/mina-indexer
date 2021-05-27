@@ -54,7 +54,7 @@ func (s *Server) initRoutes() {
 	s.GET("/validators/:id", s.GetValidator)
 	s.GET("/validators/:id/stats", timeBucketMiddleware(), s.GetValidatorStats)
 	s.GET("/delegations", s.GetDelegations)
-	s.GET("/delegators/:id/rewards", s.GetDelegatorRewards)
+	s.GET("/rewards/:id", s.GetRewards)
 	s.GET("/snarkers", s.GetSnarkers)
 	s.GET("/transactions", s.GetTransactions)
 	s.GET("/transactions/:id", s.GetTransaction)
@@ -372,9 +372,9 @@ func (s *Server) GetDelegations(c *gin.Context) {
 	jsonOk(c, delegations)
 }
 
-// GetDelegatorRewards returns delegator rewards
-func (s Server) GetDelegatorRewards(c *gin.Context) {
-	var params delegatorRewardsParams
+// GeRewards returns rewards
+func (s Server) GetRewards(c *gin.Context) {
+	var params rewardsParams
 	if err := c.ShouldBindQuery(&params); err != nil {
 		badRequest(c, errors.New("invalid from or/and to date or missing interval or validator id"))
 		return
@@ -387,7 +387,14 @@ func (s Server) GetDelegatorRewards(c *gin.Context) {
 		}
 	}
 
-	resp, err := s.db.Rewards.FetchRewardsByInterval(c.Param("id"), params.ValidatorId, params.From, params.To, interval)
+	var rewardOwnerType model.RewardOwnerType
+	if rewardOwnerType, ok = model.GetTypeForRewardOwnerType(params.RewardOwnerType); !ok {
+		if shouldReturn(c, errors.New("owner type is wrong")) {
+			return
+		}
+	}
+
+	resp, err := s.db.Rewards.FetchRewardsByInterval(c.Param("id"), params.ValidatorId, params.From, params.To, interval, rewardOwnerType)
 	if shouldReturn(c, err) {
 		return
 	}

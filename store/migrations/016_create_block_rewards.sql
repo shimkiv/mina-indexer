@@ -2,7 +2,7 @@
 CREATE TABLE block_rewards (
   id                    CHAIN_UUID,
   public_key            TEXT NOT NULL,
-  delegate              TEXT,
+  delegate              TEXT NOT NULL,
   block_height          CHAIN_HEIGHT NOT NULL,
   block_time            CHAIN_TIME NOT NULL,
   reward                CHAIN_CURRENCY,

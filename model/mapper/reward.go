@@ -24,7 +24,7 @@ func DelegatorBlockRewards(accounts []model.Account) ([]model.BlockReward, error
 		// reward to be calculated next step
 		dbr := model.BlockReward{
 			PublicKey:       a.PublicKey,
-			Delegate:        a.Delegate,
+			Delegate:        *a.Delegate,
 			BlockHeight:     a.LastHeight,
 			BlockTime:       a.LastTime,
 			RewardOwnerType: string(model.RewardOwnerTypeDelegator),
