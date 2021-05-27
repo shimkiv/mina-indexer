@@ -25,6 +25,22 @@ func CalculateWeight(balance types.Amount, totalStakedAmount types.Amount) (big.
 	return *new(big.Float).Quo(w, t), nil
 }
 
+// CalculateValidatorReward calculates validator reward
+func CalculateValidatorReward(blockReward types.Amount) (types.Amount, error) {
+	vr, ok := new(big.Float).SetString(blockReward.String())
+	if !ok {
+		return types.Amount{}, errors.New("error with block reward amount")
+	}
+
+	// %5 validator fee
+	vr = vr.Mul(vr, big.NewFloat(0.5))
+	if !ok {
+		return types.Amount{}, errors.New("error with validator reward amount")
+	}
+
+	return types.NewAmount(vr.String()), nil
+}
+
 // CalculateDelegatorReward calculates delegator reward
 func CalculateDelegatorReward(weight big.Float, blockReward types.Amount) (types.Amount, error) {
 	br, ok := new(big.Float).SetString(blockReward.String())

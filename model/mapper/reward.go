@@ -6,16 +6,28 @@ import (
 	"github.com/figment-networks/mina-indexer/model/types"
 )
 
+// ValidatorBlockReward returns validator reward models references from the block data
+func ValidatorBlockReward(v *model.Validator) (*model.BlockReward, error) {
+	result := model.BlockReward{
+		PublicKey:       v.PublicKey,
+		BlockHeight:     v.LastHeight,
+		BlockTime:       v.LastTime,
+		RewardOwnerType: string(model.RewardOwnerTypeValidator),
+	}
+	return &result, nil
+}
+
 // DelegatorBlockRewards returns delegator reward models references from the block data
-func DelegatorBlockRewards(accounts []model.Account) ([]model.DelegatorBlockReward, error) {
-	result := []model.DelegatorBlockReward{}
+func DelegatorBlockRewards(accounts []model.Account) ([]model.BlockReward, error) {
+	result := []model.BlockReward{}
 	for _, a := range accounts {
 		// reward to be calculated next step
-		dbr := model.DelegatorBlockReward{
-			PublicKey:   a.PublicKey,
-			Delegate:    a.Delegate,
-			BlockHeight: a.LastHeight,
-			BlockTime:   a.LastTime,
+		dbr := model.BlockReward{
+			PublicKey:       a.PublicKey,
+			Delegate:        a.Delegate,
+			BlockHeight:     a.LastHeight,
+			BlockTime:       a.LastTime,
+			RewardOwnerType: string(model.RewardOwnerTypeDelegator),
 		}
 		result = append(result, dbr)
 	}

@@ -9,15 +9,15 @@ import (
 	"github.com/figment-networks/mina-indexer/store/queries"
 )
 
-// DelegatorRewardStore handles operations on delegator rewards
-type DelegatorRewardStore struct {
+// RewardStore handles operations on rewards
+type RewardStore struct {
 	baseStore
 }
 
 // FetchRewardsByInterval fetches rewards by interval
-func (s *DelegatorRewardStore) FetchRewardsByInterval(publicKey string, delegate string, from time.Time, to time.Time, timeInterval model.TimeInterval) (model.RewardsSummary, error) {
+func (s *RewardStore) FetchRewardsByInterval(publicKey string, delegate string, from time.Time, to time.Time, timeInterval model.TimeInterval) (model.RewardsSummary, error) {
 	var res model.RewardsSummary
-	q := strings.Replace(queries.DelegatorsRewards, "$INTERVAL", "'"+timeInterval.String()+"'", -1)
+	q := strings.Replace(queries.BlockRewards, "$INTERVAL", "'"+timeInterval.String()+"'", -1)
 	var err error
 	if delegate == "" {
 		q = strings.Replace(q, "AND delegate = ?", "", -1)
@@ -31,13 +31,13 @@ func (s *DelegatorRewardStore) FetchRewardsByInterval(publicKey string, delegate
 	return res, nil
 }
 
-// Import creates new delegator rewards
-func (s DelegatorRewardStore) Import(records []model.DelegatorBlockReward) error {
+// Import creates new rewards
+func (s RewardStore) Import(records []model.BlockReward) error {
 	if len(records) == 0 {
 		return nil
 	}
 
-	return bulk.Import(s.db, queries.DelegatorBlockRewardsImport, len(records), func(idx int) bulk.Row {
+	return bulk.Import(s.db, queries.BlockRewardsImport, len(records), func(idx int) bulk.Row {
 		tx := records[idx]
 		return bulk.Row{
 			tx.PublicKey,
@@ -45,6 +45,7 @@ func (s DelegatorRewardStore) Import(records []model.DelegatorBlockReward) error
 			tx.BlockHeight,
 			tx.BlockTime,
 			tx.Reward,
+			tx.RewardOwnerType,
 		}
 	})
 }

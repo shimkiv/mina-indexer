@@ -8,8 +8,9 @@ import (
 type Data struct {
 	Block                 *model.Block
 	Validator             *model.Validator
+	ValidatorBlockReward  *model.BlockReward
 	Accounts              []model.Account
-	DelegatorBlockRewards []model.DelegatorBlockReward
+	DelegatorBlockRewards []model.BlockReward
 	Snarkers              []model.Snarker
 	Transactions          []model.Transaction
 	SnarkJobs             []model.SnarkJob

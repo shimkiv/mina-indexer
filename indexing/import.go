@@ -35,12 +35,17 @@ func Import(db *store.Store, data *Data) error {
 	}
 
 	log.WithField("count", len(data.DelegatorBlockRewards)).Debug("creating delegator block rewards")
-	if err := db.DelegatorRewards.Import(data.DelegatorBlockRewards); err != nil {
+	if err := db.Rewards.Import(data.DelegatorBlockRewards); err != nil {
 		return err
 	}
 
 	log.WithField("count", 1).Debug("creating validators")
 	if err := db.Validators.Import([]model.Validator{*data.Validator}); err != nil {
+		return err
+	}
+
+	log.WithField("count", 1).Debug("creating validator block reward")
+	if err := db.Rewards.Import([]model.BlockReward{*data.ValidatorBlockReward}); err != nil {
 		return err
 	}
 

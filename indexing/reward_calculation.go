@@ -48,5 +48,12 @@ func RewardCalculation(db *store.Store, data *Data) error {
 		}
 		dbr.Reward = res
 	}
+
+	validatorReward, err := util.CalculateValidatorReward(blockReward)
+	if err != nil {
+		return err
+	}
+	data.ValidatorBlockReward.Reward = validatorReward
+
 	return nil
 }
