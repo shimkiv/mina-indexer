@@ -28,14 +28,14 @@ func NewPercentage(src string) Percentage {
 
 // Value returns a serialized value
 func (a Percentage) Value() (driver.Value, error) {
-	if a.Int != nil {
+	if a.Float != nil {
 		return a.Float.String(), nil
 	}
 	return nil, nil
 }
 
 func (a Percentage) String() string {
-	if a.Int == nil {
+	if a.Float == nil {
 		return ""
 	}
 	return a.Float.String()
