@@ -8,21 +8,21 @@ import (
 )
 
 // CalculateWeight calculates weight
-func CalculateWeight(balance types.Amount, totalStakedAmount types.Amount) (big.Float, error) {
+func CalculateWeight(balance types.Amount, totalStakedAmount types.Amount) (types.Percentage, error) {
 	w, ok := new(big.Float).SetString(balance.String())
 	if !ok {
-		return big.Float{}, errors.New("error with balance amount")
+		return types.Percentage{}, errors.New("error with balance amount")
 	}
 
 	if totalStakedAmount.Int64() == 0 {
-		return big.Float{}, errors.New("total staked amount can not be zero")
+		return types.Percentage{}, errors.New("total staked amount can not be zero")
 	}
 	t, ok := new(big.Float).SetString(totalStakedAmount.String())
 	if !ok {
-		return big.Float{}, errors.New("error with total staked amount")
+		return types.Percentage{}, errors.New("error with total staked amount")
 	}
 
-	return *new(big.Float).Quo(w, t), nil
+	return types.NewPercentage(new(big.Float).Quo(w, t).String()), nil
 }
 
 // CalculateValidatorReward calculates validator reward
@@ -33,6 +33,7 @@ func CalculateValidatorReward(blockReward types.Amount) (types.Amount, error) {
 	}
 
 	// %5 validator fee
+	// TODO: fetch validators fee from https://api.staketab.com/mina/get_providers
 	vr = vr.Mul(vr, big.NewFloat(0.05))
 	if !ok {
 		return types.Amount{}, errors.New("error with validator reward amount")

@@ -35,6 +35,7 @@ func DelegatorBlockRewards(accounts []model.Account) ([]model.BlockReward, error
 	return result, nil
 }
 
+// TODO: fetch coinbase from graphQL
 func CoinbaseReward(block *graph.Block) types.Amount {
 	if block.Transactions != nil {
 		return types.NewAmount(block.Transactions.Coinbase)
