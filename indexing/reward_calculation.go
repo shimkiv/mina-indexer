@@ -12,6 +12,9 @@ import (
 
 // RewardCalculation calculates rewards
 func RewardCalculation(db *store.Store, data *Data) error {
+	if data.Block.Coinbase.Int == nil || data.Block.TransactionsFees.Int == nil || data.Block.SnarkJobsFees.Int64() == 0 {
+		return nil
+	}
 	blockReward := data.Block.Coinbase.
 		Mul(data.Block.TransactionsFees).
 		Sub(data.Block.SnarkJobsFees)
@@ -31,7 +34,7 @@ func RewardCalculation(db *store.Store, data *Data) error {
 
 	recordsMap := map[string]big.Float{}
 	for _, r := range records {
-		recordsMap[r.PublicKey] = r.Weight
+		recordsMap[r.PublicKey] = *r.Weight.Float
 	}
 
 	for _, dbr := range data.DelegatorBlockRewards {

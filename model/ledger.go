@@ -1,7 +1,6 @@
 package model
 
 import (
-	"math/big"
 	"time"
 
 	"github.com/figment-networks/mina-indexer/model/types"
@@ -22,18 +21,18 @@ func (Ledger) TableName() string {
 }
 
 type LedgerEntry struct {
-	ID                          int          `json:"-"`
-	LedgerID                    int          `json:"-"`
-	PublicKey                   string       `json:"public_key"`
-	Delegate                    string       `json:"delegate"`
-	Delegation                  bool         `json:"delegation"`
-	Balance                     types.Amount `json:"balance"`
-	Weight                      big.Float    `json:"weight"`
-	TimingInitialMinimumBalance types.Amount `json:"timing_initial_minimum_balance"`
-	TimingCliffTime             *int         `json:"timing_cliff_time"`
-	TimingCliffAmount           types.Amount `json:"timing_cliff_amount"`
-	TimingVestingPeriod         *int         `json:"timing_vesting_period"`
-	TimingVestingIncrement      *int         `json:"timing_vesting_increment"`
+	ID                          int              `json:"-"`
+	LedgerID                    int              `json:"-"`
+	PublicKey                   string           `json:"public_key"`
+	Delegate                    string           `json:"delegate"`
+	Delegation                  bool             `json:"delegation"`
+	Balance                     types.Amount     `json:"balance"`
+	Weight                      types.Percentage `json:"weight"`
+	TimingInitialMinimumBalance types.Amount     `json:"timing_initial_minimum_balance"`
+	TimingCliffTime             *int             `json:"timing_cliff_time"`
+	TimingCliffAmount           types.Amount     `json:"timing_cliff_amount"`
+	TimingVestingPeriod         *int             `json:"timing_vesting_period"`
+	TimingVestingIncrement      *int             `json:"timing_vesting_increment"`
 }
 
 func (LedgerEntry) TableName() string {

@@ -3,6 +3,7 @@ package indexing
 import (
 	"github.com/figment-networks/mina-indexer/client/archive"
 	"github.com/figment-networks/mina-indexer/client/graph"
+	"github.com/figment-networks/mina-indexer/model"
 	"github.com/figment-networks/mina-indexer/model/mapper"
 	"github.com/figment-networks/mina-indexer/model/types"
 )
@@ -16,6 +17,8 @@ func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block) (*Data, error
 
 	if graphBlock != nil {
 		block.TotalCurrency = types.NewAmount(graphBlock.ProtocolState.ConsensusState.TotalCurrency)
+		block.CoinbaseRewards = mapper.CoinbaseReward(graphBlock)
+		block.TransactionsFees = mapper.TransactionFees(graphBlock)
 	}
 
 	// Prepare validator record
@@ -26,8 +29,6 @@ func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block) (*Data, error
 
 	validatorBlockReward, _ := mapper.ValidatorBlockReward(validator)
 
-	block.CoinbaseRewards = mapper.CoinbaseReward(graphBlock)
-	block.TransactionsFees = mapper.TransactionFees(graphBlock)
 	// Prepare transaction records
 	transactions, err := mapper.TransactionsFromArchive(archiveBlock)
 	if err != nil {
@@ -59,9 +60,12 @@ func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block) (*Data, error
 		return nil, err
 	}
 
-	delegatorBlockRewards, err := mapper.DelegatorBlockRewards(accounts)
-	if err != nil {
-		return nil, err
+    delegatorBlockRewards := []model.BlockReward{}
+	if graphBlock != nil {
+		delegatorBlockRewards, err = mapper.DelegatorBlockRewards(accounts)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	data := &Data{

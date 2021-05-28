@@ -16,7 +16,7 @@ func TestCalculateWeight(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		result  *big.Float
+		result  types.Percentage
 		wantErr bool
 	}{
 		{
@@ -25,7 +25,7 @@ func TestCalculateWeight(t *testing.T) {
 				balance:            types.NewInt64Amount(10),
 				totalStakedBalance: types.NewInt64Amount(10000),
 			},
-			result: big.NewFloat(0.001),
+			result: types.NewPercentage("0.001"),
 		},
 		{
 			name: "error case stake value",
@@ -80,7 +80,6 @@ func TestCalculateDelegatorReward(t *testing.T) {
 		})
 	}
 }
-
 
 func TestCalculateValidatorReward(t *testing.T) {
 	type args struct {
