@@ -9,10 +9,10 @@ import (
 // ValidatorBlockReward returns validator reward models references from the block data
 func ValidatorBlockReward(v *model.Validator) (*model.BlockReward, error) {
 	result := model.BlockReward{
-		PublicKey:       v.PublicKey,
-		BlockHeight:     v.LastHeight,
-		BlockTime:       v.LastTime,
-		RewardOwnerType: string(model.RewardOwnerTypeValidator),
+		OwnerAccount: v.PublicKey,
+		BlockHeight:  v.LastHeight,
+		BlockTime:    v.LastTime,
+		OwnerType:    string(model.RewardOwnerTypeValidator),
 	}
 	return &result, nil
 }
@@ -23,11 +23,11 @@ func DelegatorBlockRewards(accounts []model.Account) ([]model.BlockReward, error
 	for _, a := range accounts {
 		// reward to be calculated next step
 		dbr := model.BlockReward{
-			PublicKey:       a.PublicKey,
-			Delegate:        *a.Delegate,
-			BlockHeight:     a.LastHeight,
-			BlockTime:       a.LastTime,
-			RewardOwnerType: string(model.RewardOwnerTypeDelegator),
+			OwnerAccount: a.PublicKey,
+			Delegate:     *a.Delegate,
+			BlockHeight:  a.LastHeight,
+			BlockTime:    a.LastTime,
+			OwnerType:    string(model.RewardOwnerTypeDelegator),
 		}
 		result = append(result, dbr)
 	}

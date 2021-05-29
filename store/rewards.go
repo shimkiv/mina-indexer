@@ -15,15 +15,15 @@ type RewardStore struct {
 }
 
 // FetchRewardsByInterval fetches rewards by interval
-func (s *RewardStore) FetchRewardsByInterval(publicKey string, delegate string, from time.Time, to time.Time, timeInterval model.TimeInterval, rewardOwnerType model.RewardOwnerType) (model.RewardsSummary, error) {
+func (s *RewardStore) FetchRewardsByInterval(ownerAccount string, delegate string, from time.Time, to time.Time, timeInterval model.TimeInterval, rewardOwnerType model.RewardOwnerType) (model.RewardsSummary, error) {
 	var res model.RewardsSummary
 	q := strings.Replace(queries.BlockRewards, "$INTERVAL", "'"+timeInterval.String()+"'", -1)
 	var err error
 	if delegate == "" {
 		q = strings.Replace(q, "AND delegate = ?", "", -1)
-		err = s.db.Raw(q, publicKey, from, to, rewardOwnerType).Scan(&res).Error
+		err = s.db.Raw(q, ownerAccount, from, to, rewardOwnerType).Scan(&res).Error
 	} else {
-		err = s.db.Raw(q, publicKey, delegate, from, to, rewardOwnerType).Scan(&res).Error
+		err = s.db.Raw(q, ownerAccount, delegate, from, to, rewardOwnerType).Scan(&res).Error
 	}
 	if err != nil {
 		return res, err
