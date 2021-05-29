@@ -51,8 +51,9 @@ func TestCalculateWeight(t *testing.T) {
 func TestCalculateDelegatorReward(t *testing.T) {
 	w, _ := new(big.Float).SetString("0.3")
 	type args struct {
-		weight      big.Float
-		blockReward types.Amount
+		weight       big.Float
+		blockReward  types.Amount
+		validatorFee types.Percentage
 	}
 	tests := []struct {
 		name    string
@@ -63,15 +64,16 @@ func TestCalculateDelegatorReward(t *testing.T) {
 		{
 			name: "successful",
 			args: args{
-				weight:      *w,
-				blockReward: types.NewInt64Amount(100),
+				weight:       *w,
+				blockReward:  types.NewInt64Amount(100),
+				validatorFee: types.NewPercentage("5"),
 			},
 			result: types.NewAmount("28"),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res, err := CalculateDelegatorReward(tt.args.weight, tt.args.blockReward)
+			res, err := CalculateDelegatorReward(tt.args.weight, tt.args.blockReward, tt.args.validatorFee)
 			if err != nil {
 				assert.True(t, tt.wantErr)
 			} else {
@@ -83,7 +85,8 @@ func TestCalculateDelegatorReward(t *testing.T) {
 
 func TestCalculateValidatorReward(t *testing.T) {
 	type args struct {
-		blockReward types.Amount
+		blockReward  types.Amount
+		validatorFee types.Percentage
 	}
 	tests := []struct {
 		name    string
@@ -94,14 +97,15 @@ func TestCalculateValidatorReward(t *testing.T) {
 		{
 			name: "successful",
 			args: args{
-				blockReward: types.NewInt64Amount(100),
+				blockReward:  types.NewInt64Amount(100),
+				validatorFee: types.NewPercentage("5"),
 			},
 			result: types.NewAmount("5"),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res, err := CalculateValidatorReward(tt.args.blockReward)
+			res, err := CalculateValidatorReward(tt.args.blockReward, tt.args.validatorFee)
 			if err != nil {
 				assert.True(t, tt.wantErr)
 			} else {

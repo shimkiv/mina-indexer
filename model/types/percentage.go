@@ -26,6 +26,12 @@ func NewPercentage(src string) Percentage {
 	return Percentage{Float: n}
 }
 
+// NewFloat64Percentage returns a new percentage for the given float64 value
+func NewFloat64Percentage(val float64) Percentage {
+	n := big.NewFloat(val)
+	return Percentage{Float: n}
+}
+
 // Value returns a serialized value
 func (a Percentage) Value() (driver.Value, error) {
 	if a.Float != nil {

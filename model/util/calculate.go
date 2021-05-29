@@ -26,15 +26,14 @@ func CalculateWeight(balance types.Amount, totalStakedAmount types.Amount) (type
 }
 
 // CalculateValidatorReward calculates validator reward
-func CalculateValidatorReward(blockReward types.Amount) (types.Amount, error) {
+func CalculateValidatorReward(blockReward types.Amount, validatorFee types.Percentage) (types.Amount, error) {
 	vr, ok := new(big.Float).SetString(blockReward.String())
 	if !ok {
 		return types.Amount{}, errors.New("error with block reward amount")
 	}
 
-	// %5 validator fee
-	// TODO: fetch validators fee from https://api.staketab.com/mina/get_providers
-	vr = vr.Mul(vr, big.NewFloat(0.05))
+	validatorFee.Quo(validatorFee.Float, big.NewFloat(100))
+	vr = vr.Mul(vr, validatorFee.Float)
 	if !ok {
 		return types.Amount{}, errors.New("error with validator reward amount")
 	}
@@ -43,14 +42,15 @@ func CalculateValidatorReward(blockReward types.Amount) (types.Amount, error) {
 }
 
 // CalculateDelegatorReward calculates delegator reward
-func CalculateDelegatorReward(weight big.Float, blockReward types.Amount) (types.Amount, error) {
+func CalculateDelegatorReward(weight big.Float, blockReward types.Amount, validatorFee types.Percentage) (types.Amount, error) {
 	br, ok := new(big.Float).SetString(blockReward.String())
 	if !ok {
 		return types.Amount{}, errors.New("error with stake amount")
 	}
-
-	// %5 validator fee
-	br = br.Mul(br, big.NewFloat(0.95))
+	remaining := big.NewFloat(0)
+	remaining.Sub(big.NewFloat(100), validatorFee.Float)
+	validatorFee.Quo(remaining, big.NewFloat(100))
+	br = br.Mul(br, validatorFee.Float)
 	if !ok {
 		return types.Amount{}, errors.New("error with stake amount")
 	}

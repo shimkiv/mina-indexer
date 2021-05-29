@@ -9,7 +9,7 @@ import (
 )
 
 // Prepare generates a new models from the graph block data
-func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block) (*Data, error) {
+func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block, validatorEpochs []model.ValidatorEpoch) (*Data, error) {
 	block, err := mapper.BlockFromArchive(archiveBlock)
 	if err != nil {
 		return nil, err
@@ -28,7 +28,10 @@ func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block) (*Data, error
 	}
 
 	validatorBlockReward, _ := mapper.ValidatorBlockReward(validator)
-
+	creatorFee, err := mapper.FindValidatorFee(validatorEpochs, graphBlock.Creator)
+	if err != nil {
+		return nil, err
+	}
 	// Prepare transaction records
 	transactions, err := mapper.TransactionsFromArchive(archiveBlock)
 	if err != nil {
@@ -60,7 +63,7 @@ func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block) (*Data, error
 		return nil, err
 	}
 
-    delegatorBlockRewards := []model.BlockReward{}
+	delegatorBlockRewards := []model.BlockReward{}
 	if graphBlock != nil {
 		delegatorBlockRewards, err = mapper.DelegatorBlockRewards(accounts)
 		if err != nil {
@@ -72,6 +75,8 @@ func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block) (*Data, error
 		Block:                 block,
 		Validator:             validator,
 		ValidatorBlockReward:  validatorBlockReward,
+		CreatorFee:            creatorFee,
+		ValidatorEpochs:       validatorEpochs,
 		Accounts:              accounts,
 		DelegatorBlockRewards: delegatorBlockRewards,
 		Transactions:          transactions,
