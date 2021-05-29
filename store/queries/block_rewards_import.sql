@@ -1,5 +1,5 @@
 INSERT INTO block_rewards (
-  public_key,
+  owner_account,
   delegate,
   block_height,
   block_time,
@@ -8,6 +8,6 @@ INSERT INTO block_rewards (
 )
 VALUES @values
 
-ON CONFLICT (public_key, delegate, block_height, owner_type) DO UPDATE
+ON CONFLICT (owner_account, delegate, block_height, owner_type) DO UPDATE
 SET
   reward       = excluded.reward

@@ -4,7 +4,7 @@ SELECT
 FROM
   block_rewards
 WHERE
-  public_key = ?
+  owner_account = ?
   AND delegate = ?
   AND block_time BETWEEN ? AND ?
   AND owner_type = ?
