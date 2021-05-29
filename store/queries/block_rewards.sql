@@ -7,6 +7,6 @@ WHERE
   public_key = ?
   AND delegate = ?
   AND block_time BETWEEN ? AND ?
-  AND reward_owner_type = ?
+  AND owner_type = ?
 GROUP BY
   to_char(block_time, $INTERVAL)
