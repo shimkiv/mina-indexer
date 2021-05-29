@@ -41,12 +41,12 @@ func (s RewardStore) Import(records []model.BlockReward) error {
 	return bulk.Import(s.db, queries.BlockRewardsImport, len(records), func(idx int) bulk.Row {
 		tx := records[idx]
 		return bulk.Row{
-			tx.PublicKey,
+			tx.OwnerAccount,
 			tx.Delegate,
 			tx.BlockHeight,
 			tx.BlockTime,
 			tx.Reward,
-			tx.RewardOwnerType,
+			tx.OwnerType,
 		}
 	})
 }
