@@ -32,6 +32,13 @@ type ValidatorStat struct {
 	DelegationsAmount   string `json:"delegations_amount"`
 }
 
+type ValidatorEpoch struct {
+	ID           int              `json:"-"`
+	AccountId    string           `json:"account_id"`
+	Epoch        int              `json:"epoch"`
+	ValidatorFee types.Percentage `json:"validator_fee"`
+}
+
 // Validate returns an error if validator is invalid
 func (v Validator) Validate() error {
 	if v.PublicKey == "" {

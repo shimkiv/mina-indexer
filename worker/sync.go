@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/figment-networks/mina-indexer/client/staketab"
+	"github.com/figment-networks/mina-indexer/model/types"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -20,10 +22,11 @@ import (
 const unsafeBlockThreshold = 15
 
 type SyncWorker struct {
-	cfg           *config.Config
-	db            *store.Store
-	graphClient   *graph.Client
-	archiveClient *archive.Client
+	cfg            *config.Config
+	db             *store.Store
+	graphClient    *graph.Client
+	archiveClient  *archive.Client
+	staketabClient *staketab.Client
 }
 
 func NewSyncWorker(
@@ -31,12 +34,14 @@ func NewSyncWorker(
 	db *store.Store,
 	graphClient *graph.Client,
 	archiveClient *archive.Client,
+	staketabClient *staketab.Client,
 ) SyncWorker {
 	return SyncWorker{
-		cfg:           cfg,
-		db:            db,
-		graphClient:   graphClient,
-		archiveClient: archiveClient,
+		cfg:            cfg,
+		db:             db,
+		graphClient:    graphClient,
+		archiveClient:  archiveClient,
+		staketabClient: staketabClient,
 	}
 }
 
@@ -214,12 +219,32 @@ func (w SyncWorker) processBlock(hash string) error {
 		graphBlock = nil
 	}
 
+	validatorEpochs, err := w.db.ValidatorsEpochs.GetValidatorEpochs(graphBlock.ProtocolState.ConsensusState.Epoch, graphBlock.Creator)
+	if err != nil {
+		if err != store.ErrNotFound {
+			return err
+		}
+		providers, err := w.staketabClient.GetProviders()
+		if err != nil {
+			return err
+		}
+		validatorEpochs = []model.ValidatorEpoch{}
+		for _, p := range providers.StakingProviders {
+			validatorEpoch := model.ValidatorEpoch{
+				AccountId:    p.ProviderAddress,
+				ValidatorFee: types.NewFloat64Percentage(p.ProviderFee),
+			}
+			fmt.Sscanf(graphBlock.ProtocolState.ConsensusState.Epoch, "%d", &validatorEpoch.Epoch)
+			validatorEpochs = append(validatorEpochs, validatorEpoch)
+		}
+	}
+
 	log.
 		WithField("hash", archiveBlock.StateHash).
 		WithField("height", archiveBlock.Height).
 		Debug("processing block")
 
-	data, err := indexing.Prepare(archiveBlock, graphBlock)
+	data, err := indexing.Prepare(archiveBlock, graphBlock, validatorEpochs)
 	if err != nil {
 		return err
 	}

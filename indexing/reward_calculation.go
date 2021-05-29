@@ -45,14 +45,14 @@ func RewardCalculation(db *store.Store, data *Data) error {
 			return err
 		}
 
-		res, err := util.CalculateDelegatorReward(weight, blockReward)
+		res, err := util.CalculateDelegatorReward(weight, blockReward, data.CreatorFee)
 		if err != nil {
 			return err
 		}
 		dbr.Reward = res
 	}
 
-	validatorReward, err := util.CalculateValidatorReward(blockReward)
+	validatorReward, err := util.CalculateValidatorReward(blockReward, data.CreatorFee)
 	if err != nil {
 		return err
 	}

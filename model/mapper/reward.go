@@ -1,6 +1,8 @@
 package mapper
 
 import (
+	"errors"
+
 	"github.com/figment-networks/mina-indexer/client/graph"
 	"github.com/figment-networks/mina-indexer/model"
 	"github.com/figment-networks/mina-indexer/model/types"
@@ -33,6 +35,16 @@ func DelegatorBlockRewards(accounts []model.Account) ([]model.BlockReward, error
 	}
 
 	return result, nil
+}
+
+// ValidatorBlockReward returns validator reward models references from the block data
+func FindValidatorFee(validatorEpochs []model.ValidatorEpoch, creator string) (types.Percentage, error) {
+	for _, ve := range validatorEpochs {
+		if ve.AccountId == creator {
+			return ve.ValidatorFee, nil
+		}
+	}
+	return types.Percentage{}, errors.New("validator fee not found")
 }
 
 // TODO: fetch coinbase from graphQL
