@@ -24,9 +24,9 @@ func NewDefaultClient(endpoint string) *Client {
 	return NewClient(http.DefaultClient, endpoint)
 }
 
-// GetProviders returns providers
-func (c Client) GetProviders() (Providers, error) {
-	resp, err := c.client.Get(c.endpoint + "/get_providers")
+// GetAllProviders returns all providers
+func (c Client) GetAllProviders() (Providers, error) {
+	resp, err := c.client.Get(c.endpoint + "/get_all_providers")
 	if err != nil {
 		return Providers{}, err
 	}

@@ -37,7 +37,7 @@ func RewardCalculation(db *store.Store, data *Data) error {
 		recordsMap[r.PublicKey] = *r.Weight.Float
 	}
 
-	for _, dbr := range data.DelegatorBlockRewards {
+	for _, dbr := range data.DelegatorsBlockRewards {
 		weight, ok := recordsMap[dbr.OwnerAccount]
 		if !ok {
 			err = errors.New("record is not found for " + dbr.OwnerAccount)

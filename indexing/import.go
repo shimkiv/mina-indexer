@@ -34,8 +34,8 @@ func Import(db *store.Store, data *Data) error {
 		return err
 	}
 
-	log.WithField("count", len(data.DelegatorBlockRewards)).Debug("creating delegator block rewards")
-	if err := db.Rewards.Import(data.DelegatorBlockRewards); err != nil {
+	log.WithField("count", len(data.DelegatorsBlockRewards)).Debug("creating delegators block rewards")
+	if err := db.Rewards.Import(data.DelegatorsBlockRewards); err != nil {
 		return err
 	}
 
