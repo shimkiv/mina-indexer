@@ -34,7 +34,7 @@ func (s *ValidatorsEpochsStore) GetValidatorEpochs(epoch string, accountId strin
 	scope := s.db
 
 	if accountId != "" {
-		scope = scope.Where("accountId = ?", accountId)
+		scope = scope.Where("account_id = ?", accountId)
 	}
 	if epoch != "" {
 		scope = scope.Where("epoch = ?", epoch)

@@ -39,6 +39,11 @@ type ValidatorEpoch struct {
 	ValidatorFee types.Percentage `json:"validator_fee"`
 }
 
+// TableName returns the model table name
+func (ValidatorEpoch) TableName() string {
+	return "validator_epochs"
+}
+
 // Validate returns an error if validator is invalid
 func (v Validator) Validate() error {
 	if v.PublicKey == "" {
