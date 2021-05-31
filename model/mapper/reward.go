@@ -47,7 +47,6 @@ func FindValidatorFee(validatorEpochs []model.ValidatorEpoch, creator string) (t
 	return types.Percentage{}, errors.New("validator fee not found")
 }
 
-// TODO: fetch coinbase from graphQL
 func CoinbaseReward(block *graph.Block) types.Amount {
 	if block.Transactions != nil {
 		return types.NewAmount(block.Transactions.Coinbase)
