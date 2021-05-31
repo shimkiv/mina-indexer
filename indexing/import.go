@@ -44,9 +44,11 @@ func Import(db *store.Store, data *Data) error {
 		return err
 	}
 
-	log.WithField("count", 1).Debug("creating validator block reward")
-	if err := db.Rewards.Import([]model.BlockReward{*data.ValidatorBlockReward}); err != nil {
-		return err
+	if data.ValidatorBlockReward != nil {
+		log.WithField("count", 1).Debug("creating validator block reward")
+		if err := db.Rewards.Import([]model.BlockReward{*data.ValidatorBlockReward}); err != nil {
+			return err
+		}
 	}
 
 	log.WithField("count", len(data.ValidatorEpochs)).Debug("creating validator epochs")
