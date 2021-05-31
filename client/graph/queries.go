@@ -117,6 +117,11 @@ var (
 		}
 		transactions {
 			coinbase
+			feeTransfer {
+				fee
+				recipient
+				type
+			}
 		}`
 
 	queryAccount = `
