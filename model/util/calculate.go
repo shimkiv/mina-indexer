@@ -32,13 +32,19 @@ func CalculateValidatorReward(blockReward types.Amount, validatorFee types.Perce
 		return types.Amount{}, errors.New("error with block reward amount")
 	}
 
-	validatorFee.Quo(validatorFee.Float, big.NewFloat(100))
-	vr = vr.Mul(vr, validatorFee.Float)
+	fee, ok := new(big.Float).SetString(validatorFee.String())
+	if !ok {
+		return types.Amount{}, errors.New("error with validator fee")
+	}
+	fee.Quo(fee, big.NewFloat(100))
+	vr.Mul(vr, fee)
 	if !ok {
 		return types.Amount{}, errors.New("error with validator reward amount")
 	}
 
-	return types.NewAmount(vr.String()), nil
+	result := new(big.Int)
+	vr.Int(result)
+	return types.NewAmount(result.String()), nil
 }
 
 // CalculateDelegatorReward calculates delegator reward
