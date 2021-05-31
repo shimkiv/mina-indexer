@@ -32,6 +32,9 @@ func DelegatorBlockRewards(accounts []model.Account) ([]model.BlockReward, error
 		}
 		if a.Delegate != nil {
 			dbr.Delegate = *a.Delegate
+		} else {
+			// self delegation
+			dbr.Delegate = a.PublicKey
 		}
 		result = append(result, dbr)
 	}

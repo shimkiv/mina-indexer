@@ -16,7 +16,7 @@ func RewardCalculation(db *store.Store, data *Data) error {
 		return nil
 	}
 	blockReward := data.Block.Coinbase.
-		Mul(data.Block.TransactionsFees).
+		Add(data.Block.TransactionsFees).
 		Sub(data.Block.SnarkJobsFees)
 
 	ledger, err := db.Staking.FindLedger(data.Block.Epoch)
