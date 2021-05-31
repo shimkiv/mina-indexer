@@ -28,10 +28,14 @@ func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block, validatorEpoc
 	}
 
 	validatorBlockReward, _ := mapper.ValidatorBlockReward(validator)
-	creatorFee, err := mapper.FindValidatorFee(validatorEpochs, graphBlock.Creator)
-	if err != nil {
-		return nil, err
+	var creatorFee types.Percentage
+	if graphBlock != nil {
+		creatorFee, err = mapper.FindValidatorFee(validatorEpochs, graphBlock.Creator)
+		if err != nil {
+			return nil, err
+		}
 	}
+
 	// Prepare transaction records
 	transactions, err := mapper.TransactionsFromArchive(archiveBlock)
 	if err != nil {
@@ -72,16 +76,16 @@ func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block, validatorEpoc
 	}
 
 	data := &Data{
-		Block:                 block,
-		Validator:             validator,
-		ValidatorBlockReward:  validatorBlockReward,
-		CreatorFee:            creatorFee,
-		ValidatorEpochs:       validatorEpochs,
-		Accounts:              accounts,
-		DelegatorBlockRewards: delegatorBlockRewards,
-		Transactions:          transactions,
-		Snarkers:              snarkers,
-		SnarkJobs:             snarkJobs,
+		Block:                  block,
+		Validator:              validator,
+		ValidatorBlockReward:   validatorBlockReward,
+		CreatorFee:             creatorFee,
+		ValidatorEpochs:        validatorEpochs,
+		Accounts:               accounts,
+		DelegatorsBlockRewards: delegatorBlockRewards,
+		Transactions:           transactions,
+		Snarkers:               snarkers,
+		SnarkJobs:              snarkJobs,
 	}
 
 	return data, nil

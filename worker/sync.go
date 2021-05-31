@@ -219,23 +219,25 @@ func (w SyncWorker) processBlock(hash string) error {
 		graphBlock = nil
 	}
 
-	validatorEpochs, err := w.db.ValidatorsEpochs.GetValidatorEpochs(graphBlock.ProtocolState.ConsensusState.Epoch, graphBlock.Creator)
-	if err != nil {
-		if err != store.ErrNotFound {
-			return err
-		}
-		providers, err := w.staketabClient.GetProviders()
+	validatorEpochs := []model.ValidatorEpoch{}
+	if graphBlock != nil {
+		validatorEpochs, err = w.db.ValidatorsEpochs.GetValidatorEpochs(graphBlock.ProtocolState.ConsensusState.Epoch, graphBlock.Creator)
 		if err != nil {
-			return err
-		}
-		validatorEpochs = []model.ValidatorEpoch{}
-		for _, p := range providers.StakingProviders {
-			validatorEpoch := model.ValidatorEpoch{
-				AccountId:    p.ProviderAddress,
-				ValidatorFee: types.NewFloat64Percentage(p.ProviderFee),
+			if err != store.ErrNotFound {
+				return err
 			}
-			fmt.Sscanf(graphBlock.ProtocolState.ConsensusState.Epoch, "%d", &validatorEpoch.Epoch)
-			validatorEpochs = append(validatorEpochs, validatorEpoch)
+			providers, err := w.staketabClient.GetAllProviders()
+			if err != nil {
+				return err
+			}
+			for _, p := range providers.StakingProviders {
+				validatorEpoch := model.ValidatorEpoch{
+					AccountId:    p.ProviderAddress,
+					ValidatorFee: types.NewFloat64Percentage(p.ProviderFee),
+				}
+				fmt.Sscanf(graphBlock.ProtocolState.ConsensusState.Epoch, "%d", &validatorEpoch.Epoch)
+				validatorEpochs = append(validatorEpochs, validatorEpoch)
+			}
 		}
 	}
 
