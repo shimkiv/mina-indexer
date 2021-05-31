@@ -114,7 +114,10 @@ var (
 			fee
 			prover
 			workIds
-		}`
+		}
+        transactions {
+           coinbase
+        }`
 
 	queryAccount = `
 		query {
