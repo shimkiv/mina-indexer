@@ -12,7 +12,7 @@ import (
 
 // RewardCalculation calculates rewards
 func RewardCalculation(db *store.Store, data *Data) error {
-	if data.Block.Coinbase.Int == nil || data.Block.TransactionsFees.Int == nil || data.Block.SnarkJobsFees.Int64() == 0 {
+	if data.CreatorFee.Float == nil || data.Block.Coinbase.Int == nil || data.Block.TransactionsFees.Int == nil || data.Block.SnarkJobsFees.Int64() == 0 {
 		return nil
 	}
 	blockReward := data.Block.Coinbase.

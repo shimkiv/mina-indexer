@@ -27,13 +27,14 @@ func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block, validatorEpoc
 		return nil, err
 	}
 
-	validatorBlockReward, _ := mapper.ValidatorBlockReward(validator)
+	var validatorBlockReward *model.BlockReward
 	var creatorFee types.Percentage
 	if graphBlock != nil {
 		creatorFee, err = mapper.FindValidatorFee(validatorEpochs, graphBlock.Creator)
 		if err != nil {
 			return nil, err
 		}
+		validatorBlockReward, _ = mapper.ValidatorBlockReward(validator)
 	}
 
 	// Prepare transaction records
