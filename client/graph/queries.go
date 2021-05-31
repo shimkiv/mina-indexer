@@ -115,9 +115,9 @@ var (
 			prover
 			workIds
 		}
-        transactions {
-           coinbase
-        }`
+		transactions {
+			coinbase
+		}`
 
 	queryAccount = `
 		query {
