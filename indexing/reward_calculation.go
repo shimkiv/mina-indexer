@@ -15,9 +15,8 @@ func RewardCalculation(db *store.Store, data *Data) error {
 	if data.CreatorFee.Float == nil || data.Block.Coinbase.Int == nil || data.Block.TransactionsFees.Int == nil || data.Block.SnarkJobsFees.Int64() == 0 {
 		return nil
 	}
-	blockReward := data.Block.Coinbase.
-		Add(data.Block.TransactionsFees).
-		Sub(data.Block.SnarkJobsFees)
+	blockReward := data.Block.Coinbase.Add(data.Block.TransactionsFees)
+	blockReward = blockReward.Sub(data.Block.SnarkJobsFees)
 
 	ledger, err := db.Staking.FindLedger(data.Block.Epoch)
 	if err != nil && err != store.ErrNotFound {
@@ -37,7 +36,7 @@ func RewardCalculation(db *store.Store, data *Data) error {
 		recordsMap[r.PublicKey] = *r.Weight.Float
 	}
 
-	for _, dbr := range data.DelegatorsBlockRewards {
+	for i, dbr := range data.DelegatorsBlockRewards {
 		weight, ok := recordsMap[dbr.OwnerAccount]
 		if !ok {
 			err = errors.New("record is not found for " + dbr.OwnerAccount)
@@ -49,7 +48,7 @@ func RewardCalculation(db *store.Store, data *Data) error {
 		if err != nil {
 			return err
 		}
-		dbr.Reward = res
+		data.DelegatorsBlockRewards[i].Reward = res
 	}
 
 	validatorReward, err := util.CalculateValidatorReward(blockReward, data.CreatorFee)
