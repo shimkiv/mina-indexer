@@ -225,6 +225,8 @@ type FeeTransfer struct {
 	Recipient string `json:"recipient"`
 	// Amount that the recipient is paid in this fee transfer
 	Fee string `json:"fee"`
+	// Transfer type
+	Type string `json:"type"`
 }
 
 type Histogram struct {

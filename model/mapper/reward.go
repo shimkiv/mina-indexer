@@ -20,22 +20,18 @@ func ValidatorBlockReward(v *model.Validator) (*model.BlockReward, error) {
 }
 
 // DelegatorBlockRewards returns delegator reward models references from the block data
-func DelegatorBlockRewards(accounts []model.Account) ([]model.BlockReward, error) {
+func DelegatorBlockRewards(accounts []model.LedgerEntry, block *graph.Block) ([]model.BlockReward, error) {
 	result := []model.BlockReward{}
 	for _, a := range accounts {
 		// reward to be calculated next step
 		dbr := model.BlockReward{
 			OwnerAccount: a.PublicKey,
-			BlockHeight:  a.LastHeight,
-			BlockTime:    a.LastTime,
+			Delegate:     a.Delegate,
+			BlockHeight:  BlockHeight(block),
+			BlockTime:    BlockTime(block),
 			OwnerType:    string(model.RewardOwnerTypeDelegator),
 		}
-		if a.Delegate != nil {
-			dbr.Delegate = *a.Delegate
-		} else {
-			// self delegation
-			dbr.Delegate = a.PublicKey
-		}
+
 		result = append(result, dbr)
 	}
 
@@ -63,7 +59,11 @@ func TransactionFees(block *graph.Block) types.Amount {
 	res := types.NewInt64Amount(0)
 	if block.Transactions != nil && block.Transactions.FeeTransfer != nil {
 		for _, transfer := range block.Transactions.FeeTransfer {
-			res = res.Add(types.NewAmount(transfer.Fee))
+			if transfer.Type == model.TxTypeFeeTransfer {
+				res = res.Add(types.NewAmount(transfer.Fee))
+			} else if transfer.Type == model.TxTypeCoinbaseFeeTransfer {
+				res = res.Sub(types.NewAmount(transfer.Fee))
+			}
 		}
 	}
 	return res
