@@ -222,10 +222,10 @@ func (w SyncWorker) processBlock(hash string) error {
 	validatorEpochs := []model.ValidatorEpoch{}
 	if graphBlock != nil {
 		validatorEpochs, err = w.db.ValidatorsEpochs.GetValidatorEpochs(graphBlock.ProtocolState.ConsensusState.Epoch, graphBlock.Creator)
-		if err != nil {
-			if err != store.ErrNotFound {
-				return err
-			}
+		if err != nil && err != store.ErrNotFound {
+			return err
+		}
+		if len(validatorEpochs) == 0 {
 			providers, err := w.staketabClient.GetAllProviders()
 			if err != nil {
 				return err
