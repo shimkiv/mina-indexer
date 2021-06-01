@@ -375,30 +375,20 @@ func (s *Server) GetDelegations(c *gin.Context) {
 // GeRewards returns rewards
 func (s Server) GetRewards(c *gin.Context) {
 	var params rewardsParams
-	if err := c.ShouldBindQuery(&params); err != nil {
-		badRequest(c, errors.New("invalid from or/and to date or missing interval or validator id"))
+	if err := c.BindQuery(&params); err != nil {
+		badRequest(c, errors.New("missing parameter"))
 		return
 	}
-	var interval model.TimeInterval
-	var ok bool
-	if interval, ok = model.GetTypeForTimeInterval(params.Interval); !ok {
-		if shouldReturn(c, errors.New("time interval type is wrong")) {
-			return
-		}
+	if err := params.Validate(); err != nil {
+		badRequest(c, err)
+		return
 	}
-
-	var rewardOwnerType model.RewardOwnerType
-	if rewardOwnerType, ok = model.GetTypeForRewardOwnerType(params.RewardOwnerType); !ok {
-		if shouldReturn(c, errors.New("owner type is wrong")) {
-			return
-		}
-	}
-
+	interval, _ := model.GetTypeForTimeInterval(params.Interval)
+	rewardOwnerType, _ := model.GetTypeForRewardOwnerType(params.RewardOwnerType)
 	resp, err := s.db.Rewards.FetchRewardsByInterval(c.Param("id"), params.ValidatorId, params.From, params.To, interval, rewardOwnerType)
 	if shouldReturn(c, err) {
 		return
 	}
-
 	jsonOk(c, resp)
 }
 
