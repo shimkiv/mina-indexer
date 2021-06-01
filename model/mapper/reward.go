@@ -2,6 +2,7 @@ package mapper
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/figment-networks/mina-indexer/client/graph"
 	"github.com/figment-networks/mina-indexer/model"
@@ -59,9 +60,9 @@ func TransactionFees(block *graph.Block) types.Amount {
 	res := types.NewInt64Amount(0)
 	if block.Transactions != nil && block.Transactions.FeeTransfer != nil {
 		for _, transfer := range block.Transactions.FeeTransfer {
-			if transfer.Type == model.TxTypeFeeTransfer {
+			if strings.ToLower(transfer.Type) == model.TxTypeFeeTransfer {
 				res = res.Add(types.NewAmount(transfer.Fee))
-			} else if transfer.Type == model.TxTypeCoinbaseFeeTransfer {
+			} else if strings.ToLower(transfer.Type) == model.TxTypeCoinbaseFeeTransfer {
 				res = res.Sub(types.NewAmount(transfer.Fee))
 			}
 		}
