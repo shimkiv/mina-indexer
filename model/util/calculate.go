@@ -26,42 +26,41 @@ func CalculateWeight(balance types.Amount, totalStakedAmount types.Amount) (type
 }
 
 // CalculateValidatorReward calculates validator reward
-func CalculateValidatorReward(blockReward types.Amount, validatorFee types.Percentage) (types.Amount, error) {
+func CalculateValidatorReward(blockReward types.Amount, validatorFee types.Percentage) (types.Percentage, error) {
 	vr, ok := new(big.Float).SetString(blockReward.String())
 	if !ok {
-		return types.Amount{}, errors.New("error with block reward amount")
+		return types.Percentage{}, errors.New("error with block reward amount")
 	}
 
 	fee, ok := new(big.Float).SetString(validatorFee.String())
 	if !ok {
-		return types.Amount{}, errors.New("error with validator fee")
+		return types.Percentage{}, errors.New("error with validator fee")
 	}
 	fee.Quo(fee, big.NewFloat(100))
 	vr.Mul(vr, fee)
 	if !ok {
-		return types.Amount{}, errors.New("error with validator reward amount")
+		return types.Percentage{}, errors.New("error with validator reward amount")
 	}
 
 	result := new(big.Int)
 	vr.Int(result)
-	return types.NewAmount(result.String()), nil
+	return types.NewPercentage(result.String()), nil
 }
 
 // CalculateDelegatorReward calculates delegator reward
-func CalculateDelegatorReward(weight big.Float, blockReward types.Amount, validatorFee types.Percentage) (types.Amount, error) {
+func CalculateDelegatorReward(weight big.Float, blockReward types.Amount, validatorFee types.Percentage) (types.Percentage, error) {
 	br, ok := new(big.Float).SetString(blockReward.String())
 	if !ok {
-		return types.Amount{}, errors.New("error with stake amount")
+		return types.Percentage{}, errors.New("error with stake amount")
 	}
 	remaining := big.NewFloat(0)
 	remaining.Sub(big.NewFloat(100), validatorFee.Float)
-	validatorFee.Quo(remaining, big.NewFloat(100))
-	br = br.Mul(br, validatorFee.Float)
+	remaining.Quo(remaining, big.NewFloat(100))
+	br = br.Mul(br, remaining)
 	if !ok {
-		return types.Amount{}, errors.New("error with stake amount")
+		return types.Percentage{}, errors.New("error with stake amount")
 	}
-
 	res := new(big.Float)
 	res.Mul(br, &weight)
-	return types.NewAmount(res.String()), nil
+	return types.NewPercentage(res.String()), nil
 }

@@ -1,6 +1,6 @@
 -- +goose Up
 CREATE TABLE validator_epochs (
-  id              SERIAL NOT NULL PRIMARY KEY,
+  id              SERIAL PRIMARY KEY,
   account_id      VARCHAR NOT NULL,
   epoch           INTEGER DEFAULT 0,
   validator_fee   DECIMAL(65, 2) NOT NULL

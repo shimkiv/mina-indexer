@@ -58,7 +58,7 @@ func TestCalculateDelegatorReward(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		result  types.Amount
+		result  types.Percentage
 		wantErr bool
 	}{
 		{
@@ -68,7 +68,7 @@ func TestCalculateDelegatorReward(t *testing.T) {
 				blockReward:  types.NewInt64Amount(100),
 				validatorFee: types.NewPercentage("5"),
 			},
-			result: types.NewAmount("28"),
+			result: types.NewPercentage("28.5"),
 		},
 	}
 	for _, tt := range tests {

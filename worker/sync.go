@@ -231,6 +231,9 @@ func (w SyncWorker) processBlock(hash string, ledgerData *mapper.LedgerData) err
 				return err
 			}
 			for _, p := range providers.StakingProviders {
+				if p.ProviderAddress == "" {
+					continue
+				}
 				validatorEpoch := model.ValidatorEpoch{
 					AccountId:    p.ProviderAddress,
 					ValidatorFee: types.NewFloat64Percentage(p.ProviderFee),

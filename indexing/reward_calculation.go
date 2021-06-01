@@ -43,7 +43,6 @@ func RewardCalculation(db *store.Store, data *Data) error {
 			log.WithError(err)
 			return err
 		}
-
 		res, err := util.CalculateDelegatorReward(weight, blockReward, data.CreatorFee)
 		if err != nil {
 			return err

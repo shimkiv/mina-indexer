@@ -5,7 +5,7 @@ CREATE TABLE block_rewards (
   delegate              TEXT NOT NULL,
   block_height          CHAIN_HEIGHT NOT NULL,
   block_time            CHAIN_TIME NOT NULL,
-  reward                CHAIN_CURRENCY,
+  reward                NUMERIC(65, 4),
   owner_type            OWNER_TYPE
 );
 
