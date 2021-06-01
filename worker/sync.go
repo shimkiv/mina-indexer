@@ -137,7 +137,7 @@ func (w SyncWorker) processBlock(hash string, ledgerData *mapper.LedgerData) err
 
 	validatorEpochs := []model.ValidatorEpoch{}
 	if graphBlock != nil {
-		validatorEpochs, err = w.db.ValidatorsEpochs.GetValidatorEpochs(graphBlock.ProtocolState.ConsensusState.Epoch, graphBlock.Creator)
+		validatorEpochs, err = w.db.ValidatorsEpochs.GetValidatorEpochs(graphBlock.ProtocolState.ConsensusState.Epoch, "")
 		if err != nil && err != store.ErrNotFound {
 			return err
 		}
@@ -225,7 +225,14 @@ func (w SyncWorker) processStakingLedger() (*mapper.LedgerData, error) {
 
 	// We already have current epoch ledger, no need to import it.
 	if currentLedger != nil && currentLedger.EntriesCount > 0 {
-		return nil, nil
+		records, err := w.db.Staking.LedgerRecords(currentLedger.ID)
+		if err != nil && err != store.ErrNotFound {
+			return nil, err
+		}
+		return &mapper.LedgerData{
+			Ledger:  currentLedger,
+			Entries: records,
+		}, nil
 	}
 
 	ledger, err := w.archiveClient.StakingLedger(archive.LedgerTypeCurrent)
