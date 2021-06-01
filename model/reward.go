@@ -23,8 +23,8 @@ func (dbr BlockReward) String() string {
 }
 
 type RewardsSummary struct {
-	Interval string       `json:"interval"`
-	Amount   types.Amount `json:"amount"`
+	Interval string           `json:"interval"`
+	Amount   types.Percentage `json:"amount"`
 }
 
 type TimeInterval uint
