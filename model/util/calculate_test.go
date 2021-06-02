@@ -4,8 +4,10 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/figment-networks/mina-indexer/model/types"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/figment-networks/mina-indexer/model"
+	"github.com/figment-networks/mina-indexer/model/types"
 )
 
 func TestCalculateWeight(t *testing.T) {
@@ -114,3 +116,68 @@ func TestCalculateValidatorReward(t *testing.T) {
 		})
 	}
 }
+
+func TestCalculateSuperchargedWeighting(t *testing.T) {
+	type args struct {
+		block model.Block
+	}
+	tests := []struct {
+		name    string
+		args    args
+		result  types.Percentage
+		wantErr bool
+	}{
+		{
+			name: "successful zero transaction fee",
+			args: args{
+				block: model.Block{
+					Coinbase:         types.NewAmount("200"),
+					TransactionsFees: types.NewAmount("0"),
+				},
+			},
+			result: types.NewPercentage("2"),
+		},
+		{
+			name: "successful same amount transaction fee and coinbase",
+			args: args{
+				block: model.Block{
+					Coinbase:         types.NewAmount("200"),
+					TransactionsFees: types.NewAmount("200"),
+				},
+			},
+			result: types.NewPercentage("1.5"),
+		},
+		{
+			name: "successful low transaction fee",
+			args: args{
+				block: model.Block{
+					Coinbase:         types.NewAmount("200"),
+					TransactionsFees: types.NewAmount("5"),
+				},
+			},
+			result: types.NewPercentage("1.975609756"),
+		},
+		{
+			name: "successful high transaction fee",
+			args: args{
+				block: model.Block{
+					Coinbase:         types.NewAmount("200"),
+					TransactionsFees: types.NewAmount("10000"),
+				},
+			},
+			result: types.NewPercentage("1.019607843"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res, err := CalculateSuperchargedWeighting(tt.args.block)
+			if err != nil {
+				assert.True(t, tt.wantErr)
+			} else {
+				assert.Equal(t, res.String(), tt.result.String())
+			}
+		})
+	}
+}
+
+// TODO: unit test for setting heights

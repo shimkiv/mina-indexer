@@ -31,6 +31,10 @@ func Account(block *graph.Block, input *graph.Account) (*model.Account, error) {
 		acc.Nonce = util.MustUInt64(*input.Nonce)
 	}
 
+	if input.Locked != nil {
+		acc.Supercharged = !(*input.Locked)
+	}
+
 	return acc, acc.Validate()
 }
 

@@ -11,6 +11,7 @@ import (
 type Account struct {
 	ID             string       `json:"-"`
 	PublicKey      string       `json:"public_key"`
+	Supercharged   bool         `json:"supercharged"`
 	Delegate       *string      `json:"delegate"`
 	Balance        types.Amount `json:"balance"`
 	BalanceUnknown types.Amount `json:"balance_unknown"`
