@@ -66,7 +66,7 @@ func CalculateDelegatorReward(weight big.Float, blockReward types.Amount, valida
 	return types.NewPercentage(res.String()), nil
 }
 
-// CalculateDelegatorReward calculates delegator reward
+// CalculateSuperchargedWeighting calculates supercharged weighting
 func CalculateSuperchargedWeighting(block model.Block) (types.Percentage, error) {
 	trFees, ok := new(big.Float).SetString(block.TransactionsFees.String())
 	if !ok {
@@ -84,8 +84,24 @@ func CalculateSuperchargedWeighting(block model.Block) (types.Percentage, error)
 	return types.NewPercentage(res.String()), nil
 }
 
-// TODO: change method name for not supercharged
-func SetWeights(StakedAmount types.Amount, records []model.LedgerEntry) error {
+// CalculateSuperchargedContribution calculates supercharged contribution
+func CalculateSuperchargedContribution(superchargedWeighting, timedWeighting types.Percentage) (types.Percentage, error) {
+	sw, ok := new(big.Float).SetString(superchargedWeighting.String())
+	if !ok {
+		return types.Percentage{}, errors.New("error with supercharged weighting")
+	}
+	tw, ok := new(big.Float).SetString(timedWeighting.String())
+	if !ok {
+		return types.Percentage{}, errors.New("error with timed weighting")
+	}
+	res := sw.Sub(sw, big.NewFloat(1))
+	res = res.Mul(sw, tw)
+	res = res.Add(sw, big.NewFloat(1))
+	return types.NewPercentage(res.String()), nil
+}
+
+// CalculateWeightsNonSupercharged calculates weights when block reward is not doubled for supercharged
+func CalculateWeightsNonSupercharged(StakedAmount types.Amount, records []model.LedgerEntry) error {
 	for _, r := range records {
 		w, err := CalculateWeight(r.Balance, StakedAmount)
 		if err != nil {
@@ -93,5 +109,42 @@ func SetWeights(StakedAmount types.Amount, records []model.LedgerEntry) error {
 		}
 		r.Weight = w
 	}
+	return nil
+}
+
+// CalculateWeightsSupercharged calculates weights when block reward is doubled for supercharged
+func CalculateWeightsSupercharged(superchargedContribution types.Percentage, records []model.LedgerEntry) error {
+	sum := new(big.Float)
+	sc := new(big.Float)
+	bln := new(big.Float)
+	stk := new(big.Float)
+	w := new(big.Float)
+	var ok bool
+
+	// pool stakes
+	for _, r := range records {
+		sc, ok = sc.SetString(superchargedContribution.String())
+		if !ok {
+			return errors.New("error with supercharged contribution")
+		}
+		bln, ok := bln.SetString(r.Balance.String())
+		if !ok {
+			return errors.New("error with balance")
+		}
+		stk = bln.Mul(bln, sc)
+		r.Weight = types.NewPercentage(stk.String())
+		sum.Add(sum, stk)
+	}
+
+	// pool weights
+	for _, r := range records {
+		w, ok = new(big.Float).SetString(r.Weight.String())
+		if !ok {
+			return errors.New("error with weight")
+		}
+		w = w.Quo(w, sum)
+		r.Weight = types.NewPercentage(w.String())
+	}
+
 	return nil
 }

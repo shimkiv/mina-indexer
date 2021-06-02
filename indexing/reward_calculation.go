@@ -7,6 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/figment-networks/mina-indexer/model/mapper"
+	"github.com/figment-networks/mina-indexer/model/types"
 	"github.com/figment-networks/mina-indexer/model/util"
 	"github.com/figment-networks/mina-indexer/store"
 )
@@ -37,11 +38,29 @@ func RewardCalculation(db *store.Store, data *Data) error {
 		return err
 	}
 
-	// update heights
-	err = util.SetWeights(ledger.StakedAmount, records)
-	if err != nil {
-		return err
+	if !data.CreatorAccount.Supercharged {
+		err = util.CalculateWeightsNonSupercharged(ledger.StakedAmount, records)
+		if err != nil {
+			return err
+		}
+	} else {
+		superchargedWeighting, err := util.CalculateSuperchargedWeighting(*data.Block)
+		if err != nil {
+			return err
+		}
+		// TODO: check how to get time weighted
+		timedWeighting := types.NewPercentage("1")
+		superchargedContribution, err := util.CalculateSuperchargedContribution(superchargedWeighting, timedWeighting)
+		if err != nil {
+			return err
+		}
+		err = util.CalculateWeightsSupercharged(superchargedContribution, records)
+		if err != nil {
+			return err
+		}
 	}
+
+	// update db for weights
 	err = db.Staking.CreateLedgerEntries(records)
 	if err != nil {
 		return err
