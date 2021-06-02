@@ -335,11 +335,6 @@ func (w SyncWorker) processStakingLedger() (*mapper.LedgerData, error) {
 	}
 	ledgerData.UpdateLedgerID()
 
-	err = ledgerData.SetWeights()
-	if err != nil {
-		return nil, err
-	}
-
 	err = w.db.Staking.CreateLedgerEntries(ledgerData.Entries)
 	if err != nil {
 		return nil, err

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math/big"
 
+	"github.com/figment-networks/mina-indexer/model"
 	"github.com/figment-networks/mina-indexer/model/types"
 )
 
@@ -63,4 +64,34 @@ func CalculateDelegatorReward(weight big.Float, blockReward types.Amount, valida
 	res := new(big.Float)
 	res.Mul(br, &weight)
 	return types.NewPercentage(res.String()), nil
+}
+
+// CalculateDelegatorReward calculates delegator reward
+func CalculateSuperchargedWeighting(block model.Block) (types.Percentage, error) {
+	trFees, ok := new(big.Float).SetString(block.TransactionsFees.String())
+	if !ok {
+		return types.Percentage{}, errors.New("error with transaction fees")
+	}
+	coinbase, ok := new(big.Float).SetString(block.Coinbase.String())
+	if !ok {
+		return types.Percentage{}, errors.New("error with coinbase")
+	}
+	denom := trFees.Quo(trFees, coinbase)
+	denom = denom.Add(denom, new(big.Float).SetFloat64(1))
+	enum := new(big.Float).SetFloat64(1)
+	enum = enum.Quo(enum, denom)
+	res := enum.Add(enum, new(big.Float).SetFloat64(1))
+	return types.NewPercentage(res.String()), nil
+}
+
+// TODO: change method name for not supercharged
+func SetWeights(StakedAmount types.Amount, records []model.LedgerEntry) error {
+	for _, r := range records {
+		w, err := CalculateWeight(r.Balance, StakedAmount)
+		if err != nil {
+			return err
+		}
+		r.Weight = w
+	}
+	return nil
 }

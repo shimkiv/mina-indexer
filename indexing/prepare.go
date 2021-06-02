@@ -1,6 +1,8 @@
 package indexing
 
 import (
+	"errors"
+
 	"github.com/figment-networks/mina-indexer/client/archive"
 	"github.com/figment-networks/mina-indexer/client/graph"
 	"github.com/figment-networks/mina-indexer/model"
@@ -25,16 +27,6 @@ func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block, validatorEpoc
 	validator, err := mapper.Validator(archiveBlock)
 	if err != nil {
 		return nil, err
-	}
-
-	var validatorBlockReward *model.BlockReward
-	var creatorFee types.Percentage
-	if graphBlock != nil {
-		creatorFee, err = mapper.FindValidatorFee(validatorEpochs, graphBlock.Creator)
-		if err != nil {
-			return nil, err
-		}
-		validatorBlockReward, _ = mapper.ValidatorBlockReward(validator)
 	}
 
 	// Prepare transaction records
@@ -67,9 +59,20 @@ func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block, validatorEpoc
 	if err != nil {
 		return nil, err
 	}
-
+	accountsMap := map[string]*model.Account{}
+	for _, acc := range accounts {
+		accountsMap[acc.PublicKey] = &acc
+	}
+	var validatorBlockReward *model.BlockReward
 	delegatorBlockRewards := []model.BlockReward{}
+	var creatorAcc *model.Account
+	var ok bool
 	if graphBlock != nil {
+		creatorAcc, ok = accountsMap[graphBlock.Creator]
+		if !ok {
+			return nil, errors.New("creator is not found in accounts map " + graphBlock.Creator)
+		}
+		validatorBlockReward, _ = mapper.ValidatorBlockReward(validator)
 		delegatorBlockRewards, err = mapper.DelegatorBlockRewards(ledgerData.Entries, graphBlock)
 		if err != nil {
 			return nil, err
@@ -80,7 +83,7 @@ func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block, validatorEpoc
 		Block:                  block,
 		Validator:              validator,
 		ValidatorBlockReward:   validatorBlockReward,
-		CreatorFee:             creatorFee,
+		CreatorAccount:         creatorAcc,
 		ValidatorEpochs:        validatorEpochs,
 		Accounts:               accounts,
 		DelegatorsBlockRewards: delegatorBlockRewards,

@@ -12,3 +12,6 @@ INSERT INTO ledger_entries (
   timing_vesting_increment
 )
 VALUES @values
+ON CONFLICT (ledger_id, public_key) DO UPDATE
+SET
+  weight       = excluded.weight

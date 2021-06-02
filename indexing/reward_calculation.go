@@ -6,14 +6,20 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	"github.com/figment-networks/mina-indexer/model/mapper"
 	"github.com/figment-networks/mina-indexer/model/util"
 	"github.com/figment-networks/mina-indexer/store"
 )
 
 // RewardCalculation calculates rewards
 func RewardCalculation(db *store.Store, data *Data) error {
-	if data.CreatorFee.Float == nil || data.Block.Coinbase.Int == nil || data.Block.TransactionsFees.Int == nil || data.Block.SnarkJobsFees.Int64() == 0 {
+	if data.CreatorAccount == nil || data.Block.Coinbase.Int == nil || data.Block.TransactionsFees.Int == nil || data.Block.SnarkJobsFees.Int64() == 0 {
 		return nil
+	}
+
+	creatorFee, err := mapper.FindValidatorFee(data.ValidatorEpochs, data.CreatorAccount.PublicKey)
+	if err != nil {
+		return err
 	}
 	blockReward := data.Block.Coinbase.Add(data.Block.TransactionsFees)
 	blockReward = blockReward.Sub(data.Block.SnarkJobsFees)
@@ -31,6 +37,16 @@ func RewardCalculation(db *store.Store, data *Data) error {
 		return err
 	}
 
+	// update heights
+	err = util.SetWeights(ledger.StakedAmount, records)
+	if err != nil {
+		return err
+	}
+	err = db.Staking.CreateLedgerEntries(records)
+	if err != nil {
+		return err
+	}
+
 	recordsMap := map[string]big.Float{}
 	for _, r := range records {
 		recordsMap[r.PublicKey] = *r.Weight.Float
@@ -43,14 +59,14 @@ func RewardCalculation(db *store.Store, data *Data) error {
 			log.WithError(err)
 			return err
 		}
-		res, err := util.CalculateDelegatorReward(weight, blockReward, data.CreatorFee)
+		res, err := util.CalculateDelegatorReward(weight, blockReward, creatorFee)
 		if err != nil {
 			return err
 		}
 		data.DelegatorsBlockRewards[i].Reward = res
 	}
 
-	validatorReward, err := util.CalculateValidatorReward(blockReward, data.CreatorFee)
+	validatorReward, err := util.CalculateValidatorReward(blockReward, creatorFee)
 	if err != nil {
 		return err
 	}
