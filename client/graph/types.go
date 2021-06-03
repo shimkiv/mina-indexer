@@ -96,6 +96,8 @@ type Block struct {
 	ProtocolStateProof *ProtocolStateProof `json:"protocolStateProof"`
 	Transactions       *Transactions       `json:"transactions"`
 	SnarkJobs          []*CompletedWork    `json:"snarkJobs"`
+	// WinnerAccount that wins this block
+	WinnerAccount *Account `json:"winnerAccount"`
 }
 
 // Connection as described by the Relay connections spec

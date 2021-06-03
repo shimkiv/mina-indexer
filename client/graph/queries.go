@@ -122,6 +122,10 @@ var (
 				recipient
 				type
 			}
+		}
+		winnerAccount {
+			publicKey
+			locked
 		}`
 
 	queryAccount = `

@@ -67,6 +67,7 @@ func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block, validatorEpoc
 	delegatorBlockRewards := []model.BlockReward{}
 	var creatorAcc *model.Account
 	var ok bool
+	var supercharged bool
 	if graphBlock != nil {
 		creatorAcc, ok = accountsMap[graphBlock.Creator]
 		if !ok {
@@ -77,11 +78,15 @@ func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block, validatorEpoc
 		if err != nil {
 			return nil, err
 		}
+		if graphBlock.WinnerAccount.Locked != nil {
+			supercharged = !(*graphBlock.WinnerAccount.Locked)
+		}
 	}
 
 	data := &Data{
 		Block:                  block,
 		FirstSlotOfEpoch:       firstSlotOfEpoch,
+		Supercharged:           supercharged,
 		Validator:              validator,
 		ValidatorBlockReward:   validatorBlockReward,
 		CreatorAccount:         creatorAcc,
