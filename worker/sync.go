@@ -135,18 +135,8 @@ func (w SyncWorker) processBlock(hash string, ledgerData *mapper.LedgerData) err
 		graphBlock = nil
 	}
 
-	firstBlockOfEpoch, err := w.db.Blocks.FirstBlockOfEpoch(graphBlock.ProtocolState.ConsensusState.Epoch)
-	var firstSlotOfEpoch int
-	if err != nil {
-		if err != store.ErrNotFound {
-			return err
-		}
-		firstSlotOfEpoch = int(archiveBlock.GlobalSlot)
-	} else {
-		firstSlotOfEpoch = firstBlockOfEpoch.Slot
-	}
-
 	validatorEpochs := []model.ValidatorEpoch{}
+	var firstSlotOfEpoch int
 	if graphBlock != nil {
 		validatorEpochs, err = w.db.ValidatorsEpochs.GetValidatorEpochs(graphBlock.ProtocolState.ConsensusState.Epoch, "")
 		if err != nil && err != store.ErrNotFound {
@@ -168,6 +158,16 @@ func (w SyncWorker) processBlock(hash string, ledgerData *mapper.LedgerData) err
 				fmt.Sscanf(graphBlock.ProtocolState.ConsensusState.Epoch, "%d", &validatorEpoch.Epoch)
 				validatorEpochs = append(validatorEpochs, validatorEpoch)
 			}
+		}
+
+		firstBlockOfEpoch, err := w.db.Blocks.FirstBlockOfEpoch(graphBlock.ProtocolState.ConsensusState.Epoch)
+		if err != nil {
+			if err != store.ErrNotFound {
+				return err
+			}
+			firstSlotOfEpoch = int(archiveBlock.GlobalSlot)
+		} else {
+			firstSlotOfEpoch = firstBlockOfEpoch.Slot
 		}
 	}
 
