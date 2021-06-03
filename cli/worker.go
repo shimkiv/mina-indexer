@@ -2,7 +2,6 @@ package cli
 
 import (
 	"context"
-	"github.com/figment-networks/mina-indexer/client/staketab"
 	"sync"
 	"time"
 
@@ -10,6 +9,7 @@ import (
 
 	"github.com/figment-networks/mina-indexer/client/archive"
 	"github.com/figment-networks/mina-indexer/client/graph"
+	"github.com/figment-networks/mina-indexer/client/staketab"
 	"github.com/figment-networks/mina-indexer/config"
 	"github.com/figment-networks/mina-indexer/store"
 	"github.com/figment-networks/mina-indexer/worker"
