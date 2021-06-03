@@ -122,28 +122,35 @@ func CalculateWeightsSupercharged(superchargedContribution types.Percentage, rec
 	var ok bool
 
 	// pool stakes
-	for _, r := range records {
-		sc, ok = sc.SetString(superchargedContribution.String())
-		if !ok {
-			return errors.New("error with supercharged contribution")
+	for i, r := range records {
+		if r.LockedTokens.Int64() > 0 {
+			stk, ok = bln.SetString(r.Balance.String())
+			if !ok {
+				return errors.New("error with balance")
+			}
+		} else {
+			sc, ok = sc.SetString(superchargedContribution.String())
+			if !ok {
+				return errors.New("error with supercharged contribution")
+			}
+			bln, ok := bln.SetString(r.Balance.String())
+			if !ok {
+				return errors.New("error with balance")
+			}
+			stk = bln.Mul(bln, sc)
 		}
-		bln, ok := bln.SetString(r.Balance.String())
-		if !ok {
-			return errors.New("error with balance")
-		}
-		stk = bln.Mul(bln, sc)
-		r.Weight = types.NewPercentage(stk.String())
+		records[i].Weight = types.NewPercentage(stk.String())
 		sum.Add(sum, stk)
 	}
 
 	// pool weights
-	for _, r := range records {
+	for i, r := range records {
 		w, ok = new(big.Float).SetString(r.Weight.String())
 		if !ok {
 			return errors.New("error with weight")
 		}
 		w = w.Quo(w, sum)
-		r.Weight = types.NewPercentage(w.String())
+		records[i].Weight = types.NewPercentage(w.String())
 	}
 
 	return nil
