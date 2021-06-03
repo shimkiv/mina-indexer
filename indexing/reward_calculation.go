@@ -7,7 +7,6 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/figment-networks/mina-indexer/model/mapper"
-	"github.com/figment-networks/mina-indexer/model/types"
 	"github.com/figment-networks/mina-indexer/model/util"
 	"github.com/figment-networks/mina-indexer/store"
 )
@@ -48,13 +47,7 @@ func RewardCalculation(db *store.Store, data *Data) error {
 		if err != nil {
 			return err
 		}
-		// TODO: check how to get time weighted
-		timedWeighting := types.NewPercentage("1")
-		superchargedContribution, err := util.CalculateSuperchargedContribution(superchargedWeighting, timedWeighting)
-		if err != nil {
-			return err
-		}
-		err = util.CalculateWeightsSupercharged(superchargedContribution, records)
+		err = util.CalculateWeightsSupercharged(superchargedWeighting, records, data.FirstSlotOfEpoch)
 		if err != nil {
 			return err
 		}

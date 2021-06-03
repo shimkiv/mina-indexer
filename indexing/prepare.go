@@ -11,7 +11,7 @@ import (
 )
 
 // Prepare generates a new models from the graph block data
-func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block, validatorEpochs []model.ValidatorEpoch, ledgerData *mapper.LedgerData) (*Data, error) {
+func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block, validatorEpochs []model.ValidatorEpoch, ledgerData *mapper.LedgerData, firstSlotOfEpoch int) (*Data, error) {
 	block, err := mapper.BlockFromArchive(archiveBlock)
 	if err != nil {
 		return nil, err
@@ -81,6 +81,7 @@ func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block, validatorEpoc
 
 	data := &Data{
 		Block:                  block,
+		FirstSlotOfEpoch:       firstSlotOfEpoch,
 		Validator:              validator,
 		ValidatorBlockReward:   validatorBlockReward,
 		CreatorAccount:         creatorAcc,

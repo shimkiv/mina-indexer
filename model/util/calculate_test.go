@@ -180,54 +180,6 @@ func TestCalculateSuperchargedWeighting(t *testing.T) {
 	}
 }
 
-func TestCalculateSuperchargedContribution(t *testing.T) {
-	type args struct {
-		superchargedWeighting types.Percentage
-		timedWeighting        types.Percentage
-	}
-	tests := []struct {
-		name    string
-		args    args
-		result  types.Percentage
-		wantErr bool
-	}{
-		{
-			name: "successful locked entire epoch",
-			args: args{
-				superchargedWeighting: types.NewPercentage("1.9756"),
-				timedWeighting:        types.NewPercentage("0"),
-			},
-			result: types.NewPercentage("1"),
-		},
-		{
-			name: "successful unlocked entire epoch",
-			args: args{
-				superchargedWeighting: types.NewPercentage("1.9756"),
-				timedWeighting:        types.NewPercentage("1"),
-			},
-			result: types.NewPercentage("1.9756"),
-		},
-		{
-			name: "successful changed during epoch",
-			args: args{
-				superchargedWeighting: types.NewPercentage("1.9756"),
-				timedWeighting:        types.NewPercentage("1.5"),
-			},
-			result: types.NewPercentage("2.4634"),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			res, err := CalculateSuperchargedContribution(tt.args.superchargedWeighting, tt.args.timedWeighting)
-			if err != nil {
-				assert.True(t, tt.wantErr)
-			} else {
-				assert.Equal(t, res.String(), tt.result.String())
-			}
-		})
-	}
-}
-
 func TestCalculateWeightsSupercharged(t *testing.T) {
 	type args struct {
 		superchargedContribution types.Percentage

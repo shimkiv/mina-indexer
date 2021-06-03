@@ -98,3 +98,10 @@ func (s BlocksStore) FindUnsafeBlocks(startingHeight uint64) ([]model.Block, err
 		Order("height desc")
 	return result, scope.Find(&result).Error
 }
+
+// FirstBlockOfEpoch returns the first block of epoch
+func (s BlocksStore) FirstBlockOfEpoch(epoch string) (*model.Block, error) {
+	block := &model.Block{}
+	err := s.db.Where("epoch >= ?", epoch).Order("height ASC").Limit(1).Take(block).Error
+	return block, checkErr(err)
+}

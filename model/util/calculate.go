@@ -2,11 +2,14 @@ package util
 
 import (
 	"errors"
+	"math"
 	"math/big"
 
 	"github.com/figment-networks/mina-indexer/model"
 	"github.com/figment-networks/mina-indexer/model/types"
 )
+
+const slotsPerEpoch = 7140
 
 // CalculateWeight calculates weight
 func CalculateWeight(balance types.Amount, totalStakedAmount types.Amount) (types.Percentage, error) {
@@ -84,22 +87,6 @@ func CalculateSuperchargedWeighting(block model.Block) (types.Percentage, error)
 	return types.NewPercentage(res.String()), nil
 }
 
-// CalculateSuperchargedContribution calculates supercharged contribution
-func CalculateSuperchargedContribution(superchargedWeighting, timedWeighting types.Percentage) (types.Percentage, error) {
-	sw, ok := new(big.Float).SetString(superchargedWeighting.String())
-	if !ok {
-		return types.Percentage{}, errors.New("error with supercharged weighting")
-	}
-	tw, ok := new(big.Float).SetString(timedWeighting.String())
-	if !ok {
-		return types.Percentage{}, errors.New("error with timed weighting")
-	}
-	res := sw.Sub(sw, big.NewFloat(1))
-	res = res.Mul(sw, tw)
-	res = res.Add(sw, big.NewFloat(1))
-	return types.NewPercentage(res.String()), nil
-}
-
 // CalculateWeightsNonSupercharged calculates weights when block reward is not doubled for supercharged
 func CalculateWeightsNonSupercharged(StakedAmount types.Amount, records []model.LedgerEntry) error {
 	for _, r := range records {
@@ -113,7 +100,7 @@ func CalculateWeightsNonSupercharged(StakedAmount types.Amount, records []model.
 }
 
 // CalculateWeightsSupercharged calculates weights when block reward is doubled for supercharged
-func CalculateWeightsSupercharged(superchargedContribution types.Percentage, records []model.LedgerEntry) error {
+func CalculateWeightsSupercharged(superchargedWeighting types.Percentage, records []model.LedgerEntry, firstSlotOfEpoch int) error {
 	sum := new(big.Float)
 	sc := new(big.Float)
 	bln := new(big.Float)
@@ -123,6 +110,16 @@ func CalculateWeightsSupercharged(superchargedContribution types.Percentage, rec
 
 	// pool stakes
 	for i, r := range records {
+		timedWeighting, err := calculateTimedWeighting(r, firstSlotOfEpoch)
+		if err != nil {
+			return err
+		}
+
+		superchargedContribution, err := calculateSuperchargedContribution(superchargedWeighting, timedWeighting)
+		if err != nil {
+			return err
+		}
+
 		if r.LockedTokens.Int64() > 0 {
 			stk, ok = bln.SetString(r.Balance.String())
 			if !ok {
@@ -154,4 +151,52 @@ func CalculateWeightsSupercharged(superchargedContribution types.Percentage, rec
 	}
 
 	return nil
+}
+
+// calculateTimedWeighting calculates timed weighting
+func calculateTimedWeighting(record model.LedgerEntry, firstSlotOfEpoch int) (types.Percentage, error) {
+	if record.IsUntimed() && record.LockedTokens.Int64() == 0 {
+		return types.NewFloat64Percentage(1), nil
+	}
+
+	if record.IsUntimed() && record.LockedTokens.Int64() > 0 {
+		return types.NewFloat64Percentage(0), nil
+	}
+
+	imb, ok := new(big.Int).SetString(record.TimingInitialMinimumBalance.String(), 10)
+	if !ok {
+		return types.Percentage{}, errors.New("error with initial minimum balance")
+	}
+	ca, ok := new(big.Int).SetString(record.TimingCliffAmount.String(), 10)
+	if !ok {
+		return types.Percentage{}, errors.New("error with cliff amount")
+	}
+	ct := new(big.Int).SetInt64(int64(*record.TimingCliffTime))
+
+	vestingAmount := new(big.Int)
+	vestingAmount.Sub(imb, ca)
+	vestingPerc := math.Ceil(float64(*record.TimingVestingPeriod) / float64(*record.TimingVestingIncrement))
+	vestingTime := new(big.Int).SetInt64(int64(vestingPerc))
+	vestingTime.Mul(vestingTime, vestingAmount)
+	unLockedTime := new(big.Int)
+	unLockedTime.Add(ct, vestingTime)
+
+	factor := float64(slotsPerEpoch-(unLockedTime.Int64()-int64(firstSlotOfEpoch))) / float64(slotsPerEpoch)
+	return types.NewFloat64Percentage(factor), nil
+}
+
+// calculateSuperchargedContribution calculates supercharged contribution
+func calculateSuperchargedContribution(superchargedWeighting, timedWeighting types.Percentage) (types.Percentage, error) {
+	sw, ok := new(big.Float).SetString(superchargedWeighting.String())
+	if !ok {
+		return types.Percentage{}, errors.New("error with supercharged weighting")
+	}
+	tw, ok := new(big.Float).SetString(timedWeighting.String())
+	if !ok {
+		return types.Percentage{}, errors.New("error with timed weighting")
+	}
+	res := sw.Sub(sw, big.NewFloat(1))
+	res = res.Mul(sw, tw)
+	res = res.Add(sw, big.NewFloat(1))
+	return types.NewPercentage(res.String()), nil
 }
