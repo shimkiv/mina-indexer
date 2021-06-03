@@ -148,7 +148,6 @@ var (
 					unknown
 					total
 					blockHeight
-					locked
 				}
 			}
 		}`
