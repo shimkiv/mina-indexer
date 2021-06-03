@@ -8,6 +8,7 @@ import (
 type Data struct {
 	Block                  *model.Block
 	FirstSlotOfEpoch       int
+	Supercharged           bool
 	Validator              *model.Validator
 	ValidatorBlockReward   *model.BlockReward
 	CreatorAccount         *model.Account

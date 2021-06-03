@@ -37,7 +37,7 @@ func RewardCalculation(db *store.Store, data *Data) error {
 		return err
 	}
 
-	if !data.CreatorAccount.Supercharged {
+	if !data.Supercharged {
 		err = util.CalculateWeightsNonSupercharged(ledger.StakedAmount, records)
 		if err != nil {
 			return err
