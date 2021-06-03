@@ -27,7 +27,6 @@ type LedgerEntry struct {
 	Delegate                    string           `json:"delegate"`
 	Delegation                  bool             `json:"delegation"`
 	Balance                     types.Amount     `json:"balance"`
-	LockedTokens                types.Amount     `json:"locked_tokens"`
 	Weight                      types.Percentage `json:"weight"`
 	TimingInitialMinimumBalance types.Amount     `json:"timing_initial_minimum_balance"`
 	TimingCliffTime             *int             `json:"timing_cliff_time"`
@@ -41,6 +40,6 @@ func (LedgerEntry) TableName() string {
 }
 
 func (l LedgerEntry) IsUntimed() bool {
-	return l.TimingInitialMinimumBalance.Int != nil && l.TimingCliffTime != nil &&
-		l.TimingCliffAmount.Int != nil && l.TimingVestingPeriod != nil && l.TimingVestingIncrement != nil
+	return l.TimingInitialMinimumBalance.Int == nil && l.TimingCliffTime == nil &&
+		l.TimingCliffAmount.Int == nil && l.TimingVestingPeriod == nil && l.TimingVestingIncrement == nil
 }

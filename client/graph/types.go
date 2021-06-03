@@ -80,8 +80,6 @@ type AnnotatedBalance struct {
 	Unknown string `json:"unknown"`
 	// Block height at which balance was measured
 	BlockHeight string `json:"blockHeight"`
-	// The locked amount of coda owned by the account
-	Locked string `json:"locked"`
 }
 
 type Block struct {

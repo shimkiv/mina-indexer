@@ -267,14 +267,6 @@ func (w SyncWorker) processStakingLedger() (*mapper.LedgerData, error) {
 		return nil, err
 	}
 
-	for i, e := range ledgerData.Entries {
-		acc, err := w.graphClient.GetAccount(e.PublicKey)
-		if err != nil {
-			return nil, err
-		}
-		ledgerData.Entries[i].LockedTokens = types.NewAmount(acc.Balance.Locked)
-	}
-
 	return ledgerData, nil
 }
 

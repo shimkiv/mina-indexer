@@ -120,22 +120,16 @@ func CalculateWeightsSupercharged(superchargedWeighting types.Percentage, record
 			return err
 		}
 
-		if r.LockedTokens.Int64() > 0 {
-			stk, ok = bln.SetString(r.Balance.String())
-			if !ok {
-				return errors.New("error with balance")
-			}
-		} else {
-			sc, ok = sc.SetString(superchargedContribution.String())
-			if !ok {
-				return errors.New("error with supercharged contribution")
-			}
-			bln, ok := bln.SetString(r.Balance.String())
-			if !ok {
-				return errors.New("error with balance")
-			}
-			stk = bln.Mul(bln, sc)
+		sc, ok = sc.SetString(superchargedContribution.String())
+		if !ok {
+			return errors.New("error with supercharged contribution")
 		}
+		bln, ok := bln.SetString(r.Balance.String())
+		if !ok {
+			return errors.New("error with balance")
+		}
+		stk = bln.Mul(bln, sc)
+
 		records[i].Weight = types.NewPercentage(stk.String())
 		sum.Add(sum, stk)
 	}
@@ -155,12 +149,8 @@ func CalculateWeightsSupercharged(superchargedWeighting types.Percentage, record
 
 // calculateTimedWeighting calculates timed weighting
 func calculateTimedWeighting(record model.LedgerEntry, firstSlotOfEpoch int) (types.Percentage, error) {
-	if record.IsUntimed() && record.LockedTokens.Int64() == 0 {
+	if record.IsUntimed() {
 		return types.NewFloat64Percentage(1), nil
-	}
-
-	if record.IsUntimed() && record.LockedTokens.Int64() > 0 {
-		return types.NewFloat64Percentage(0), nil
 	}
 
 	imb, ok := new(big.Int).SetString(record.TimingInitialMinimumBalance.String(), 10)
@@ -182,6 +172,10 @@ func calculateTimedWeighting(record model.LedgerEntry, firstSlotOfEpoch int) (ty
 	unLockedTime.Add(ct, vestingTime)
 
 	factor := float64(slotsPerEpoch-(unLockedTime.Int64()-int64(firstSlotOfEpoch))) / float64(slotsPerEpoch)
+	if factor < 0 {
+		// means it will be unlocked after this epoch, so it is locked in this one
+		return types.NewFloat64Percentage(0), nil
+	}
 	return types.NewFloat64Percentage(factor), nil
 }
 

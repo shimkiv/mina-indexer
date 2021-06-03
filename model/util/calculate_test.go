@@ -181,9 +181,34 @@ func TestCalculateSuperchargedWeighting(t *testing.T) {
 }
 
 func TestCalculateWeightsSupercharged(t *testing.T) {
+	ct := 86400
+	vp := 1
+	vi := 0
+
+	records := []model.LedgerEntry{
+		{
+			PublicKey: "one",
+			Balance:   types.NewAmount("20000"),
+		},
+		{
+			PublicKey: "two",
+			Balance:   types.NewAmount("50000"),
+		},
+		{
+			PublicKey:                   "three",
+			Balance:                     types.NewAmount("30000"),
+			TimingInitialMinimumBalance: types.NewAmount("230400"),
+			TimingCliffAmount:           types.NewAmount("230400"),
+			TimingCliffTime:             &ct,
+			TimingVestingPeriod:         &vp,
+			TimingVestingIncrement:      &vi,
+		},
+	}
+
 	type args struct {
 		superchargedContribution types.Percentage
 		records                  []model.LedgerEntry
+		firstSlotOfEpoch         int
 	}
 	tests := []struct {
 		name    string
@@ -192,34 +217,28 @@ func TestCalculateWeightsSupercharged(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "successful locked entire epoch",
+			name: "successful with timing but locked entire epoch",
 			args: args{
 				superchargedContribution: types.NewPercentage("1.98765"),
-				records: []model.LedgerEntry{
-					{
-						PublicKey:    "one",
-						Balance:      types.NewAmount("20000"),
-						LockedTokens: types.NewAmount("0"),
-					},
-					{
-						PublicKey:    "two",
-						Balance:      types.NewAmount("50000"),
-						LockedTokens: types.NewAmount("0"),
-					},
-					{
-						PublicKey:    "three",
-						Balance:      types.NewAmount("30000"),
-						LockedTokens: types.NewAmount("1"),
-					},
-				},
+				records:                  records,
+				firstSlotOfEpoch:         70000,
 			},
 			result: []string{"0.2350364057", "0.5875910143", "0.17737258"},
+		},
+		{
+			name: "successful with timing but locked entire epoch",
+			args: args{
+				superchargedContribution: types.NewPercentage("1.98765"),
+				records:                  records,
+				firstSlotOfEpoch:         80000,
+			},
+			result: []string{"0.2308451533", "0.5771128832", "0.1920419636"},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			records := tt.args.records
-			err := CalculateWeightsSupercharged(tt.args.superchargedContribution, records)
+			err := CalculateWeightsSupercharged(tt.args.superchargedContribution, records, tt.args.firstSlotOfEpoch)
 			if err != nil {
 				assert.True(t, tt.wantErr)
 			} else {
