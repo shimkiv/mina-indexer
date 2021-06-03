@@ -7,6 +7,7 @@ import (
 // Data contains all the records processed for a height
 type Data struct {
 	Block                  *model.Block
+	FirstSlotOfEpoch       int
 	Validator              *model.Validator
 	ValidatorBlockReward   *model.BlockReward
 	CreatorAccount         *model.Account

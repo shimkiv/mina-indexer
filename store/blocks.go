@@ -74,3 +74,10 @@ func (s BlocksStore) AvgTimes(limit int64) ([]byte, error) {
 func (s BlocksStore) Stats(period uint, interval string) ([]byte, error) {
 	return jsonquery.MustArray(s.db, queries.BlocksStats, period, interval)
 }
+
+// FirstBlockOfEpoch returns the first block of epoch
+func (s BlocksStore) FirstBlockOfEpoch(epoch string) (*model.Block, error) {
+	block := &model.Block{}
+	err := s.db.Where("epoch >= ?", epoch).Order("height ASC").Limit(1).Take(block).Error
+	return block, checkErr(err)
+}

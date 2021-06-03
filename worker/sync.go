@@ -135,6 +135,17 @@ func (w SyncWorker) processBlock(hash string, ledgerData *mapper.LedgerData) err
 		graphBlock = nil
 	}
 
+	firstBlockOfEpoch, err := w.db.Blocks.FirstBlockOfEpoch(graphBlock.ProtocolState.ConsensusState.Epoch)
+	var firstSlotOfEpoch int
+	if err != nil {
+		if err != store.ErrNotFound {
+			return err
+		}
+		firstSlotOfEpoch = int(archiveBlock.GlobalSlot)
+	} else {
+		firstSlotOfEpoch = firstBlockOfEpoch.Slot
+	}
+
 	validatorEpochs := []model.ValidatorEpoch{}
 	if graphBlock != nil {
 		validatorEpochs, err = w.db.ValidatorsEpochs.GetValidatorEpochs(graphBlock.ProtocolState.ConsensusState.Epoch, "")
@@ -165,7 +176,7 @@ func (w SyncWorker) processBlock(hash string, ledgerData *mapper.LedgerData) err
 		WithField("height", archiveBlock.Height).
 		Debug("processing block")
 
-	data, err := indexing.Prepare(archiveBlock, graphBlock, validatorEpochs, ledgerData)
+	data, err := indexing.Prepare(archiveBlock, graphBlock, validatorEpochs, ledgerData, firstSlotOfEpoch)
 	if err != nil {
 		return err
 	}
