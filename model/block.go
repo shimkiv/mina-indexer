@@ -27,7 +27,6 @@ type Block struct {
 	SnarkersCount     int          `json:"snarkers_count"`
 	SnarkJobsCount    int          `json:"snark_jobs_count"`
 	SnarkJobsFees     types.Amount `json:"snark_jobs_fees"`
-	CoinbaseRewards   types.Amount `json:"coinbase_rewards"`
 }
 
 // BlockIntervalStat contains block count stats for a given time interval

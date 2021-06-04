@@ -19,7 +19,6 @@ func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block, validatorEpoc
 
 	if graphBlock != nil {
 		block.TotalCurrency = types.NewAmount(graphBlock.ProtocolState.ConsensusState.TotalCurrency)
-		block.CoinbaseRewards = mapper.CoinbaseReward(graphBlock)
 		block.TransactionsFees = mapper.TransactionFees(graphBlock)
 	}
 
@@ -82,7 +81,7 @@ func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block, validatorEpoc
 			supercharged = !(*graphBlock.WinnerAccount.Locked)
 		} else {
 			// The coinbase reward for producing a block is 720 tokens. for supercharged 2x
-			supercharged = block.CoinbaseRewards.Int64() == 1440000000000
+			supercharged = block.Coinbase.Int64() == 1440000000000
 		}
 	}
 
