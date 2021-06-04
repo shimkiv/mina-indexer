@@ -77,6 +77,8 @@ func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block, validatorEpoc
 		if err != nil {
 			return nil, err
 		}
+
+		// the reward is supercharged is based off of the account that won the block
 		if graphBlock.WinnerAccount.Locked != nil {
 			supercharged = !(*graphBlock.WinnerAccount.Locked)
 		} else {

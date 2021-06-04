@@ -1,5 +1,6 @@
 INSERT INTO validator_epochs (
   account_id,
+  account_address,
   epoch,
   validator_fee
 )
