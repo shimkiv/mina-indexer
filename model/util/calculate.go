@@ -90,12 +90,12 @@ func CalculateSuperchargedWeighting(block model.Block) (types.Percentage, error)
 
 // CalculateWeightsNonSupercharged calculates weights when block reward is not doubled for supercharged
 func CalculateWeightsNonSupercharged(StakedAmount types.Amount, records []model.LedgerEntry) error {
-	for _, r := range records {
+	for i, r := range records {
 		w, err := CalculateWeight(r.Balance, StakedAmount)
 		if err != nil {
 			return err
 		}
-		r.Weight = w
+		records[i].Weight = w
 	}
 	return nil
 }
