@@ -236,8 +236,9 @@ func (w SyncWorker) processBlock(hash string, ledgerData *mapper.LedgerData) err
 					continue
 				}
 				validatorEpoch := model.ValidatorEpoch{
-					AccountId:    p.ProviderAddress,
-					ValidatorFee: types.NewFloat64Percentage(p.ProviderFee),
+					AccountId:      p.ProviderId,
+					AccountAddress: p.ProviderAddress,
+					ValidatorFee:   types.NewFloat64Percentage(p.ProviderFee),
 				}
 				fmt.Sscanf(graphBlock.ProtocolState.ConsensusState.Epoch, "%d", &validatorEpoch.Epoch)
 				validatorEpochs = append(validatorEpochs, validatorEpoch)
