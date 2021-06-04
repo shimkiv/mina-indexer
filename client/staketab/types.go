@@ -6,6 +6,7 @@ type Providers struct {
 }
 
 type StakingProvider struct {
+	ProviderId      int     `json:"provider_id"`
 	ProviderAddress string  `json:"provider_address"`
 	ProviderFee     float64 `json:"provider_fee"`
 }

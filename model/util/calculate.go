@@ -69,7 +69,8 @@ func CalculateDelegatorReward(weight big.Float, blockReward types.Amount, valida
 	return types.NewPercentage(res.String()), nil
 }
 
-// CalculateSuperchargedWeighting calculates supercharged weighting
+// CalculateSuperchargedWeighting calculates supercharged weighting for given block
+// supercharged weighting = 1 + (1 / (1 + transaction fees / coinbase))
 func CalculateSuperchargedWeighting(block model.Block) (types.Percentage, error) {
 	trFees, ok := new(big.Float).SetString(block.TransactionsFees.String())
 	if !ok {
@@ -80,9 +81,9 @@ func CalculateSuperchargedWeighting(block model.Block) (types.Percentage, error)
 		return types.Percentage{}, errors.New("error with coinbase")
 	}
 	denom := trFees.Quo(trFees, coinbase)
-	denom = denom.Add(denom, new(big.Float).SetFloat64(1))
+	denom.Add(denom, new(big.Float).SetFloat64(1))
 	enum := new(big.Float).SetFloat64(1)
-	enum = enum.Quo(enum, denom)
+	enum.Quo(enum, denom)
 	res := enum.Add(enum, new(big.Float).SetFloat64(1))
 	return types.NewPercentage(res.String()), nil
 }
@@ -148,11 +149,20 @@ func CalculateWeightsSupercharged(superchargedWeighting types.Percentage, record
 }
 
 // calculateTimedWeighting calculates timed weighting
+//
+// return 0 for if entry is unlocked entire epoch,
+//        1 for if entry is locked entire epoch,
+//        proportion calculated based on slots if it becomes unlocked during epoch
 func calculateTimedWeighting(record model.LedgerEntry, firstSlotOfEpoch int) (types.Percentage, error) {
 	if record.IsUntimed() {
 		return types.NewFloat64Percentage(1), nil
 	}
 
+	// unlockedTime: global slot at which that account's tokens will be fully unlocked
+	//
+	// vesting_amount = initial_min_balance - cliff_amount
+	// vesting_time = vesting_amount * math.ceil(vesting_period / vesting_increment)
+	// unlocked_time = cliff_time + vesting_time
 	imb, ok := new(big.Int).SetString(record.TimingInitialMinimumBalance.String(), 10)
 	if !ok {
 		return types.Percentage{}, errors.New("error with initial minimum balance")
@@ -180,6 +190,8 @@ func calculateTimedWeighting(record model.LedgerEntry, firstSlotOfEpoch int) (ty
 }
 
 // calculateSuperchargedContribution calculates supercharged contribution
+//
+// supercharged contribution = ((supercharged weighting - 1) * timed weighting factor) + 1
 func calculateSuperchargedContribution(superchargedWeighting, timedWeighting types.Percentage) (types.Percentage, error) {
 	sw, ok := new(big.Float).SetString(superchargedWeighting.String())
 	if !ok {
@@ -190,7 +202,7 @@ func calculateSuperchargedContribution(superchargedWeighting, timedWeighting typ
 		return types.Percentage{}, errors.New("error with timed weighting")
 	}
 	res := sw.Sub(sw, big.NewFloat(1))
-	res = res.Mul(sw, tw)
-	res = res.Add(sw, big.NewFloat(1))
+	res.Mul(sw, tw)
+	res.Add(sw, big.NewFloat(1))
 	return types.NewPercentage(res.String()), nil
 }

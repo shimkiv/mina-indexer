@@ -42,7 +42,7 @@ func DelegatorBlockRewards(accounts []model.LedgerEntry, block *graph.Block) ([]
 // ValidatorBlockReward returns validator reward models references from the block data
 func FindValidatorFee(validatorEpochs []model.ValidatorEpoch, creator string) (types.Percentage, error) {
 	for _, ve := range validatorEpochs {
-		if ve.AccountId == creator {
+		if ve.AccountAddress == creator {
 			return ve.ValidatorFee, nil
 		}
 	}

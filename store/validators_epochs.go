@@ -21,6 +21,7 @@ func (s ValidatorsEpochsStore) Import(records []model.ValidatorEpoch) error {
 		r := records[idx]
 		return bulk.Row{
 			r.AccountId,
+			r.AccountAddress,
 			r.Epoch,
 			r.ValidatorFee,
 		}
