@@ -38,8 +38,8 @@ func blockCheck(input *graph.Block) error {
 }
 
 // RewardTimeBucket daily time bucket for rewards
-func RewardTimeBucket(input string) (time.Time, error) {
-	t, err := time.Parse("2006-01-02", input)
+func RewardTimeBucket(input time.Time) (time.Time, error) {
+	t, err := time.Parse("2006-01-02", input.Format("2006-01-02"))
 	if err != nil {
 		return time.Time{}, err
 	}
