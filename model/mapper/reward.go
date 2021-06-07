@@ -11,12 +11,15 @@ import (
 
 // ValidatorBlockReward returns validator reward models references from the block data
 func ValidatorBlockReward(v *model.Validator) (*model.BlockReward, error) {
+	t, err := RewardTimeBucket(v.LastTime.String())
+	if err != nil {
+		return nil, err
+	}
 	result := model.BlockReward{
 		OwnerAccount: v.PublicKey,
-		BlockHeight:  v.LastHeight,
-		BlockTime:    v.LastTime,
 		OwnerType:    string(model.RewardOwnerTypeValidator),
 	}
+	result.TimeBucket = t
 	return &result, nil
 }
 
@@ -24,18 +27,19 @@ func ValidatorBlockReward(v *model.Validator) (*model.BlockReward, error) {
 func DelegatorBlockRewards(accounts []model.LedgerEntry, block *graph.Block) ([]model.BlockReward, error) {
 	result := []model.BlockReward{}
 	for _, a := range accounts {
+		t, err := RewardTimeBucket(block.ProtocolState.BlockchainState.Date)
+		if err != nil {
+			return nil, err
+		}
 		// reward to be calculated next step
 		dbr := model.BlockReward{
 			OwnerAccount: a.PublicKey,
 			Delegate:     a.Delegate,
-			BlockHeight:  BlockHeight(block),
-			BlockTime:    BlockTime(block),
 			OwnerType:    string(model.RewardOwnerTypeDelegator),
 		}
-
+		dbr.TimeBucket = t
 		result = append(result, dbr)
 	}
-
 	return result, nil
 }
 

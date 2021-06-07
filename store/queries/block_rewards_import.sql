@@ -1,13 +1,12 @@
 INSERT INTO block_rewards (
   owner_account,
   delegate,
-  block_height,
-  block_time,
+  time_bucket,
   reward,
   owner_type
 )
 VALUES @values
 
-ON CONFLICT (owner_account, delegate, block_height, owner_type) DO UPDATE
+ON CONFLICT (owner_account, delegate, time_bucket, owner_type) DO UPDATE
 SET
-  reward       = excluded.reward
+  reward      = COALESCE(block_rewards.rewards,0) + excluded.reward
