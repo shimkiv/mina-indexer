@@ -15,8 +15,8 @@ type RewardStore struct {
 }
 
 // FetchRewardsByInterval fetches rewards by interval
-func (s *RewardStore) FetchRewardsByInterval(ownerAccount string, delegate string, from time.Time, to time.Time, timeInterval model.TimeInterval, rewardOwnerType model.RewardOwnerType) (model.RewardsSummary, error) {
-	var res model.RewardsSummary
+func (s *RewardStore) FetchRewardsByInterval(ownerAccount string, delegate string, from time.Time, to time.Time, timeInterval model.TimeInterval, rewardOwnerType model.RewardOwnerType) ([]model.RewardsSummary, error) {
+	var res []model.RewardsSummary
 	q := strings.Replace(queries.BlockRewards, "$INTERVAL", "'"+timeInterval.String()+"'", -1)
 	var err error
 	if delegate == "" {
