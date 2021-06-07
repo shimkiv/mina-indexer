@@ -1,12 +1,12 @@
 SELECT
-  to_char(block_time, $INTERVAL) AS interval,
+  to_char(time_bucket, $INTERVAL) AS interval,
   SUM(reward) AS amount
 FROM
   block_rewards
 WHERE
   owner_account = ?
   AND delegate = ?
-  AND block_time BETWEEN ? AND ?
+  AND time_bucket BETWEEN ? AND ?
   AND owner_type = ?
 GROUP BY
-  to_char(block_time, $INTERVAL)
+  to_char(time_bucket, $INTERVAL)
