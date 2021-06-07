@@ -11,7 +11,7 @@ import (
 
 // ValidatorBlockReward returns validator reward models references from the block data
 func ValidatorBlockReward(v *model.Validator) (*model.BlockReward, error) {
-	t, err := RewardTimeBucket(v.LastTime.String())
+	t, err := RewardTimeBucket(v.LastTime)
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +27,8 @@ func ValidatorBlockReward(v *model.Validator) (*model.BlockReward, error) {
 func DelegatorBlockRewards(accounts []model.LedgerEntry, block *graph.Block) ([]model.BlockReward, error) {
 	result := []model.BlockReward{}
 	for _, a := range accounts {
-		t, err := RewardTimeBucket(block.ProtocolState.BlockchainState.Date)
+		bt := BlockTime(block)
+		t, err := RewardTimeBucket(bt)
 		if err != nil {
 			return nil, err
 		}
