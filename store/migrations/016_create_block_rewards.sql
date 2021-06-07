@@ -11,8 +11,8 @@ CREATE TABLE block_rewards (
 CREATE UNIQUE INDEX idx_block_rewards_pk
   ON block_rewards(owner_account, delegate, time_bucket, owner_type);
 
-CREATE INDEX idx_block_rewards_block_time
-  ON block_rewards (block_time);
+CREATE INDEX idx_block_rewards_time_bucket
+  ON block_rewards (time_bucket);
 
 -- +goose Down
 DROP TABLE block_rewards;
