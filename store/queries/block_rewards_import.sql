@@ -9,4 +9,4 @@ VALUES @values
 
 ON CONFLICT (owner_account, delegate, time_bucket, owner_type) DO UPDATE
 SET
-  reward      = COALESCE(block_rewards.rewards,0) + excluded.reward
+  reward      = COALESCE(block_rewards.reward,0) + excluded.reward
