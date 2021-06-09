@@ -103,17 +103,23 @@ func (w SyncWorker) Run() (int, error) {
 		// do not abort here
 	}
 
-	log.Info("correcting canonical block")
+	log.Info("correcting canonical blocks")
 	lastBlock, err = w.db.Blocks.Recent()
 	if err != nil {
 		return 0, err
 	}
+
 	t := true
-	blocksRequest = &archive.BlocksRequest{
-		StartHeight: uint(lastBlock.Height) - 300,
-		Limit:       300,
-		Canonical:   &t,
+	blocksRequest = &archive.BlocksRequest{Canonical: &t}
+	var limit uint = 300
+	if uint(lastBlock.Height)-limit > 0 {
+		blocksRequest.StartHeight = uint(lastBlock.Height) - limit
+		blocksRequest.Limit = limit
+	} else {
+		blocksRequest.StartHeight = 0
+		blocksRequest.Limit = uint(lastBlock.Height)
 	}
+
 	canonicalBlocks, err := w.archiveClient.Blocks(blocksRequest)
 	if err != nil {
 		return 0, err
