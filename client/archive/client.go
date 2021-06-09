@@ -49,7 +49,7 @@ func (c Client) Blocks(blocksReq *BlocksRequest) ([]Block, error) {
 	params := url.Values{}
 	params.Add("start_height", fmt.Sprintf("%v", blocksReq.StartHeight))
 	if blocksReq.Canonical != nil {
-		params.Add("canonical", fmt.Sprintf("%v", blocksReq.Canonical))
+		params.Add("canonical", fmt.Sprintf("%v", *blocksReq.Canonical))
 	}
 	params.Add("limit", fmt.Sprintf("%v", blocksReq.Limit))
 	req.URL.RawQuery = params.Encode()
