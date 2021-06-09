@@ -30,9 +30,14 @@ func (s BlocksStore) FindByHash(hash string) (*model.Block, error) {
 	return s.FindBy("hash", hash)
 }
 
-// FindByHeight returns a block with the matching height
+// FindByHeight returns a canonical block with the matching height
 func (s BlocksStore) FindByHeight(height uint64) (*model.Block, error) {
-	return s.FindBy("height", height)
+	result := model.Block{}
+
+	scope := s.db.Limit(1)
+	scope = scope.Where("height = ?", height).Where("canonical = ?", true)
+
+	return &result, scope.Find(&result).Error
 }
 
 // Recent returns the most recent block
