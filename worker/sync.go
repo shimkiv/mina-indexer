@@ -63,8 +63,7 @@ func (w SyncWorker) Run() (int, error) {
 	}
 
 	blocksRequest := &archive.BlocksRequest{
-		Limit:     100,
-		Canonical: true,
+		Limit: 100,
 	}
 	if lastBlock != nil {
 		blocksRequest.StartHeight = uint(lastBlock.Height)
@@ -102,6 +101,25 @@ func (w SyncWorker) Run() (int, error) {
 	if err := w.processStagingLedger(); err != nil {
 		log.WithError(err).Error("staging ledger processing failed")
 		// do not abort here
+	}
+
+	log.Info("correcting canonical block")
+	t := true
+	blocksRequest = &archive.BlocksRequest{
+		Limit:     300,
+		Canonical: &t,
+	}
+	canonicalBlocks, err := w.archiveClient.Blocks(blocksRequest)
+	if err != nil {
+		return 0, err
+	}
+	for _, block := range canonicalBlocks {
+		if err := w.db.Blocks.UpdateCanonicalBlocksAllFalseByHeight(block.Height); err != nil {
+			return 0, err
+		}
+		if err := w.db.Blocks.UpdateCanonicalBlock(block.StateHash); err != nil {
+			return 0, err
+		}
 	}
 
 	var lag int

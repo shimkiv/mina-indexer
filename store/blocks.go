@@ -74,3 +74,13 @@ func (s BlocksStore) AvgTimes(limit int64) ([]byte, error) {
 func (s BlocksStore) Stats(period uint, interval string) ([]byte, error) {
 	return jsonquery.MustArray(s.db, queries.BlocksStats, period, interval)
 }
+
+// UpdateCanonicalBlocks updates all blocks as non canonical at a height
+func (s BlocksStore) UpdateCanonicalBlocksAllFalseByHeight(height uint64) error {
+	return s.db.Exec(queries.UpdateCanonicalBlocksAllFalse, height).Error
+}
+
+// UpdateCanonicalBlock updates canonical at a height
+func (s BlocksStore) UpdateCanonicalBlock(hash string) error {
+	return s.db.Exec(queries.UpdateCanonicalBlock, hash).Error
+}
