@@ -10,7 +10,7 @@ import (
 
 func BlockFromArchive(input *archive.Block) (*model.Block, error) {
 	block := &model.Block{
-		Canonical:         true,
+		Canonical:         false,
 		Height:            input.Height,
 		Time:              time.Unix(input.Timestamp/1000, 0),
 		Creator:           input.Creator,
