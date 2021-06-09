@@ -112,7 +112,7 @@ func (w SyncWorker) Run() (int, error) {
 	t := true
 	blocksRequest = &archive.BlocksRequest{Canonical: &t}
 	var limit uint = 300
-	if uint(lastBlock.Height)-limit > 0 {
+	if (int(lastBlock.Height)-int(limit)) > 0 {
 		blocksRequest.StartHeight = uint(lastBlock.Height) - limit
 		blocksRequest.Limit = limit
 	} else {
