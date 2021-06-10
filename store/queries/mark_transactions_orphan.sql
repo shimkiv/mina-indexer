@@ -1,1 +1,1 @@
-UPDATE transactions SET canonical = false WHERE height = $1
+UPDATE transactions SET canonical = false WHERE block_height = $1
