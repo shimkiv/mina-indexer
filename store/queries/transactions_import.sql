@@ -11,6 +11,7 @@ INSERT INTO transactions (
   fee,
   memo,
   status,
+  canonical,
   failure_reason,
   sequence_number,
   secondary_sequence_number,
@@ -26,5 +27,6 @@ SET
   amount         = excluded.amount,
   fee            = excluded.fee,
   status         = excluded.status,
+  canonical      = excluded.canonical,
   failure_reason = excluded.failure_reason,
   updated_at     = excluded.updated_at

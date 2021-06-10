@@ -112,7 +112,7 @@ func (w SyncWorker) Run() (int, error) {
 	t := true
 	blocksRequest = &archive.BlocksRequest{Canonical: &t}
 	var limit uint = 300
-	if (int(lastBlock.Height)-int(limit)) > 0 {
+	if (int(lastBlock.Height) - int(limit)) > 0 {
 		blocksRequest.StartHeight = uint(lastBlock.Height) - limit
 		blocksRequest.Limit = limit
 	} else {
@@ -129,6 +129,12 @@ func (w SyncWorker) Run() (int, error) {
 			return 0, err
 		}
 		if err := w.db.Blocks.MarkBlockCanonical(block.StateHash); err != nil {
+			return 0, err
+		}
+		if err := w.db.Transactions.MarkTransactionsOrphan(block.Height); err != nil {
+			return 0, err
+		}
+		if err := w.db.Transactions.MarkTransactionsCanonical(block.StateHash); err != nil {
 			return 0, err
 		}
 	}

@@ -27,6 +27,7 @@ type TransactionSearch struct {
 	StartTime string `form:"start_time"`
 	EndTime   string `form:"end_time"`
 	Status    string `form:"status"`
+	Canonical *bool  `form:"canonical"`
 	Limit     uint   `form:"limit"`
 
 	startTime *time.Time

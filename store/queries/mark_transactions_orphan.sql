@@ -1,0 +1,1 @@
+UPDATE transactions SET canonical = false WHERE height = $1

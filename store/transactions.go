@@ -85,6 +85,9 @@ func (s TransactionsStore) Search(search TransactionSearch) ([]model.Transaction
 	if search.endTime != nil {
 		scope = scope.Where("time <= ?", search.endTime)
 	}
+	if search.Canonical != nil {
+		scope = scope.Where("canonical = ?", *search.Canonical)
+	}
 
 	result := []model.Transaction{}
 	err := scope.Find(&result).Error
@@ -114,6 +117,7 @@ func (s TransactionsStore) Import(records []model.Transaction) error {
 			tx.Fee,
 			tx.Memo,
 			tx.Status,
+			tx.Canonical,
 			tx.FailureReason,
 			tx.SequenceNumber,
 			tx.SecondarySequenceNumber,
@@ -121,4 +125,14 @@ func (s TransactionsStore) Import(records []model.Transaction) error {
 			now,
 		}
 	})
+}
+
+// MarkTransactionsOrphan updates all transactions as non canonical at a height
+func (s TransactionsStore) MarkTransactionsOrphan(height uint64) error {
+	return s.db.Exec(queries.MarkTransactionsOrphan, height).Error
+}
+
+// MarkTransactionsCanonical updates transactions canonical for given block hash
+func (s TransactionsStore) MarkTransactionsCanonical(blockHash string) error {
+	return s.db.Exec(queries.MarkTransactionsCanonical, blockHash).Error
 }
