@@ -35,7 +35,7 @@ func (s BlocksStore) FindByHeight(height uint64) (*model.Block, error) {
 	result := model.Block{}
 
 	scope := s.db.Limit(1)
-	scope = scope.Where("height = ?", height).Where("canonical = ?", true)
+	scope = scope.Where("height = ? AND canonical = ?", height, true)
 
 	return &result, scope.Find(&result).Error
 }
@@ -80,12 +80,12 @@ func (s BlocksStore) Stats(period uint, interval string) ([]byte, error) {
 	return jsonquery.MustArray(s.db, queries.BlocksStats, period, interval)
 }
 
-// UpdateCanonicalBlocks updates all blocks as non canonical at a height
-func (s BlocksStore) UpdateCanonicalBlocksAllFalseByHeight(height uint64) error {
+// MarkBlocksOrphan updates all blocks as non canonical at a height
+func (s BlocksStore) MarkBlocksOrphan(height uint64) error {
 	return s.db.Exec(queries.UpdateCanonicalBlocksAllFalse, height).Error
 }
 
-// UpdateCanonicalBlock updates canonical at a height
-func (s BlocksStore) UpdateCanonicalBlock(hash string) error {
-	return s.db.Exec(queries.UpdateCanonicalBlock, hash).Error
+// MarkBlockCanonical updates canonical at a height
+func (s BlocksStore) MarkBlockCanonical(hash string) error {
+	return s.db.Exec(queries.MarkBlockCanonical, hash).Error
 }

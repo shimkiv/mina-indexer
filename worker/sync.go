@@ -125,10 +125,10 @@ func (w SyncWorker) Run() (int, error) {
 		return 0, err
 	}
 	for _, block := range canonicalBlocks {
-		if err := w.db.Blocks.UpdateCanonicalBlocksAllFalseByHeight(block.Height); err != nil {
+		if err := w.db.Blocks.MarkBlocksOrphan(block.Height); err != nil {
 			return 0, err
 		}
-		if err := w.db.Blocks.UpdateCanonicalBlock(block.StateHash); err != nil {
+		if err := w.db.Blocks.MarkBlockCanonical(block.StateHash); err != nil {
 			return 0, err
 		}
 	}
