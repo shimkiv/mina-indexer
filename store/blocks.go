@@ -89,3 +89,12 @@ func (s BlocksStore) MarkBlocksOrphan(height uint64) error {
 func (s BlocksStore) MarkBlockCanonical(hash string) error {
 	return s.db.Exec(queries.MarkBlockCanonical, hash).Error
 }
+
+// FindUnsafeBlocks returns the last indexed unsafe blocks that may be orphaned
+func (s BlocksStore) FindUnsafeBlocks(startingHeight uint64) ([]model.Block, error) {
+	result := []model.Block{}
+
+	scope := s.db.Where("height >= ? AND canonical = ?", startingHeight, true).
+		Order("height desc")
+	return result, scope.Find(&result).Error
+}

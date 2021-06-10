@@ -66,5 +66,6 @@ LEFT JOIN transactions
   AND transactions.status = 'applied'
 WHERE
 	blocks.time >= $1 AND blocks.time <= $2
+	AND blocks.canonical = true AND transactions.canonical = true
 GROUP BY
 	DATE_TRUNC('@bucket', blocks.time);

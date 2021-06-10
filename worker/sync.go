@@ -139,6 +139,40 @@ func (w SyncWorker) Run() (int, error) {
 		}
 	}
 
+	startingBlock := lastBlock.Height - 15
+	unsafeBlocks, err := w.db.Blocks.FindUnsafeBlocks(startingBlock)
+	if err != nil {
+		return 0, err
+	}
+
+	validatorKeys := map[string]string{}
+	blockKeys := map[uint64]model.Block{}
+	for _, b := range unsafeBlocks {
+		_, ok := validatorKeys[b.Creator]
+		if !ok {
+			validatorKeys[b.Creator] = b.Creator
+		}
+
+		_, ok = blockKeys[b.Height]
+		if !ok {
+			blockKeys[b.Height] = b
+		}
+	}
+
+	for _, block := range blockKeys {
+		ts := block.Time
+		buckets := []string{store.BucketHour, store.BucketDay}
+
+		for _, bucket := range buckets {
+			log.WithField("bucket", bucket).Debug("correcting chain stats")
+			if err := w.db.Stats.CreateChainStats(bucket, ts); err != nil {
+				return 0, err
+			}
+		}
+
+		// TODO get validator by id and trigger calculation
+	}
+
 	var lag int
 
 	if len(blocks) > 0 {
