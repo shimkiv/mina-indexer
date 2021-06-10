@@ -82,7 +82,7 @@ func (s BlocksStore) Stats(period uint, interval string) ([]byte, error) {
 
 // MarkBlocksOrphan updates all blocks as non canonical at a height
 func (s BlocksStore) MarkBlocksOrphan(height uint64) error {
-	return s.db.Exec(queries.UpdateCanonicalBlocksAllFalse, height).Error
+	return s.db.Exec(queries.MarkBlocksOrphan, height).Error
 }
 
 // MarkBlockCanonical updates canonical at a height
