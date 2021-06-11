@@ -94,7 +94,7 @@ func (s BlocksStore) MarkBlockCanonical(hash string) error {
 func (s BlocksStore) FindUnsafeBlocks(startingHeight uint64) ([]model.Block, error) {
 	result := []model.Block{}
 
-	scope := s.db.Where("height >= ? AND canonical = ?", startingHeight, true).
+	scope := s.db.Where("height >= ?", startingHeight).
 		Order("height desc")
 	return result, scope.Find(&result).Error
 }
