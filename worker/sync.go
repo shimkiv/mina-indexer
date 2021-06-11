@@ -17,6 +17,8 @@ import (
 	"github.com/figment-networks/mina-indexer/store"
 )
 
+const unsafeBlockThreshold = 15
+
 type SyncWorker struct {
 	cfg           *config.Config
 	db            *store.Store
@@ -139,7 +141,8 @@ func (w SyncWorker) Run() (int, error) {
 		}
 	}
 
-	startingBlock := lastBlock.Height - 15
+	log.Info("correcting canonical blocks and validators statistics")
+	startingBlock := lastBlock.Height - unsafeBlockThreshold
 	unsafeBlocks, err := w.db.Blocks.FindUnsafeBlocks(startingBlock)
 	if err != nil {
 		return 0, err
@@ -151,6 +154,10 @@ func (w SyncWorker) Run() (int, error) {
 		_, ok := validatorKeys[b.Creator]
 		if !ok {
 			validatorKeys[b.Creator] = b.Creator
+		}
+
+		if !b.Canonical {
+			continue
 		}
 
 		_, ok = blockKeys[b.Height]
@@ -168,9 +175,14 @@ func (w SyncWorker) Run() (int, error) {
 			if err := w.db.Stats.CreateChainStats(bucket, ts); err != nil {
 				return 0, err
 			}
-		}
 
-		// TODO get validator by id and trigger calculation
+			log.WithField("bucket", bucket).Debug("creating validator stats")
+			for _, key := range validatorKeys {
+				if err := w.db.Stats.CreateValidatorStats(key, bucket, ts); err != nil {
+					return 0, err
+				}
+			}
+		}
 	}
 
 	var lag int
