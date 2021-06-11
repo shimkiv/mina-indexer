@@ -142,7 +142,10 @@ func (w SyncWorker) Run() (int, error) {
 	}
 
 	log.Info("correcting canonical blocks and validators statistics")
-	startingBlock := lastBlock.Height - unsafeBlockThreshold
+	var startingBlock uint64
+	if (int(lastBlock.Height) - int(limit)) > 0 {
+		startingBlock = lastBlock.Height - unsafeBlockThreshold
+	}
 	unsafeBlocks, err := w.db.Blocks.FindUnsafeBlocks(startingBlock)
 	if err != nil {
 		return 0, err
