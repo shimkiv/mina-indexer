@@ -9,13 +9,13 @@ import (
 )
 
 // ValidatorBlockReward returns validator reward models references from the block data
-func ValidatorBlockReward(v *model.Validator) (*model.BlockReward, error) {
-	t, err := RewardTimeBucket(v.LastTime)
+func ValidatorBlockReward(block model.Block) (*model.BlockReward, error) {
+	t, err := RewardTimeBucket(block.Time)
 	if err != nil {
 		return nil, err
 	}
 	result := model.BlockReward{
-		OwnerAccount: v.PublicKey,
+		OwnerAccount: block.Creator,
 		OwnerType:    string(model.RewardOwnerTypeValidator),
 	}
 	result.TimeBucket = t
@@ -23,11 +23,10 @@ func ValidatorBlockReward(v *model.Validator) (*model.BlockReward, error) {
 }
 
 // DelegatorBlockRewards returns delegator reward models references from the block data
-func DelegatorBlockRewards(accounts []model.LedgerEntry, block *graph.Block) ([]model.BlockReward, error) {
+func DelegatorBlockRewards(accounts []model.LedgerEntry, block model.Block) ([]model.BlockReward, error) {
 	result := []model.BlockReward{}
 	for _, a := range accounts {
-		bt := BlockTime(block)
-		t, err := RewardTimeBucket(bt)
+		t, err := RewardTimeBucket(block.Time)
 		if err != nil {
 			return nil, err
 		}
