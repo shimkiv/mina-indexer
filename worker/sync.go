@@ -54,7 +54,7 @@ func (w SyncWorker) Run() (int, error) {
 	}
 
 	log.Info("processing staking ledger")
-	ledgerData, err := w.processStakingLedger()
+	_, err = w.processStakingLedger()
 	if err != nil {
 		return 0, err
 	}
@@ -99,7 +99,7 @@ func (w SyncWorker) Run() (int, error) {
 	}
 
 	for _, block := range blocks {
-		if err := w.processBlock(block.StateHash, ledgerData); err != nil {
+		if err := w.processBlock(block.StateHash); err != nil {
 			return 0, err
 		}
 	}
@@ -194,10 +194,14 @@ func (w SyncWorker) Run() (int, error) {
 	}
 
 	log.Info("calculating rewards for safe canonical blocks")
-	//blocksForRewards, err := w.db.Blocks.FindNonCalculatedBlockRewards(uint64(safeCanonicalBlocksStarting), unsafeBlocksStarting)
-	_, err = w.db.Blocks.FindNonCalculatedBlockRewards(uint64(safeCanonicalBlocksStarting), unsafeBlocksStarting)
+	blocksForRewards, err := w.db.Blocks.FindNonCalculatedBlockRewards(uint64(safeCanonicalBlocksStarting), unsafeBlocksStarting)
 	if err != nil {
 		return 0, err
+	}
+	for _, block := range blocksForRewards {
+		if err := indexing.RewardCalculation(w.db, block); err != nil {
+			return 0, err
+		}
 	}
 
 	var lag int
@@ -209,7 +213,7 @@ func (w SyncWorker) Run() (int, error) {
 	return lag, err
 }
 
-func (w SyncWorker) processBlock(hash string, ledgerData *mapper.LedgerData) error {
+func (w SyncWorker) processBlock(hash string) error {
 	archiveBlock, err := w.archiveClient.Block(hash)
 	if err != nil {
 		return err
@@ -226,7 +230,6 @@ func (w SyncWorker) processBlock(hash string, ledgerData *mapper.LedgerData) err
 	}
 
 	validatorEpochs := []model.ValidatorEpoch{}
-	var firstSlotOfEpoch int
 	if graphBlock != nil {
 		validatorEpochs, err = w.db.ValidatorsEpochs.GetValidatorEpochs(graphBlock.ProtocolState.ConsensusState.Epoch, "")
 		if err != nil && err != store.ErrNotFound {
@@ -250,16 +253,6 @@ func (w SyncWorker) processBlock(hash string, ledgerData *mapper.LedgerData) err
 				validatorEpochs = append(validatorEpochs, validatorEpoch)
 			}
 		}
-
-		firstBlockOfEpoch, err := w.db.Blocks.FirstBlockOfEpoch(graphBlock.ProtocolState.ConsensusState.Epoch)
-		if err != nil {
-			if err != store.ErrNotFound {
-				return err
-			}
-			firstSlotOfEpoch = int(archiveBlock.GlobalSlot)
-		} else {
-			firstSlotOfEpoch = firstBlockOfEpoch.Slot
-		}
 	}
 
 	log.
@@ -267,12 +260,8 @@ func (w SyncWorker) processBlock(hash string, ledgerData *mapper.LedgerData) err
 		WithField("height", archiveBlock.Height).
 		Debug("processing block")
 
-	data, err := indexing.Prepare(archiveBlock, graphBlock, validatorEpochs, ledgerData, firstSlotOfEpoch)
+	data, err := indexing.Prepare(archiveBlock, graphBlock, validatorEpochs)
 	if err != nil {
-		return err
-	}
-
-	if err := indexing.RewardCalculation(w.db, data); err != nil {
 		return err
 	}
 

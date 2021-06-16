@@ -1,7 +1,6 @@
 package mapper
 
 import (
-	"errors"
 	"strings"
 
 	"github.com/figment-networks/mina-indexer/client/graph"
@@ -42,16 +41,6 @@ func DelegatorBlockRewards(accounts []model.LedgerEntry, block *graph.Block) ([]
 		result = append(result, dbr)
 	}
 	return result, nil
-}
-
-// ValidatorBlockReward returns validator reward models references from the block data
-func FindValidatorFee(validatorEpochs []model.ValidatorEpoch, creator string) (types.Percentage, error) {
-	for _, ve := range validatorEpochs {
-		if ve.AccountAddress == creator {
-			return ve.ValidatorFee, nil
-		}
-	}
-	return types.Percentage{}, errors.New("validator fee not found")
 }
 
 func TransactionFees(block *graph.Block) types.Amount {
