@@ -80,25 +80,25 @@ func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block, validatorEpoc
 
 		// the reward is supercharged is based off of the account that won the block
 		if graphBlock.WinnerAccount.Locked != nil {
-			supercharged = !(*graphBlock.WinnerAccount.Locked)
+			block.Supercharged = !(*graphBlock.WinnerAccount.Locked)
 		} else {
 			if block.Coinbase.Int != nil {
 				// The coinbase reward for producing a block is 720 tokens. for supercharged 2x
-				supercharged = block.Coinbase.Int64() == 1440000000000
+				block.Supercharged = block.Coinbase.Int64() == 1440000000000
 			}
 		}
 	}
 
 	data := &Data{
 		Block:                  block,
-		FirstSlotOfEpoch:       firstSlotOfEpoch,
-		Supercharged:           supercharged,
+		FirstSlotOfEpoch:       firstSlotOfEpoch, // remove
+		Supercharged:           supercharged, // remove
 		Validator:              validator,
-		ValidatorBlockReward:   validatorBlockReward,
+		ValidatorBlockReward:   validatorBlockReward, // remove
 		CreatorAccount:         creatorAcc,
 		ValidatorEpochs:        validatorEpochs,
 		Accounts:               accounts,
-		DelegatorsBlockRewards: delegatorBlockRewards,
+		DelegatorsBlockRewards: delegatorBlockRewards, // remove
 		Transactions:           transactions,
 		Snarkers:               snarkers,
 		SnarkJobs:              snarkJobs,

@@ -27,6 +27,8 @@ type Block struct {
 	SnarkersCount     int          `json:"snarkers_count"`
 	SnarkJobsCount    int          `json:"snark_jobs_count"`
 	SnarkJobsFees     types.Amount `json:"snark_jobs_fees"`
+	RewardCalculated  bool         `json:"reward_calculated"`
+	Supercharged      bool         `json:"supercharged"`
 }
 
 // BlockIntervalStat contains block count stats for a given time interval
