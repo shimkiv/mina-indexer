@@ -2,6 +2,8 @@ package indexing
 
 import (
 	"errors"
+	"strconv"
+
 	"github.com/figment-networks/mina-indexer/model"
 	"github.com/figment-networks/mina-indexer/model/util"
 	"github.com/figment-networks/mina-indexer/store"
@@ -13,7 +15,7 @@ func RewardCalculation(db *store.Store, block model.Block) error {
 		return nil
 	}
 
-	validatorEpochs, err := db.ValidatorsEpochs.GetValidatorEpochs(string(block.Epoch), block.Creator)
+	validatorEpochs, err := db.ValidatorsEpochs.GetValidatorEpochs(strconv.Itoa(block.Epoch), block.Creator)
 	if err != nil && err != store.ErrNotFound {
 		return err
 	} else if len(validatorEpochs) == 0 {
@@ -41,11 +43,13 @@ func RewardCalculation(db *store.Store, block model.Block) error {
 		return err
 	}
 
-	firstBlockOfEpoch, err := db.Blocks.FirstBlockOfEpoch(string(block.Epoch))
+	firstBlockOfEpoch, err := db.Blocks.FirstBlockOfEpoch(strconv.Itoa(block.Epoch))
 	if err != nil {
 		if err != store.ErrNotFound {
 			return err
 		}
+	} else if firstBlockOfEpoch == nil {
+		return errors.New("first block of epoch is not found")
 	}
 
 	firstSlotOfEpoch := firstBlockOfEpoch.Slot

@@ -31,7 +31,6 @@ func (s StakingStore) CreateLedgerEntries(records []model.LedgerEntry) error {
 			r.Delegate,
 			r.Delegation,
 			r.Balance,
-			r.Weight,
 			r.TimingInitialMinimumBalance,
 			r.TimingCliffTime,
 			r.TimingCliffAmount,
