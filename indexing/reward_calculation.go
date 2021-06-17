@@ -113,5 +113,11 @@ func RewardCalculation(db *store.Store, block model.Block) error {
 	if err := db.Rewards.Import([]model.BlockReward{*validatorReward}); err != nil {
 		return err
 	}
+
+	block.RewardCalculated = true
+	err = db.Blocks.Update(block)
+	if err != nil {
+		return err
+	}
 	return nil
 }
