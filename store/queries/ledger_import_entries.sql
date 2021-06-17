@@ -10,3 +10,4 @@ INSERT INTO ledger_entries (
   timing_vesting_period,
   timing_vesting_increment
 )
+VALUES @values
