@@ -25,6 +25,7 @@ func RewardCalculation(db *store.Store, block model.Block) error {
 		return err
 	} else if len(validatorEpochs) == 0 {
 		log.Warn(fmt.Sprintf("validator fee for epoch not found. validator id = %s", block.Creator))
+		return nil
 	}
 
 	creatorFee := validatorEpochs[0].ValidatorFee
