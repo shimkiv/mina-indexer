@@ -30,5 +30,10 @@ func BlockFromArchive(input *archive.Block) (*model.Block, error) {
 		}
 	}
 
+	if block.Coinbase.Int != nil {
+		// The coinbase reward for producing a block is 720 tokens. for supercharged 2x
+		block.Supercharged = block.Coinbase.Int64() == 1440000000000
+	}
+
 	return block, block.Validate()
 }

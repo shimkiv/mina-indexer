@@ -57,18 +57,6 @@ func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block, validatorEpoc
 		return nil, err
 	}
 
-	if graphBlock != nil {
-		// the reward is supercharged is based off of the account that won the block
-		if graphBlock.WinnerAccount.Locked != nil {
-			block.Supercharged = !(*graphBlock.WinnerAccount.Locked)
-		} else {
-			if block.Coinbase.Int != nil {
-				// The coinbase reward for producing a block is 720 tokens. for supercharged 2x
-				block.Supercharged = block.Coinbase.Int64() == 1440000000000
-			}
-		}
-	}
-
 	data := &Data{
 		Block:           block,
 		Validator:       validator,
