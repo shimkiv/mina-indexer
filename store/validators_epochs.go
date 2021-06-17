@@ -29,13 +29,13 @@ func (s ValidatorsEpochsStore) Import(records []model.ValidatorEpoch) error {
 }
 
 // GetValidatorEpochs fetches validator epochs
-func (s *ValidatorsEpochsStore) GetValidatorEpochs(epoch string, accountId string) ([]model.ValidatorEpoch, error) {
+func (s *ValidatorsEpochsStore) GetValidatorEpochs(epoch string, accountAddress string) ([]model.ValidatorEpoch, error) {
 	var res []model.ValidatorEpoch
 
 	scope := s.db
 
-	if accountId != "" {
-		scope = scope.Where("account_id = ?", accountId)
+	if accountAddress != "" {
+		scope = scope.Where("account_address = ?", accountAddress)
 	}
 	if epoch != "" {
 		scope = scope.Where("epoch = ?", epoch)
