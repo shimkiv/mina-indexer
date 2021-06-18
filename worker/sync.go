@@ -21,7 +21,7 @@ import (
 
 const unsafeBlockThreshold = 15
 
-var finalityThreshold uint = 290
+const finalityThreshold uint = 290
 
 type SyncWorker struct {
 	cfg            *config.Config
