@@ -126,7 +126,6 @@ func (w SyncWorker) Run() (int, error) {
 		blocksRequest.StartHeight = 0
 		blocksRequest.Limit = uint(lastBlock.Height)
 	}
-	safeCanonicalBlocksStarting := blocksRequest.StartHeight
 	canonicalBlocks, err := w.archiveClient.Blocks(blocksRequest)
 	if err != nil {
 		return 0, err
@@ -194,7 +193,18 @@ func (w SyncWorker) Run() (int, error) {
 	}
 
 	log.Info("calculating rewards for safe canonical blocks")
-	blocksForRewards, err := w.db.Blocks.FindNonCalculatedBlockRewards(uint64(safeCanonicalBlocksStarting), unsafeBlocksStarting)
+	lastCalculatedBlockReward, err := w.db.Blocks.FindLastCalculatedBlockReward(uint64(blocksRequest.StartHeight))
+	var safeCanonicalBlocksStarting uint64
+	if err != nil {
+		if err != store.ErrNotFound {
+			return 0, err
+		}
+	} else if lastCalculatedBlockReward == nil {
+		safeCanonicalBlocksStarting = uint64(blocksRequest.StartHeight)
+	}
+	safeCanonicalBlocksStarting = lastCalculatedBlockReward.Height
+
+	blocksForRewards, err := w.db.Blocks.FindNonCalculatedBlockRewards(safeCanonicalBlocksStarting, unsafeBlocksStarting)
 	if err != nil {
 		return 0, err
 	}
