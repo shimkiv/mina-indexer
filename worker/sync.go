@@ -200,7 +200,7 @@ func (w SyncWorker) Run() (int, error) {
 		if err != store.ErrNotFound {
 			return 0, err
 		}
-	} else if lastCalculatedBlockReward == nil {
+	} else if lastCalculatedBlockReward.Height == 0 {
 		safeCanonicalBlocksStarting = uint64(blocksRequest.StartHeight)
 	}
 	safeCanonicalBlocksStarting = lastCalculatedBlockReward.Height
