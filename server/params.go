@@ -10,7 +10,7 @@ import (
 type rewardsParams struct {
 	From            time.Time `form:"from" binding:"required" time_format:"2006-01-02"`
 	To              time.Time `form:"to" binding:"required" time_format:"2006-01-02"`
-	AccountId       string    `form:"account_id" binding:"-" `
+	ValidatorId     string    `form:"validator_id" binding:"-" `
 	RewardOwnerType string    `form:"owner_type" binding:"required" `
 	Interval        string    `form:"interval" binding:"required" `
 }
@@ -25,8 +25,13 @@ func (p *rewardsParams) Validate() error {
 		return errors.New("time interval type is wrong")
 	}
 
-	if _, ok = model.GetTypeForRewardOwnerType(p.RewardOwnerType); !ok {
+	var ownerType model.RewardOwnerType
+	if ownerType, ok = model.GetTypeForRewardOwnerType(p.RewardOwnerType); !ok {
 		return errors.New("owner type is wrong")
+	}
+
+	if ownerType == model.RewardOwnerTypeDelegator && p.ValidatorId == "" {
+		return errors.New("validator id should be defined for delegator reward")
 	}
 
 	return nil
