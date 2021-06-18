@@ -205,8 +205,24 @@ func TestCalculateWeightsSupercharged(t *testing.T) {
 		},
 	}
 
+	delegations := []model.Delegation{
+		{
+			PublicKey: "one",
+			Balance:   types.NewAmount("20000"),
+		},
+		{
+			PublicKey: "two",
+			Balance:   types.NewAmount("50000"),
+		},
+		{
+			PublicKey: "three",
+			Balance:   types.NewAmount("30000"),
+		},
+	}
+
 	type args struct {
 		superchargedContribution types.Percentage
+		delegations              []model.Delegation
 		records                  []model.LedgerEntry
 		firstSlotOfEpoch         int
 	}
@@ -220,6 +236,7 @@ func TestCalculateWeightsSupercharged(t *testing.T) {
 			name: "successful with timing but locked entire epoch",
 			args: args{
 				superchargedContribution: types.NewPercentage("1.98765"),
+				delegations:              delegations,
 				records:                  records,
 				firstSlotOfEpoch:         70000,
 			},
@@ -229,6 +246,7 @@ func TestCalculateWeightsSupercharged(t *testing.T) {
 			name: "successful with timing but locked entire epoch",
 			args: args{
 				superchargedContribution: types.NewPercentage("1.98765"),
+				delegations:              delegations,
 				records:                  records,
 				firstSlotOfEpoch:         80000,
 			},
@@ -237,13 +255,13 @@ func TestCalculateWeightsSupercharged(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			records := tt.args.records
-			err := CalculateWeightsSupercharged(tt.args.superchargedContribution, records, tt.args.firstSlotOfEpoch)
+			delegations := tt.args.delegations
+			err := CalculateWeightsSupercharged(tt.args.superchargedContribution, delegations, tt.args.records, tt.args.firstSlotOfEpoch)
 			if err != nil {
 				assert.True(t, tt.wantErr)
 			} else {
 				for i, _ := range records {
-					assert.Equal(t, tt.result[i], records[i].Weight.String())
+					assert.Equal(t, tt.result[i], delegations[i].Weight.String())
 				}
 			}
 		})

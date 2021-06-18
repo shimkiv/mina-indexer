@@ -89,19 +89,29 @@ func CalculateSuperchargedWeighting(block model.Block) (types.Percentage, error)
 }
 
 // CalculateWeightsNonSupercharged calculates weights when block reward is not doubled for supercharged
-func CalculateWeightsNonSupercharged(StakedAmount types.Amount, records []model.LedgerEntry) error {
-	for i, r := range records {
-		w, err := CalculateWeight(r.Balance, StakedAmount)
+func CalculateWeightsNonSupercharged(delegations []model.Delegation) error {
+	stakedAmount := new(big.Int)
+	bln := new(big.Int)
+	var ok bool
+	for _, r := range delegations {
+		bln, ok = bln.SetString(r.Balance.String(), 10)
+		if !ok {
+			return errors.New("error with balance")
+		}
+		stakedAmount.Add(stakedAmount, bln)
+	}
+	for i, r := range delegations {
+		w, err := CalculateWeight(r.Balance, types.NewAmount(stakedAmount.String()))
 		if err != nil {
 			return err
 		}
-		records[i].Weight = w
+		delegations[i].Weight = w
 	}
 	return nil
 }
 
 // CalculateWeightsSupercharged calculates weights when block reward is doubled for supercharged
-func CalculateWeightsSupercharged(superchargedWeighting types.Percentage, records []model.LedgerEntry, firstSlotOfEpoch int) error {
+func CalculateWeightsSupercharged(superchargedWeighting types.Percentage, delegations []model.Delegation, records []model.LedgerEntry, firstSlotOfEpoch int) error {
 	sum := new(big.Float)
 	sc := new(big.Float)
 	bln := new(big.Float)
@@ -109,9 +119,19 @@ func CalculateWeightsSupercharged(superchargedWeighting types.Percentage, record
 	w := new(big.Float)
 	var ok bool
 
+	recordsMap := map[string]model.LedgerEntry{}
+	for _, r := range records {
+		recordsMap[r.PublicKey] = r
+	}
+
 	// pool stakes
-	for i, r := range records {
-		timedWeighting, err := calculateTimedWeighting(r, firstSlotOfEpoch)
+	for i, r := range delegations {
+		record, ok := recordsMap[r.PublicKey]
+		if !ok {
+			return errors.New("ledger record not found")
+		}
+
+		timedWeighting, err := calculateTimedWeighting(record, firstSlotOfEpoch)
 		if err != nil {
 			return err
 		}
@@ -131,18 +151,18 @@ func CalculateWeightsSupercharged(superchargedWeighting types.Percentage, record
 		}
 		stk = bln.Mul(bln, sc)
 
-		records[i].Weight = types.NewPercentage(stk.String())
+		delegations[i].Weight = types.NewPercentage(stk.String())
 		sum.Add(sum, stk)
 	}
 
 	// pool weights
-	for i, r := range records {
+	for i, r := range delegations {
 		w, ok = new(big.Float).SetString(r.Weight.String())
 		if !ok {
 			return errors.New("error with weight")
 		}
 		w = w.Quo(w, sum)
-		records[i].Weight = types.NewPercentage(w.String())
+		delegations[i].Weight = types.NewPercentage(w.String())
 	}
 
 	return nil

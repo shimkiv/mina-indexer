@@ -27,7 +27,6 @@ type LedgerEntry struct {
 	Delegate                    string           `json:"delegate"`
 	Delegation                  bool             `json:"delegation"`
 	Balance                     types.Amount     `json:"balance"`
-	Weight                      types.Percentage `json:"weight"`
 	TimingInitialMinimumBalance types.Amount     `json:"timing_initial_minimum_balance"`
 	TimingCliffTime             *int             `json:"timing_cliff_time"`
 	TimingCliffAmount           types.Amount     `json:"timing_cliff_amount"`

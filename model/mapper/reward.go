@@ -23,7 +23,7 @@ func ValidatorBlockReward(block model.Block) (*model.BlockReward, error) {
 }
 
 // DelegatorBlockRewards returns delegator reward models references from the block data
-func DelegatorBlockRewards(accounts []model.LedgerEntry, block model.Block) ([]model.BlockReward, error) {
+func DelegatorBlockRewards(accounts []model.Delegation, block model.Block) ([]model.BlockReward, error) {
 	result := []model.BlockReward{}
 	for _, a := range accounts {
 		t, err := RewardTimeBucket(block.Time)

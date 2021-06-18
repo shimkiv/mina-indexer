@@ -39,11 +39,11 @@ func RewardCalculation(db *store.Store, block model.Block) error {
 	if err != nil && err != store.ErrNotFound {
 		return err
 	}
-	if err == store.ErrNotFound {
-		return nil
-	}
 
-	records, err := db.Staking.LedgerRecords(ledger.ID)
+	delegations, err := db.Staking.FindDelegations(store.FindDelegationsParams{
+		Delegate: block.Creator,
+		LedgerID: &ledger.ID,
+	})
 	if err != nil && err != store.ErrNotFound {
 		return err
 	}
@@ -60,7 +60,7 @@ func RewardCalculation(db *store.Store, block model.Block) error {
 	firstSlotOfEpoch := firstBlockOfEpoch.Slot
 
 	if !block.Supercharged {
-		err = util.CalculateWeightsNonSupercharged(ledger.StakedAmount, records)
+		err = util.CalculateWeightsNonSupercharged(delegations)
 		if err != nil {
 			return err
 		}
@@ -69,18 +69,23 @@ func RewardCalculation(db *store.Store, block model.Block) error {
 		if err != nil {
 			return err
 		}
-		err = util.CalculateWeightsSupercharged(superchargedWeighting, records, firstSlotOfEpoch)
+		records, err := db.Staking.LedgerRecordsOfDelegate(ledger.ID, block.Creator)
+		if err != nil && err != store.ErrNotFound {
+			return err
+		}
+
+		err = util.CalculateWeightsSupercharged(superchargedWeighting, delegations, records, firstSlotOfEpoch)
 		if err != nil {
 			return err
 		}
 	}
 
 	recordsMap := map[string]big.Float{}
-	for _, r := range records {
+	for _, r := range delegations {
 		recordsMap[r.PublicKey] = *r.Weight.Float
 	}
 
-	delegatorsBlockRewards, err := mapper.DelegatorBlockRewards(records, block)
+	delegatorsBlockRewards, err := mapper.DelegatorBlockRewards(delegations, block)
 	if err != nil {
 		return err
 	}
