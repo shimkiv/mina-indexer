@@ -50,11 +50,7 @@ func RewardCalculation(db *store.Store, block model.Block) error {
 
 	firstBlockOfEpoch, err := db.Blocks.FirstBlockOfEpoch(strconv.Itoa(block.Epoch))
 	if err != nil {
-		if err != store.ErrNotFound {
-			return err
-		}
-	} else if firstBlockOfEpoch.Height == 0 {
-		return errors.New("first block of epoch is not found")
+		return err
 	}
 
 	firstSlotOfEpoch := firstBlockOfEpoch.Slot
