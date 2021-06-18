@@ -21,6 +21,8 @@ import (
 
 const unsafeBlockThreshold = 15
 
+var finalityThreshold uint = 290
+
 type SyncWorker struct {
 	cfg            *config.Config
 	db             *store.Store
@@ -118,10 +120,9 @@ func (w SyncWorker) Run() (int, error) {
 
 	t := true
 	blocksRequest = &archive.BlocksRequest{Canonical: &t}
-	var limit uint = 290
-	if (int(lastBlock.Height) - int(limit)) > 0 {
-		blocksRequest.StartHeight = uint(lastBlock.Height) - limit
-		blocksRequest.Limit = limit
+	if (int(lastBlock.Height) - int(finalityThreshold)) > 0 {
+		blocksRequest.StartHeight = uint(lastBlock.Height) - finalityThreshold
+		blocksRequest.Limit = finalityThreshold
 	} else {
 		blocksRequest.StartHeight = 0
 		blocksRequest.Limit = uint(lastBlock.Height)
@@ -147,7 +148,7 @@ func (w SyncWorker) Run() (int, error) {
 
 	log.Info("correcting canonical blocks and validators statistics")
 	var unsafeBlocksStarting uint64
-	if (int(lastBlock.Height) - int(limit)) > 0 {
+	if (int(lastBlock.Height) - int(finalityThreshold)) > 0 {
 		unsafeBlocksStarting = lastBlock.Height - unsafeBlockThreshold
 	}
 	unsafeBlocks, err := w.db.Blocks.FindUnsafeBlocks(unsafeBlocksStarting)
