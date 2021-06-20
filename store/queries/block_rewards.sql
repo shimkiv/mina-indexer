@@ -9,4 +9,4 @@ WHERE
   AND time_bucket BETWEEN ? AND ?
   AND owner_type = ?
 GROUP BY
-  to_char(time_bucket, $INTERVAL)
+  to_char(time_bucket, '$INTERVAL')

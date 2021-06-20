@@ -10,13 +10,14 @@ import (
 
 	"github.com/figment-networks/mina-indexer/model"
 	"github.com/figment-networks/mina-indexer/model/mapper"
+	"github.com/figment-networks/mina-indexer/model/types"
 	"github.com/figment-networks/mina-indexer/model/util"
 	"github.com/figment-networks/mina-indexer/store"
 )
 
 // RewardCalculation calculates rewards
 func RewardCalculation(db *store.Store, block model.Block) error {
-	if block.Coinbase.Int == nil || block.TransactionsFees.Int == nil || block.SnarkJobsFees.Int == nil {
+	if block.TransactionsFees.Int == nil || block.SnarkJobsFees.Int == nil {
 		return nil
 	}
 
@@ -76,33 +77,6 @@ func RewardCalculation(db *store.Store, block model.Block) error {
 		}
 	}
 
-	recordsMap := map[string]big.Float{}
-	for _, r := range delegations {
-		recordsMap[r.PublicKey] = *r.Weight.Float
-	}
-
-	delegatorsBlockRewards, err := mapper.DelegatorBlockRewards(delegations, block)
-	if err != nil {
-		return err
-	}
-	for i, dbr := range delegatorsBlockRewards {
-		weight, ok := recordsMap[dbr.OwnerAccount]
-		if !ok {
-			err = errors.New("record is not found for " + dbr.OwnerAccount)
-			log.WithError(err)
-			return err
-		}
-		res, err := util.CalculateDelegatorReward(weight, blockReward, creatorFee)
-		if err != nil {
-			return err
-		}
-		delegatorsBlockRewards[i].Reward = res
-	}
-
-	if err := db.Rewards.Import(delegatorsBlockRewards); err != nil {
-		return err
-	}
-
 	validatorReward, err := mapper.ValidatorBlockReward(block)
 	if err != nil {
 		return err
@@ -112,6 +86,37 @@ func RewardCalculation(db *store.Store, block model.Block) error {
 		return err
 	}
 	validatorReward.Reward = reward
+
+	remainingReward := types.NewPercentage(blockReward.String())
+	remainingReward = remainingReward.Sub(reward)
+
+	recordsMap := map[string]big.Float{}
+	for _, r := range delegations {
+		recordsMap[r.PublicKey] = *r.Weight.Float
+	}
+
+	delegatorsBlockRewards, err := mapper.DelegatorBlockRewards(delegations, block)
+	if err != nil {
+		return err
+	}
+
+	for i, dbr := range delegatorsBlockRewards {
+		weight, ok := recordsMap[dbr.OwnerAccount]
+		if !ok {
+			err = errors.New("record is not found for " + dbr.OwnerAccount)
+			log.WithError(err)
+			return err
+		}
+		res, err := util.CalculateDelegatorReward(weight, remainingReward)
+		if err != nil {
+			return err
+		}
+		delegatorsBlockRewards[i].Reward = res
+	}
+
+	if err := db.Rewards.Import(delegatorsBlockRewards); err != nil {
+		return err
+	}
 
 	if err := db.Rewards.Import([]model.BlockReward{*validatorReward}); err != nil {
 		return err

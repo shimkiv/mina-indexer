@@ -5,13 +5,13 @@ import (
 	"net/http"
 )
 
-// Client interacts with the Archive API
+// Client interacts with the staketab API
 type Client struct {
 	endpoint string
 	client   *http.Client
 }
 
-// NewClient returns a new archive service client
+// NewClient returns a new staketab service client
 func NewClient(httpClient *http.Client, endpoint string) *Client {
 	return &Client{
 		endpoint: endpoint,
@@ -31,8 +31,7 @@ func (c Client) GetAllProviders() (Providers, error) {
 		return Providers{}, err
 	}
 
-	providers := &Providers{}
-	err = json.NewDecoder(resp.Body).Decode(providers)
-
-	return *providers, err
+	providers := Providers{}
+	err = json.NewDecoder(resp.Body).Decode(&providers)
+	return providers, err
 }

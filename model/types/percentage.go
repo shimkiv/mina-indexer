@@ -47,6 +47,34 @@ func (a Percentage) String() string {
 	return a.Float.String()
 }
 
+// Add adds two numbers
+func (a Percentage) Add(b Percentage) Percentage {
+	n := new(big.Float)
+	n = n.Add(a.Float, b.Float)
+	return Percentage{n}
+}
+
+// Sub substitutes a given percentage amount from the current one
+func (a Percentage) Sub(b Percentage) Percentage {
+	n := new(big.Float)
+	n = n.Sub(a.Float, b.Float)
+	return Percentage{n}
+}
+
+// Mul multiplies two numbers
+func (a Percentage) Mul(b Percentage) Percentage {
+	n := new(big.Float)
+	n = n.Mul(a.Float, b.Float)
+	return Percentage{n}
+}
+
+// Quo divides two numbers
+func (a Percentage) Quo(b Percentage) Percentage {
+	n := new(big.Float)
+	n = n.Quo(a.Float, b.Float)
+	return Percentage{n}
+}
+
 // Scan assigns the value from interface
 func (a *Percentage) Scan(value interface{}) error {
 	if value == nil {
