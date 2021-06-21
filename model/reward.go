@@ -11,6 +11,7 @@ type BlockReward struct {
 	ID           string           `json:"-"`
 	OwnerAccount string           `json:"owner_account"`
 	Delegate     string           `json:"delegate"`
+	Epoch        int              `json:"epoch"`
 	TimeBucket   time.Time        `json:"time_bucket"`
 	Reward       types.Percentage `json:"reward"`
 	OwnerType    string           `json:"owner_type"`

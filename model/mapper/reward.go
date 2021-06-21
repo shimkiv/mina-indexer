@@ -17,6 +17,7 @@ func ValidatorBlockReward(block model.Block) (*model.BlockReward, error) {
 	result := model.BlockReward{
 		OwnerAccount: block.Creator,
 		OwnerType:    string(model.RewardOwnerTypeValidator),
+		Epoch:        block.Epoch,
 	}
 	result.TimeBucket = t
 	return &result, nil
@@ -34,6 +35,7 @@ func DelegatorBlockRewards(accounts []model.Delegation, block model.Block) ([]mo
 		dbr := model.BlockReward{
 			OwnerAccount: a.PublicKey,
 			Delegate:     a.Delegate,
+			Epoch:        block.Epoch,
 			OwnerType:    string(model.RewardOwnerTypeDelegator),
 		}
 		dbr.TimeBucket = t

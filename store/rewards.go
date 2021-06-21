@@ -39,6 +39,7 @@ func (s RewardStore) Import(records []model.BlockReward) error {
 		return bulk.Row{
 			tx.OwnerAccount,
 			tx.Delegate,
+			tx.Epoch,
 			tx.TimeBucket,
 			tx.Reward,
 			tx.OwnerType,
