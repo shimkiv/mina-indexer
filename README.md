@@ -107,7 +107,7 @@ foreach delegator
       weight = delegation amount / total staked amount
       reward = delegators reward / weight
 ```
-2. Supercharged rewards when coinbase reward for producing a block is 144 tokens. At this case calculating weights different;
+2. Supercharged rewards when coinbase reward for producing a block is 1440 tokens. At this case calculating weights different;
 ```
 supercharged weighting = 1 + (1 / (1 + transaction fees / coinbase))
 
