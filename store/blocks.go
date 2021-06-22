@@ -95,6 +95,6 @@ func (s BlocksStore) FindUnsafeBlocks(startingHeight uint64) ([]model.Block, err
 	result := []model.Block{}
 
 	scope := s.db.Where("height >= ?", startingHeight).
-		Order("height desc")
+		Order("height asc")
 	return result, scope.Find(&result).Error
 }
