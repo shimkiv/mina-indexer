@@ -24,6 +24,7 @@ func (dbr BlockReward) String() string {
 
 type RewardsSummary struct {
 	Interval string           `json:"interval"`
+	Epoch    string           `json:"epoch"`
 	Amount   types.Percentage `json:"amount"`
 }
 
