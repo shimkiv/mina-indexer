@@ -10,3 +10,5 @@ WHERE
   AND owner_type = ?
 GROUP BY
   to_char(time_bucket, '$INTERVAL')
+ORDER BY
+  to_char(time_bucket, '$INTERVAL')
