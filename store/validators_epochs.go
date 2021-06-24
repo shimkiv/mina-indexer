@@ -6,12 +6,12 @@ import (
 	"github.com/figment-networks/mina-indexer/store/queries"
 )
 
-// ValidatorEpochStore handles operations on validator epochs
+// ValidatorsEpochsStore handles operations on validator epochs
 type ValidatorsEpochsStore struct {
 	baseStore
 }
 
-// ImportValidatorEpochs creates or updates validator records in bulk
+// Import creates or updates validator records in bulk
 func (s ValidatorsEpochsStore) Import(records []model.ValidatorEpoch) error {
 	if len(records) == 0 {
 		return nil
