@@ -12,6 +12,8 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+
+	"github.com/figment-networks/mina-indexer/model/util"
 )
 
 var (
@@ -261,9 +263,13 @@ func (c Client) GetPendingTransactions() ([]PendingTransaction, error) {
 	var result struct {
 		Transactions []PendingTransaction `json:"pooledUserCommands"`
 	}
-	q := buildPendingTransactionsQuery()
-	if err := c.Query(q, &result); err != nil {
+	if err := c.Query(queryPendingTx, &result); err != nil {
 		return nil, err
 	}
+
+	for idx, tx := range result.Transactions {
+		result.Transactions[idx].Memo = util.ParseMemoText(tx.Memo)
+	}
+
 	return result.Transactions, nil
 }

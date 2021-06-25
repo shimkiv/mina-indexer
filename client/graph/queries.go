@@ -144,7 +144,7 @@ var (
 			}
 		}`
 
-	pendingTrx = `
+	queryPendingTx = `
 		query {
 			pooledUserCommands {
 				amount
@@ -171,8 +171,4 @@ func buildBlocksQuery(filter string) string {
 
 func buildAccountQuery(filter string) string {
 	return fmt.Sprintf(queryAccount, filter)
-}
-
-func buildPendingTransactionsQuery() string {
-	return fmt.Sprintf(pendingTrx)
 }
