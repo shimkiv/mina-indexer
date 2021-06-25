@@ -56,6 +56,7 @@ func (s *Server) initRoutes() {
 	s.GET("/delegations", s.GetDelegations)
 	s.GET("/snarkers", s.GetSnarkers)
 	s.GET("/transactions", s.GetTransactions)
+	s.GET("/pending_transactions", s.GetPendingTransactions)
 	s.GET("/transactions/:id", s.GetTransaction)
 	s.GET("/accounts/:id", s.GetAccount)
 	s.GET("/ledgers", s.GetLedgers)
@@ -398,6 +399,15 @@ func (s *Server) GetTransactions(c *gin.Context) {
 		return
 	}
 
+	jsonOk(c, transactions)
+}
+
+// GetPendingTransactions returns transactions by height
+func (s *Server) GetPendingTransactions(c *gin.Context) {
+	transactions, err := s.graphClient.GetPendingTransactions()
+	if shouldReturn(c, err) {
+		return
+	}
 	jsonOk(c, transactions)
 }
 
