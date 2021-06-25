@@ -148,9 +148,7 @@ var (
 		query {
 			pooledUserCommands {
 				amount
-				failureReason
 				fee
-				feeToken
 				from
 				hash
 				id
@@ -159,7 +157,6 @@ var (
 				memo
 				kind
 				to
-				token
 			}
 		}`
 )

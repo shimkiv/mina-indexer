@@ -483,7 +483,22 @@ type UserCommand struct {
 }
 
 type PendingTransaction struct {
-	UserCommand UserCommand
+	ID   string `json:"id"`
+	Hash string `json:"hash"`
+	// If true, this represents a delegation of stake, otherwise it is a payment
+	IsDelegation bool `json:"isDelegation"`
+	// Nonce of the transaction
+	Nonce int `json:"nonce"`
+	// Public key of the sender
+	From string `json:"from"`
+	// Public key of the receiver
+	To string `json:"to"`
+	// Amount that sender is sending to receiver - this is 0 for delegations
+	Amount string `json:"amount"`
+	// Fee that sender is willing to pay for making the transaction
+	Fee string `json:"fee"`
+	// Short arbitrary message provided by the sender
+	Memo string `json:"memo"`
 	// Kind of the transaction
 	Kind string `json:"kind"`
 }

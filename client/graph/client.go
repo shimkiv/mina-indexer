@@ -259,7 +259,7 @@ func (c Client) ConsensusTip() (*Block, error) {
 // GetPendingTransactions returns pending transactions
 func (c Client) GetPendingTransactions() ([]PendingTransaction, error) {
 	var result struct {
-		Transactions []PendingTransaction `json:"pendingTransactions"`
+		Transactions []PendingTransaction `json:"pooledUserCommands"`
 	}
 	q := buildPendingTransactionsQuery()
 	if err := c.Query(q, &result); err != nil {
