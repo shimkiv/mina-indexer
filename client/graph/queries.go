@@ -143,6 +143,25 @@ var (
 				}
 			}
 		}`
+
+	pendingTrx = `
+		query {
+			pooledUserCommands {
+				amount
+				failureReason
+				fee
+				feeToken
+				from
+				hash
+				id
+				isDelegation
+				nonce
+				memo
+				kind
+				to
+				token
+			}
+		}`
 )
 
 func buildBestChainQuery() string {
@@ -155,4 +174,8 @@ func buildBlocksQuery(filter string) string {
 
 func buildAccountQuery(filter string) string {
 	return fmt.Sprintf(queryAccount, filter)
+}
+
+func buildPendingTransactionsQuery() string {
+	return fmt.Sprintf(pendingTrx)
 }

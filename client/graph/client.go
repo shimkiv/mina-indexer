@@ -255,3 +255,15 @@ func (c Client) ConsensusTip() (*Block, error) {
 
 	return &result.Blocks[0], nil
 }
+
+// GetPendingTransactions returns pending transactions
+func (c Client) GetPendingTransactions() ([]PendingTransaction, error) {
+	var result struct {
+		trxs []PendingTransaction `json:"pendingTransactions"`
+	}
+	q := buildPendingTransactionsQuery()
+	if err := c.Query(q, &result); err != nil {
+		return nil, err
+	}
+	return result.trxs, nil
+}

@@ -482,6 +482,12 @@ type UserCommand struct {
 	Memo string `json:"memo"`
 }
 
+type PendingTransaction struct {
+	UserCommand UserCommand
+	// Kind of the transaction
+	Kind string `json:"kind"`
+}
+
 // Transition from a source ledger to a target ledger with some fee excess and increase in supply
 type WorkDescription struct {
 	// Base58Check-encoded hash of the source ledger
