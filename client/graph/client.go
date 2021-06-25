@@ -12,6 +12,8 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+
+	"github.com/figment-networks/mina-indexer/model/util"
 )
 
 var (
@@ -254,4 +256,20 @@ func (c Client) ConsensusTip() (*Block, error) {
 	}
 
 	return &result.Blocks[0], nil
+}
+
+// GetPendingTransactions returns pending transactions
+func (c Client) GetPendingTransactions() ([]PendingTransaction, error) {
+	var result struct {
+		Transactions []PendingTransaction `json:"pooledUserCommands"`
+	}
+	if err := c.Query(queryPendingTx, &result); err != nil {
+		return nil, err
+	}
+
+	for idx, tx := range result.Transactions {
+		result.Transactions[idx].Memo = util.ParseMemoText(tx.Memo)
+	}
+
+	return result.Transactions, nil
 }

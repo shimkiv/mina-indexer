@@ -79,6 +79,7 @@ mina-indexer -config path/to/config.json -cmd=server
 | GET    | /block_times                    | Block times stats
 | GET    | /block_times_interval           | Block creation stats
 | GET    | /transactions                   | Transactions search
+| GET    | /pending_transactions           | Pending Transactions
 | GET    | /transactions/:id               | Transaction details by ID or Hash
 | GET    | /accounts                       | Accounts search
 | GET    | /accounts/:id                   | Account details by ID or Key
