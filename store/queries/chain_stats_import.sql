@@ -65,7 +65,9 @@ LEFT JOIN transactions
   ON transactions.block_hash = blocks.hash
   AND transactions.status = 'applied'
 WHERE
-	blocks.time >= $1 AND blocks.time <= $2
-	AND blocks.canonical = true AND transactions.canonical = true
+	blocks.time >= $1
+  AND blocks.time <= $2
+	AND blocks.canonical = true
+  AND transactions.canonical = true
 GROUP BY
 	DATE_TRUNC('@bucket', blocks.time);
