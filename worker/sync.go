@@ -275,7 +275,10 @@ func (w SyncWorker) processStakingLedger() (*mapper.LedgerData, error) {
 
 	// We already have current epoch ledger, no need to import it.
 	if currentLedger != nil && currentLedger.EntriesCount > 0 {
-		return nil, nil
+		records, err := w.db.Staking.LedgerRecords(currentLedger.ID)
+		if err != nil && err != store.ErrNotFound || len(records) > 0 {
+			return nil, nil
+		}
 	}
 
 	ledger, err := w.archiveClient.StakingLedger(archive.LedgerTypeCurrent)
@@ -288,10 +291,15 @@ func (w SyncWorker) processStakingLedger() (*mapper.LedgerData, error) {
 		return nil, err
 	}
 
-	err = w.db.Staking.CreateLedger(ledgerData.Ledger)
-	if err != nil {
-		return nil, err
+	if currentLedger == nil {
+		err = w.db.Staking.CreateLedger(ledgerData.Ledger)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		ledgerData.Ledger = currentLedger
 	}
+
 	ledgerData.UpdateLedgerID()
 
 	err = w.db.Staking.CreateLedgerEntries(ledgerData.Entries)
