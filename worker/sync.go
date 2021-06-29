@@ -212,6 +212,8 @@ func (w SyncWorker) processStakingLedger() (*mapper.LedgerData, error) {
 		if err != nil {
 			return nil, err
 		}
+	} else {
+		ledgerData.Ledger = currentLedger
 	}
 
 	ledgerData.UpdateLedgerID()
