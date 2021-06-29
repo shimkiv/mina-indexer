@@ -6,6 +6,8 @@ import (
 	"github.com/figment-networks/mina-indexer/store/queries"
 )
 
+const batchSize = 100
+
 // StakingStore handles operations on staking data
 type StakingStore struct {
 	baseStore
@@ -18,26 +20,34 @@ func (s StakingStore) CreateLedger(ledger *model.Ledger) error {
 
 // CreateLedgerEntries create a batch of ledger entries
 func (s StakingStore) CreateLedgerEntries(records []model.LedgerEntry) error {
-	if len(records) == 0 {
-		return nil
-	}
-
-	return bulk.Import(s.db, queries.LedgerImportEntries, len(records), func(idx int) bulk.Row {
-		r := records[idx]
-
-		return bulk.Row{
-			r.LedgerID,
-			r.PublicKey,
-			r.Delegate,
-			r.Delegation,
-			r.Balance,
-			r.TimingInitialMinimumBalance,
-			r.TimingCliffTime,
-			r.TimingCliffAmount,
-			r.TimingVestingPeriod,
-			r.TimingVestingIncrement,
+	var err error
+	for i := 0; i < len(records); i += batchSize {
+		j := i + batchSize
+		if j > len(records) {
+			j = len(records)
 		}
-	})
+
+		err = bulk.Import(s.db, queries.LedgerImportEntries, len(records), func(idx int) bulk.Row {
+			r := records[idx]
+
+			return bulk.Row{
+				r.LedgerID,
+				r.PublicKey,
+				r.Delegate,
+				r.Delegation,
+				r.Balance,
+				r.TimingInitialMinimumBalance,
+				r.TimingCliffTime,
+				r.TimingCliffAmount,
+				r.TimingVestingPeriod,
+				r.TimingVestingIncrement,
+			}
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // FindLedger returns the most recent ledger of an epoch
@@ -93,7 +103,7 @@ type FindDelegationsParams struct {
 	Delegate  string
 }
 
-// CurrentLedgerRecords returns all ledger records from current epoch
+// LedgerRecords returns all ledger records from current epoch
 func (s StakingStore) LedgerRecords(ledgerID int) ([]model.LedgerEntry, error) {
 	result := []model.LedgerEntry{}
 
