@@ -27,8 +27,8 @@ func (s StakingStore) CreateLedgerEntries(records []model.LedgerEntry) error {
 			j = len(records)
 		}
 
-		err = bulk.Import(s.db, queries.LedgerImportEntries, len(records), func(idx int) bulk.Row {
-			r := records[idx]
+		err = bulk.Import(s.db, queries.LedgerImportEntries, j-i, func(k int) bulk.Row {
+			r := records[i+k]
 
 			return bulk.Row{
 				r.LedgerID,
