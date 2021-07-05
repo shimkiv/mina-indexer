@@ -68,6 +68,21 @@ func (s StatsStore) ValidatorStats(validator *model.Validator, period uint, inte
 	return result, err
 }
 
+// FindValidatorsForDefaultStats returns validator for default values
+func (s StatsStore) FindValidatorsForDefaultStats(bucket string, ts time.Time) ([]model.Validator, error) {
+	start, _, err := s.getTimeRange(bucket, ts)
+	if err != nil {
+		return nil, err
+	}
+
+	var res []model.Validator
+	err = s.db.Raw(queries.ValidatorsForDefaultStats, bucket, start).Scan(&res).Error
+	if err != nil {
+		return nil, checkErr(err)
+	}
+	return res, nil
+}
+
 // getTimeRange returns the start/end time for a given time bucket
 func (s StatsStore) getTimeRange(bucket string, ts time.Time) (start time.Time, end time.Time, err error) {
 	switch bucket {
