@@ -17,6 +17,8 @@ import (
 	"github.com/figment-networks/mina-indexer/store"
 )
 
+const unsafeBlockThreshold = 15
+
 type SyncWorker struct {
 	cfg           *config.Config
 	db            *store.Store
@@ -63,8 +65,7 @@ func (w SyncWorker) Run() (int, error) {
 	}
 
 	blocksRequest := &archive.BlocksRequest{
-		Limit:     100,
-		Canonical: true,
+		Limit: 100,
 	}
 	if lastBlock != nil {
 		blocksRequest.StartHeight = uint(lastBlock.Height)
@@ -102,6 +103,89 @@ func (w SyncWorker) Run() (int, error) {
 	if err := w.processStagingLedger(); err != nil {
 		log.WithError(err).Error("staging ledger processing failed")
 		// do not abort here
+	}
+
+	log.Info("correcting canonical blocks")
+	lastBlock, err = w.db.Blocks.Recent()
+	if err != nil {
+		return 0, err
+	}
+
+	t := true
+	blocksRequest = &archive.BlocksRequest{Canonical: &t}
+	var limit uint = 300
+	if (int(lastBlock.Height) - int(limit)) > 0 {
+		blocksRequest.StartHeight = uint(lastBlock.Height) - limit
+		blocksRequest.Limit = limit
+	} else {
+		blocksRequest.StartHeight = 0
+		blocksRequest.Limit = uint(lastBlock.Height)
+	}
+
+	canonicalBlocks, err := w.archiveClient.Blocks(blocksRequest)
+	if err != nil {
+		return 0, err
+	}
+	for _, block := range canonicalBlocks {
+		if err := w.db.Blocks.MarkBlocksOrphan(block.Height); err != nil {
+			return 0, err
+		}
+		if err := w.db.Blocks.MarkBlockCanonical(block.StateHash); err != nil {
+			return 0, err
+		}
+		if err := w.db.Transactions.MarkTransactionsOrphan(block.Height); err != nil {
+			return 0, err
+		}
+		if err := w.db.Transactions.MarkTransactionsCanonical(block.StateHash); err != nil {
+			return 0, err
+		}
+	}
+
+	log.Info("correcting canonical blocks and validators statistics")
+	var startingBlock uint64
+	if (int(lastBlock.Height) - int(limit)) > 0 {
+		startingBlock = lastBlock.Height - unsafeBlockThreshold
+	}
+	unsafeBlocks, err := w.db.Blocks.FindUnsafeBlocks(startingBlock)
+	if err != nil {
+		return 0, err
+	}
+
+	validatorKeys := map[string]string{}
+	blockKeys := map[uint64]model.Block{}
+	for _, b := range unsafeBlocks {
+		_, ok := validatorKeys[b.Creator]
+		if !ok {
+			validatorKeys[b.Creator] = b.Creator
+		}
+
+		if !b.Canonical {
+			continue
+		}
+
+		_, ok = blockKeys[b.Height]
+		if !ok {
+			blockKeys[b.Height] = b
+		}
+	}
+
+	for _, block := range blockKeys {
+		ts := block.Time
+		buckets := []string{store.BucketHour, store.BucketDay}
+
+		for _, bucket := range buckets {
+			log.WithField("bucket", bucket).Debug("correcting chain stats")
+			if err := w.db.Stats.CreateChainStats(bucket, ts); err != nil {
+				return 0, err
+			}
+
+			log.WithField("bucket", bucket).Debug("creating validator stats")
+			for _, key := range validatorKeys {
+				if err := w.db.Stats.CreateValidatorStats(key, bucket, ts); err != nil {
+					return 0, err
+				}
+			}
+		}
 	}
 
 	var lag int

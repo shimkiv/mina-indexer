@@ -41,7 +41,7 @@ func (s StatsStore) CreateChainStats(bucket string, ts time.Time) error {
 }
 
 // CreateValidatorStats creates a new validator stats record
-func (s StatsStore) CreateValidatorStats(validator *model.Validator, bucket string, ts time.Time) error {
+func (s StatsStore) CreateValidatorStats(validatorPublicKey string, bucket string, ts time.Time) error {
 	start, end, err := s.getTimeRange(bucket, ts)
 	if err != nil {
 		return err
@@ -49,7 +49,7 @@ func (s StatsStore) CreateValidatorStats(validator *model.Validator, bucket stri
 
 	return s.db.Exec(
 		s.prepareBucket(queries.ValidatorsCreateStats, bucket),
-		start, end, validator.PublicKey,
+		start, end, validatorPublicKey,
 	).Error
 }
 

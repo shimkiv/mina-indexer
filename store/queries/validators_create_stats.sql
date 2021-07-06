@@ -22,7 +22,7 @@ VALUES (
 	DATE_TRUNC('@bucket', $1::timestamp),
 	'@bucket',
 	(SELECT id FROM validators WHERE public_key = $3 LIMIT 1),
-	(SELECT COUNT(1) FROM blocks WHERE time >= $1 AND time <= $2 AND creator = $3),
+	(SELECT COUNT(1) FROM blocks WHERE time >= $1 AND time <= $2 AND creator = $3 AND canonical = true),
   (SELECT COUNT(1) FROM current_delegations),
   (SELECT COALESCE(SUM(balance::numeric), 0) FROM current_delegations)
 )

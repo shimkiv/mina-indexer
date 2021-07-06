@@ -6,7 +6,7 @@ const (
 )
 
 type BlocksRequest struct {
-	Canonical   bool
+	Canonical   *bool
 	StartHeight uint
 	Limit       uint
 }

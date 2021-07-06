@@ -25,7 +25,7 @@ func Finalize(db *store.Store, data *Data) error {
 		}
 
 		log.WithField("bucket", bucket).Debug("creating validator stats")
-		if err := db.Stats.CreateValidatorStats(data.Validator, bucket, ts); err != nil {
+		if err := db.Stats.CreateValidatorStats(data.Validator.PublicKey, bucket, ts); err != nil {
 			return err
 		}
 	}

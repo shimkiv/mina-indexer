@@ -47,6 +47,7 @@ type Transaction struct {
 	Nonce                   *int         `json:"nonce"`
 	Memo                    *string      `json:"memo"`
 	Status                  string       `json:"status"`
+	Canonical               bool         `json:"canonical"`
 	FailureReason           *string      `json:"failure_reason"`
 	SequenceNumber          *int         `json:"sequence_number"`
 	SecondarySequenceNumber *int         `json:"secondary_sequence_number"`

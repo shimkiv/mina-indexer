@@ -30,15 +30,20 @@ func (s BlocksStore) FindByHash(hash string) (*model.Block, error) {
 	return s.FindBy("hash", hash)
 }
 
-// FindByHeight returns a block with the matching height
+// FindByHeight returns a canonical block with the matching height
 func (s BlocksStore) FindByHeight(height uint64) (*model.Block, error) {
-	return s.FindBy("height", height)
+	result := model.Block{}
+
+	scope := s.db.Limit(1)
+	scope = scope.Where("height = ? AND canonical = ?", height, true)
+	err := scope.Find(&result).Error
+	return &result, checkErr(err)
 }
 
 // Recent returns the most recent block
 func (s BlocksStore) Recent() (*model.Block, error) {
 	block := &model.Block{}
-	err := s.db.Order("height DESC").Limit(1).Take(block).Error
+	err := s.db.Where("canonical = ?", true).Order("height DESC").Limit(1).Take(block).Error
 	return block, checkErr(err)
 }
 
@@ -73,4 +78,25 @@ func (s BlocksStore) AvgTimes(limit int64) ([]byte, error) {
 // Stats returns block stats for a given interval
 func (s BlocksStore) Stats(period uint, interval string) ([]byte, error) {
 	return jsonquery.MustArray(s.db, queries.BlocksStats, period, interval)
+}
+
+// MarkBlocksOrphan updates all blocks as non canonical at a height
+func (s BlocksStore) MarkBlocksOrphan(height uint64) error {
+	return s.db.Exec(queries.MarkBlocksOrphan, height).Error
+}
+
+// MarkBlockCanonical updates canonical at a height
+func (s BlocksStore) MarkBlockCanonical(hash string) error {
+	return s.db.Exec(queries.MarkBlockCanonical, hash).Error
+}
+
+// FindUnsafeBlocks returns the last indexed unsafe blocks that may be orphaned
+func (s BlocksStore) FindUnsafeBlocks(startingHeight uint64) ([]model.Block, error) {
+	result := []model.Block{}
+
+	scope := s.db.
+		Where("height >= ?", startingHeight).
+		Order("height asc")
+
+	return result, scope.Find(&result).Error
 }

@@ -1,0 +1,1 @@
+UPDATE blocks SET canonical = false WHERE height = $1
