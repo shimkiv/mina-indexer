@@ -28,6 +28,17 @@ func Finalize(db *store.Store, data *Data) error {
 		if err := db.Stats.CreateValidatorStats(data.Validator.PublicKey, bucket, ts); err != nil {
 			return err
 		}
+
+		validators, err := db.Stats.FindValidatorsForDefaultStats(bucket, ts)
+		if err != nil && err != store.ErrNotFound {
+			return err
+		}
+		for _, v := range validators {
+			if err := db.Stats.CreateValidatorStats(&v, bucket, ts); err != nil {
+				return err
+			}
+		}
+
 	}
 
 	return nil
