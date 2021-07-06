@@ -34,7 +34,7 @@ func Finalize(db *store.Store, data *Data) error {
 			return err
 		}
 		for _, v := range validators {
-			if err := db.Stats.CreateValidatorStats(&v, bucket, ts); err != nil {
+			if err := db.Stats.CreateValidatorStats(v.PublicKey, bucket, ts); err != nil {
 				return err
 			}
 		}
