@@ -46,6 +46,8 @@ type Config struct {
 	RollbarToken     string `json:"rollbar_token" envconfig:"ROLLBAR_TOKEN"`
 	RollbarNamespace string `json:"rollbar_namespace" envconfig:"ROLLBAR_NAMESPACE"`
 
+	HistoricalLimit uint `json:"historical_limit" envconfig:"HISTORICAL_LIMIT" default:"290"`
+
 	syncDuration    time.Duration
 	cleanupDuration time.Duration
 }
