@@ -47,6 +47,13 @@ func (s BlocksStore) Recent() (*model.Block, error) {
 	return block, checkErr(err)
 }
 
+// LastBlock returns the last block
+func (s BlocksStore) LastBlock() (*model.Block, error) {
+	block := &model.Block{}
+	err := s.db.Order("height DESC").Limit(1).Take(block).Error
+	return block, checkErr(err)
+}
+
 // Search returns blocks that match search filters
 func (s BlocksStore) Search(search *BlockSearch) ([]model.Block, error) {
 	result := []model.Block{}
