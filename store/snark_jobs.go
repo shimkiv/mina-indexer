@@ -26,6 +26,19 @@ func (s JobsStore) ByHeight(height uint64) ([]model.SnarkJob, error) {
 	return result, err
 }
 
+// ByReference returns all jobs for a given block reference
+func (s JobsStore) ByReference(blockReference string) ([]model.SnarkJob, error) {
+	result := []model.SnarkJob{}
+
+	err := s.db.
+		Where("block_reference = ?", blockReference).
+		Order("id ASC").
+		Find(&result).
+		Error
+
+	return result, err
+}
+
 func (s JobsStore) Import(jobs []model.SnarkJob) error {
 	if len(jobs) == 0 {
 		return nil
@@ -36,6 +49,7 @@ func (s JobsStore) Import(jobs []model.SnarkJob) error {
 
 		return bulk.Row{
 			j.Height,
+			j.BlockReference,
 			j.Time,
 			j.Prover,
 			j.Fee,
