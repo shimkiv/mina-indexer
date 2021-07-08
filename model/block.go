@@ -4,29 +4,32 @@ import (
 	"errors"
 	"time"
 
+	"github.com/lib/pq"
+
 	"github.com/figment-networks/mina-indexer/model/types"
 )
 
 // Block model contains block data
 type Block struct {
-	ID                int          `json:"-"`
-	Height            uint64       `json:"height"`
-	Hash              string       `json:"hash"`
-	ParentHash        string       `json:"parent_hash"`
-	Time              time.Time    `json:"time"`
-	Canonical         bool         `json:"canonical"`
-	LedgerHash        string       `json:"ledger_hash"`
-	SnarkedLedgerHash string       `json:"snarked_ledger_hash"`
-	Creator           string       `json:"creator"`
-	Coinbase          types.Amount `json:"coinbase"`
-	TotalCurrency     types.Amount `json:"total_currency"`
-	Epoch             int          `json:"epoch"`
-	Slot              int          `json:"slot"`
-	TransactionsCount int          `json:"transactions_count"`
-	TransactionsFees  int          `json:"transactions_fees"`
-	SnarkersCount     int          `json:"snarkers_count"`
-	SnarkJobsCount    int          `json:"snark_jobs_count"`
-	SnarkJobsFees     types.Amount `json:"snark_jobs_fees"`
+	ID                int            `json:"-"`
+	Height            uint64         `json:"height"`
+	Hash              string         `json:"hash"`
+	ParentHash        string         `json:"parent_hash"`
+	Time              time.Time      `json:"time"`
+	Canonical         bool           `json:"canonical"`
+	LedgerHash        string         `json:"ledger_hash"`
+	SnarkedLedgerHash string         `json:"snarked_ledger_hash"`
+	Creator           string         `json:"creator"`
+	Coinbase          types.Amount   `json:"coinbase"`
+	TotalCurrency     types.Amount   `json:"total_currency"`
+	Epoch             int            `json:"epoch"`
+	Slot              int            `json:"slot"`
+	TransactionsCount int            `json:"transactions_count"`
+	TransactionsFees  int            `json:"transactions_fees"`
+	SnarkersCount     int            `json:"snarkers_count"`
+	SnarkerAccounts   pq.StringArray `json:"snarker_accounts"`
+	SnarkJobsCount    int            `json:"snark_jobs_count"`
+	SnarkJobsFees     types.Amount   `json:"snark_jobs_fees"`
 }
 
 // BlockIntervalStat contains block count stats for a given time interval

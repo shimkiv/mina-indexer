@@ -55,6 +55,7 @@ func (s *Server) initRoutes() {
 	s.GET("/validators/:id/stats", timeBucketMiddleware(), s.GetValidatorStats)
 	s.GET("/delegations", s.GetDelegations)
 	s.GET("/snarkers", s.GetSnarkers)
+	s.GET("/snarker/:id", s.GetSnarker)
 	s.GET("/transactions", s.GetTransactions)
 	s.GET("/pending_transactions", s.GetPendingTransactions)
 	s.GET("/transactions/:id", s.GetTransaction)
@@ -383,6 +384,22 @@ func (s *Server) GetSnarkers(c *gin.Context) {
 		return
 	}
 	jsonOk(c, snarkers)
+}
+
+// GetSnarker get snarker info for canonical
+func (s *Server) GetSnarker(c *gin.Context) {
+	snarker, err := s.db.Snarkers.FindSnarker(c.Param("id"))
+	if shouldReturn(c, err) {
+		return
+	}
+
+	result, err := s.db.Snarkers.SnarkerInfoFromCanonicalBlocks(snarker.Account, snarker.StartHeight, snarker.LastHeight)
+	if err != nil {
+		badRequest(c, err)
+		return
+	}
+
+	jsonOk(c, result)
 }
 
 // GetTransactions returns transactions by height
