@@ -115,6 +115,16 @@ func (w SyncWorker) Run() (int, error) {
 		return 0, err
 	}
 	for _, block := range canonicalBlocks {
+		_, err := w.db.Blocks.FindByHash(block.StateHash)
+		if err != nil {
+			if err != store.ErrNotFound {
+				return 0, err
+			}
+			if err := w.processBlock(block.StateHash); err != nil {
+				return 0, err
+			}
+		}
+
 		if err := w.db.Blocks.MarkBlocksOrphan(block.Height); err != nil {
 			return 0, err
 		}
