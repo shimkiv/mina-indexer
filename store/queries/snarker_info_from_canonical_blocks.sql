@@ -1,6 +1,6 @@
 SELECT
- count(*),
- sum(works_count)
+ count(*) as jobs_count,
+ sum(works_count) as work_count
 FROM
  snark_jobs
 WHERE
