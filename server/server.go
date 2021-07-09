@@ -185,10 +185,6 @@ func (s *Server) GetBlock(c *gin.Context) {
 	}
 
 	jobs, err := s.db.Jobs.ByHash(block.Hash)
-	if err == store.ErrNotFound || len(jobs) == 0 {
-		// for historical
-		jobs, err = s.db.Jobs.ByHeight(block.Height)
-	}
 	if shouldReturn(c, err) {
 		return
 	}
