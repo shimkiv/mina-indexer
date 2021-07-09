@@ -37,6 +37,11 @@ func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block) (*Data, error
 		return nil, err
 	}
 	block.SnarkersCount = len(snarkers)
+	var snarkerAccounts []string
+	for _, s := range snarkers {
+		snarkerAccounts = append(snarkerAccounts, s.Account)
+	}
+	block.SnarkerAccounts = snarkerAccounts
 
 	// Prepare snarker jobs
 	snarkJobs, err := mapper.SnarkJobs(graphBlock)

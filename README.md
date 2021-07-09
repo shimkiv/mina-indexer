@@ -83,3 +83,5 @@ mina-indexer -config path/to/config.json -cmd=server
 | GET    | /transactions/:id               | Transaction details by ID or Hash
 | GET    | /accounts                       | Accounts search
 | GET    | /accounts/:id                   | Account details by ID or Key
+| GET    | /snarkers                       | All existing snarkers from all blocks(including non-canonical)
+| GET    | /snarker/:id                    | Snarker info from canonical blocks

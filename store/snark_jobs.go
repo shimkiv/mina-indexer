@@ -26,6 +26,19 @@ func (s JobsStore) ByHeight(height uint64) ([]model.SnarkJob, error) {
 	return result, err
 }
 
+// ByHash returns all jobs for a given block hash
+func (s JobsStore) ByHash(hash string) ([]model.SnarkJob, error) {
+	result := []model.SnarkJob{}
+
+	err := s.db.
+		Where("block_hash = ?", hash).
+		Order("id ASC").
+		Find(&result).
+		Error
+
+	return result, err
+}
+
 func (s JobsStore) Import(jobs []model.SnarkJob) error {
 	if len(jobs) == 0 {
 		return nil
@@ -36,6 +49,7 @@ func (s JobsStore) Import(jobs []model.SnarkJob) error {
 
 		return bulk.Row{
 			j.Height,
+			j.BlockHash,
 			j.Time,
 			j.Prover,
 			j.Fee,

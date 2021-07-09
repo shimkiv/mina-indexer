@@ -11,6 +11,7 @@ import (
 type SnarkJob struct {
 	ID         int          `json:"-"`
 	Height     uint64       `json:"height"`
+	BlockHash  string       `json:"block_hash"`
 	Time       time.Time    `json:"time"`
 	Prover     string       `json:"prover"`
 	Fee        types.Amount `json:"fee"`

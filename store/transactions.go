@@ -34,12 +34,14 @@ func (s TransactionsStore) FindByHash(hash string) (*model.Transaction, error) {
 
 // ByAccount returns a list of transactions sent or received by the account
 func (s TransactionsStore) ByAccount(account string) ([]model.Transaction, error) {
-	return s.Search(TransactionSearch{Account: account})
+	var canonical = true
+	return s.Search(TransactionSearch{Account: account, Canonical: &canonical})
 }
 
 // ByHeight returns transactions for a given height
 func (s TransactionsStore) ByHeight(height uint64, limit uint) ([]model.Transaction, error) {
-	return s.Search(TransactionSearch{Height: height, Limit: limit})
+	var canonical = true
+	return s.Search(TransactionSearch{Height: height, Limit: limit, Canonical: &canonical})
 }
 
 // Search returns a list of transactions that matches the filters
