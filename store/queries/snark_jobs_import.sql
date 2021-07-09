@@ -1,6 +1,6 @@
 INSERT INTO snark_jobs (
   height,
-  block_reference,
+  block_hash,
   time,
   prover,
   fee,

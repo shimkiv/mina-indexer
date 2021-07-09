@@ -9,14 +9,14 @@ import (
 
 // SnarkJob contains a completed SNARK job details
 type SnarkJob struct {
-	ID             int          `json:"-"`
-	Height         uint64       `json:"height"`
-	BlockReference string       `json:"block_reference"`
-	Time           time.Time    `json:"time"`
-	Prover         string       `json:"prover"`
-	Fee            types.Amount `json:"fee"`
-	WorksCount     int          `json:"works_count"`
-	CreatedAt      time.Time    `json:"-"`
+	ID         int          `json:"-"`
+	Height     uint64       `json:"height"`
+	BlockHash  string       `json:"block_hash"`
+	Time       time.Time    `json:"time"`
+	Prover     string       `json:"prover"`
+	Fee        types.Amount `json:"fee"`
+	WorksCount int          `json:"works_count"`
+	CreatedAt  time.Time    `json:"-"`
 }
 
 // TableName returns the Job table name
