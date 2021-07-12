@@ -10,6 +10,7 @@ import (
 func SnarkJob(block *graph.Block, w *graph.CompletedWork) (*model.SnarkJob, error) {
 	j := &model.SnarkJob{
 		Height:     BlockHeight(block),
+		BlockHash:  block.StateHash,
 		Time:       BlockTime(block),
 		Prover:     w.Prover,
 		Fee:        types.NewAmount(w.Fee),

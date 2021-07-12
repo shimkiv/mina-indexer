@@ -155,6 +155,22 @@ var (
 				}
 			}
 		}`
+
+	queryPendingTx = `
+		query {
+			pooledUserCommands {
+				amount
+				fee
+				from
+				hash
+				id
+				isDelegation
+				nonce
+				memo
+				kind
+				to
+			}
+		}`
 )
 
 func buildBestChainQuery() string {

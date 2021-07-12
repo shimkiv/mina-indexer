@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/figment-networks/indexing-engine/store/bulk"
+	"github.com/figment-networks/indexing-engine/store/jsonquery"
 	"github.com/figment-networks/mina-indexer/model"
 	"github.com/figment-networks/mina-indexer/store/queries"
 )
@@ -20,6 +21,18 @@ func (s SnarkersStore) All() ([]model.Snarker, error) {
 		Find(&result).
 		Error
 	return result, checkErr(err)
+}
+
+// FindSnarker returns snarker for a given account
+func (s SnarkersStore) FindSnarker(account string) (*model.Snarker, error) {
+	result := &model.Snarker{}
+	err := findBy(s.db, result, "account", account)
+	return result, checkErr(err)
+}
+
+// SnarkerInfoFromCanonicalBlocks returns snarker info from canonical blocks
+func (s SnarkersStore) SnarkerInfoFromCanonicalBlocks(account string, start, end uint64) ([]byte, error) {
+	return jsonquery.MustObject(s.db, queries.SnarkerInfoFromCanonicalBlocks, account, start, end)
 }
 
 func (s SnarkersStore) Import(records []model.Snarker) error {

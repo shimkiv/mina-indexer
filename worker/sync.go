@@ -75,7 +75,7 @@ func (w SyncWorker) Run() (int, error) {
 		Limit: 100,
 	}
 	if lastBlock != nil {
-		blocksRequest.StartHeight = uint(lastBlock.Height)
+		blocksRequest.StartHeight = uint(lastBlock.Height + 1)
 	}
 
 	log.
@@ -86,12 +86,6 @@ func (w SyncWorker) Run() (int, error) {
 	blocks, err := w.archiveClient.Blocks(blocksRequest)
 	if err != nil {
 		return 0, err
-	}
-
-	// Remove the last block from the response. Last block in the chain is not 100%
-	// canonical until we get the next block with the right parent hash.
-	if lastBlock != nil && len(blocks) > 0 {
-		blocks = blocks[0 : len(blocks)-1]
 	}
 
 	// Check if the only block we received is the most recent indexed one
@@ -106,23 +100,18 @@ func (w SyncWorker) Run() (int, error) {
 		}
 	}
 
-	log.Info("processing staging ledger")
-	if err := w.processStagingLedger(); err != nil {
-		log.WithError(err).Error("staging ledger processing failed")
-		// do not abort here
-	}
-
 	log.Info("correcting canonical blocks")
-	lastBlock, err = w.db.Blocks.Recent()
+	lastBlock, err = w.db.Blocks.LastBlock()
 	if err != nil {
 		return 0, err
 	}
 
 	t := true
 	blocksRequest = &archive.BlocksRequest{Canonical: &t}
-	if (int(lastBlock.Height) - int(finalityThreshold)) > 0 {
-		blocksRequest.StartHeight = uint(lastBlock.Height) - finalityThreshold
-		blocksRequest.Limit = finalityThreshold
+	var limit uint = w.cfg.HistoricalLimit
+	if (int(lastBlock.Height) - int(limit)) > 0 {
+		blocksRequest.StartHeight = uint(lastBlock.Height+1) - limit
+		blocksRequest.Limit = limit
 	} else {
 		blocksRequest.StartHeight = 0
 		blocksRequest.Limit = uint(lastBlock.Height)
@@ -132,6 +121,16 @@ func (w SyncWorker) Run() (int, error) {
 		return 0, err
 	}
 	for _, block := range canonicalBlocks {
+		_, err := w.db.Blocks.FindByHash(block.StateHash)
+		if err != nil {
+			if err != store.ErrNotFound {
+				return 0, err
+			}
+			if err := w.processBlock(block.StateHash); err != nil {
+				return 0, err
+			}
+		}
+
 		if err := w.db.Blocks.MarkBlocksOrphan(block.Height); err != nil {
 			return 0, err
 		}
@@ -208,6 +207,12 @@ func (w SyncWorker) Run() (int, error) {
 		if err := indexing.RewardCalculation(w.db, block); err != nil {
 			return 0, err
 		}
+	}
+
+	log.Info("processing staging ledger")
+	if err := w.processStagingLedger(); err != nil {
+		log.WithError(err).Error("staging ledger processing failed")
+		// do not abort here
 	}
 
 	var lag int
@@ -342,10 +347,15 @@ func (w SyncWorker) processStakingLedger() (*mapper.LedgerData, error) {
 		return nil, err
 	}
 
-	err = w.db.Staking.CreateLedger(ledgerData.Ledger)
-	if err != nil {
-		return nil, err
+	if currentLedger == nil {
+		err = w.db.Staking.CreateLedger(ledgerData.Ledger)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		ledgerData.Ledger = currentLedger
 	}
+
 	ledgerData.UpdateLedgerID()
 
 	err = w.db.Staking.CreateLedgerEntries(ledgerData.Entries)

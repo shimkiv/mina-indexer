@@ -95,7 +95,7 @@ func startWorker(cfg *config.Config) error {
 
 	s := <-initSignals()
 
-	log.Info("received signal", s)
+	log.Info("received signal: ", s)
 	cancelSync()
 	cancelCleanup()
 

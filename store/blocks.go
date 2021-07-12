@@ -36,12 +36,19 @@ func (s BlocksStore) FindByHeight(height uint64) (*model.Block, error) {
 
 	scope := s.db.Limit(1)
 	scope = scope.Where("height = ? AND canonical = ?", height, true)
-
-	return &result, scope.Find(&result).Error
+	err := scope.Find(&result).Error
+	return &result, checkErr(err)
 }
 
 // Recent returns the most recent block
 func (s BlocksStore) Recent() (*model.Block, error) {
+	block := &model.Block{}
+	err := s.db.Where("canonical = ?", true).Order("height DESC").Limit(1).Take(block).Error
+	return block, checkErr(err)
+}
+
+// LastBlock returns the last block
+func (s BlocksStore) LastBlock() (*model.Block, error) {
 	block := &model.Block{}
 	err := s.db.Order("height DESC").Limit(1).Take(block).Error
 	return block, checkErr(err)
@@ -94,8 +101,10 @@ func (s BlocksStore) MarkBlockCanonical(hash string) error {
 func (s BlocksStore) FindUnsafeBlocks(startingHeight uint64) ([]model.Block, error) {
 	result := []model.Block{}
 
-	scope := s.db.Where("height >= ?", startingHeight).
+	scope := s.db.
+		Where("height >= ?", startingHeight).
 		Order("height asc")
+
 	return result, scope.Find(&result).Error
 }
 

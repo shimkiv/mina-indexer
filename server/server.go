@@ -56,7 +56,9 @@ func (s *Server) initRoutes() {
 	s.GET("/delegations", s.GetDelegations)
 	s.GET("/rewards/:id", s.GetRewards)
 	s.GET("/snarkers", s.GetSnarkers)
+	s.GET("/snarker/:id", s.GetSnarker)
 	s.GET("/transactions", s.GetTransactions)
+	s.GET("/pending_transactions", s.GetPendingTransactions)
 	s.GET("/transactions/:id", s.GetTransaction)
 	s.GET("/accounts/:id", s.GetAccount)
 	s.GET("/ledgers", s.GetLedgers)
@@ -183,7 +185,7 @@ func (s *Server) GetBlock(c *gin.Context) {
 		return
 	}
 
-	jobs, err := s.db.Jobs.ByHeight(block.Height)
+	jobs, err := s.db.Jobs.ByHash(block.Hash)
 	if shouldReturn(c, err) {
 		return
 	}
@@ -401,6 +403,22 @@ func (s *Server) GetSnarkers(c *gin.Context) {
 	jsonOk(c, snarkers)
 }
 
+// GetSnarker get snarker info for canonical
+func (s *Server) GetSnarker(c *gin.Context) {
+	snarker, err := s.db.Snarkers.FindSnarker(c.Param("id"))
+	if shouldReturn(c, err) {
+		return
+	}
+
+	result, err := s.db.Snarkers.SnarkerInfoFromCanonicalBlocks(snarker.Account, snarker.StartHeight, snarker.LastHeight)
+	if err != nil {
+		badRequest(c, err)
+		return
+	}
+
+	jsonOk(c, result)
+}
+
 // GetTransactions returns transactions by height
 func (s *Server) GetTransactions(c *gin.Context) {
 	search := store.TransactionSearch{}
@@ -419,6 +437,15 @@ func (s *Server) GetTransactions(c *gin.Context) {
 		return
 	}
 
+	jsonOk(c, transactions)
+}
+
+// GetPendingTransactions returns transactions by height
+func (s *Server) GetPendingTransactions(c *gin.Context) {
+	transactions, err := s.graphClient.GetPendingTransactions()
+	if shouldReturn(c, err) {
+		return
+	}
 	jsonOk(c, transactions)
 }
 
