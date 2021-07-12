@@ -25,7 +25,7 @@ type Block struct {
 	Epoch             int            `json:"epoch"`
 	Slot              int            `json:"slot"`
 	TransactionsCount int            `json:"transactions_count"`
-	TransactionsFees  int            `json:"transactions_fees"`
+	TransactionsFees  types.Amount   `json:"transactions_fees"`
 	SnarkersCount     int            `json:"snarkers_count"`
 	SnarkerAccounts   pq.StringArray `json:"snarker_accounts"`
 	SnarkJobsCount    int            `json:"snark_jobs_count"`
