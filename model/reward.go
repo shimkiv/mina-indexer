@@ -25,6 +25,7 @@ func (dbr BlockReward) String() string {
 type RewardsSummary struct {
 	Interval string           `json:"interval"`
 	Epoch    string           `json:"epoch"`
+	Delegate string           `json:"delegate"`
 	Amount   types.Percentage `json:"amount"`
 }
 
@@ -61,9 +62,9 @@ func GetTypeForTimeInterval(s string) (TimeInterval, bool) {
 func (k TimeInterval) String() string {
 	switch k {
 	case TimeIntervalDaily:
-		return "DD-MM-YYYY"
+		return "YYYY-MM-DD"
 	case TimeIntervalMonthly:
-		return "MM-YYYY"
+		return "YYYY-MM"
 	case TimeIntervalYearly:
 		return "YYYY"
 	default:
