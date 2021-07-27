@@ -374,11 +374,11 @@ func (s *Server) GetDelegations(c *gin.Context) {
 	jsonOk(c, delegations)
 }
 
-// GeRewards returns rewards
+// GetRewards returns rewards
 func (s Server) GetRewards(c *gin.Context) {
 	var params rewardsParams
 	if err := c.BindQuery(&params); err != nil {
-		badRequest(c, errors.New("missing parameter"))
+		badRequest(c, err)
 		return
 	}
 	if err := params.Validate(); err != nil {
