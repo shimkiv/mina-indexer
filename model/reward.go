@@ -23,10 +23,10 @@ func (dbr BlockReward) String() string {
 }
 
 type RewardsSummary struct {
-	Interval string      `json:"interval"`
-	Epoch    string      `json:"epoch"`
-	Delegate string      `json:"delegate"`
-	Amount   types.Float `json:"amount"`
+	Interval string       `json:"interval"`
+	Epoch    string       `json:"epoch"`
+	Delegate string       `json:"delegate"`
+	Amount   types.Amount `json:"amount"`
 }
 
 type TimeInterval uint
