@@ -195,6 +195,9 @@ func (w SyncWorker) Run() (int, error) {
 	log.Info("calculating rewards for safe canonical blocks")
 	safeCanonicalBlocksStarting := uint64(blocksRequest.StartHeight)
 	lastCalculatedBlockReward, err := w.db.Blocks.FindLastCalculatedBlockReward(uint64(blocksRequest.StartHeight))
+	if err != nil && err != store.ErrNotFound {
+		return 0, err
+	}
 	if err == nil {
 		safeCanonicalBlocksStarting = lastCalculatedBlockReward.Height
 	}
