@@ -27,12 +27,12 @@ var (
 	errCleanupIntervalInvalid  = errors.New("Cleanup interval is invalid")
 )
 
-// Config holds the configration data
+// Config holds the configuration data
 type Config struct {
 	AppEnv           string `json:"app_env" envconfig:"APP_ENV" default:"development"`
 	MinaEndpoint     string `json:"mina_endpoint" envconfig:"MINA_ENDPOINT"`
 	ArchiveEndpoint  string `json:"archive_endpoint" envconfig:"ARCHIVE_ENDPOINT"`
-	StaketabEndpoint string `json:"staketab_endpoint" envconfig:"STAKETAB_ENDPOINT" default:"https://api.staketab.com/mina/get_all_providers"`
+	StaketabEndpoint string `json:"staketab_endpoint" envconfig:"STAKETAB_ENDPOINT" default:"https://api.staketab.com/mina"`
 	GenesisFile      string `json:"genesis_file" envconfig:"GENESIS_FILE"`
 	IdentityFile     string `json:"identity_file" envconfig:"IDENTITY_FILE"`
 	ServerAddr       string `json:"server_addr" envconfig:"SERVER_ADDR" default:"0.0.0.0"`
