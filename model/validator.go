@@ -33,11 +33,11 @@ type ValidatorStat struct {
 }
 
 type ValidatorEpoch struct {
-	ID             int              `json:"-"`
-	AccountId      int              `json:"account_id"`
-	AccountAddress string           `json:"account_address"`
-	Epoch          int              `json:"epoch"`
-	ValidatorFee   types.Percentage `json:"validator_fee"`
+	ID             int         `json:"-"`
+	AccountId      int         `json:"account_id"`
+	AccountAddress string      `json:"account_address"`
+	Epoch          int         `json:"epoch"`
+	ValidatorFee   types.Float `json:"validator_fee"`
 }
 
 // TableName returns the model table name

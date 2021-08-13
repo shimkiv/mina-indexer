@@ -258,7 +258,7 @@ func (w SyncWorker) processBlock(hash string) error {
 				validatorEpoch := model.ValidatorEpoch{
 					AccountId:      p.ProviderId,
 					AccountAddress: p.ProviderAddress,
-					ValidatorFee:   types.NewFloat64Percentage(p.ProviderFee),
+					ValidatorFee:   types.NewFloat64Float(p.ProviderFee),
 				}
 				fmt.Sscanf(graphBlock.ProtocolState.ConsensusState.Epoch, "%d", &validatorEpoch.Epoch)
 				validatorEpochs = append(validatorEpochs, validatorEpoch)

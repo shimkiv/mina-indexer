@@ -8,13 +8,13 @@ import (
 
 // BlockReward contains the reward details earned at a specific height
 type BlockReward struct {
-	ID           string           `json:"-"`
-	OwnerAccount string           `json:"owner_account"`
-	Delegate     string           `json:"delegate"`
-	Epoch        int              `json:"epoch"`
-	TimeBucket   time.Time        `json:"time_bucket"`
-	Reward       types.Percentage `json:"reward"`
-	OwnerType    string           `json:"owner_type"`
+	ID           string      `json:"-"`
+	OwnerAccount string      `json:"owner_account"`
+	Delegate     string      `json:"delegate"`
+	Epoch        int         `json:"epoch"`
+	TimeBucket   time.Time   `json:"time_bucket"`
+	Reward       types.Float `json:"reward"`
+	OwnerType    string      `json:"owner_type"`
 }
 
 // String returns account text representation
@@ -23,10 +23,10 @@ func (dbr BlockReward) String() string {
 }
 
 type RewardsSummary struct {
-	Interval string           `json:"interval"`
-	Epoch    string           `json:"epoch"`
-	Delegate string           `json:"delegate"`
-	Amount   types.Percentage `json:"amount"`
+	Interval string      `json:"interval"`
+	Epoch    string      `json:"epoch"`
+	Delegate string      `json:"delegate"`
+	Amount   types.Float `json:"amount"`
 }
 
 type TimeInterval uint

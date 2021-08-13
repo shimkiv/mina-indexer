@@ -7,15 +7,15 @@ import (
 )
 
 var (
-	errInvalidPercentage = errors.New("invalid percentage")
+	errInvalidFloat = errors.New("invalid float")
 )
 
-type Percentage struct {
+type Float struct {
 	*big.Float
 }
 
-// NewPercentage returns a new percentage from the given string
-func NewPercentage(src string) Percentage {
+// NewFloat returns a new float from the given string
+func NewFloat(src string) Float {
 	if src == "" {
 		src = "0"
 	}
@@ -23,24 +23,24 @@ func NewPercentage(src string) Percentage {
 	n := new(big.Float)
 	n.SetString(src)
 
-	return Percentage{Float: n}
+	return Float{Float: n}
 }
 
-// NewFloat64Percentage returns a new percentage for the given float64 value
-func NewFloat64Percentage(val float64) Percentage {
+// NewFloat64Float returns a new float for the given float64 value
+func NewFloat64Float(val float64) Float {
 	n := big.NewFloat(val)
-	return Percentage{Float: n}
+	return Float{Float: n}
 }
 
 // Value returns a serialized value
-func (a Percentage) Value() (driver.Value, error) {
+func (a Float) Value() (driver.Value, error) {
 	if a.Float != nil {
 		return a.Float.String(), nil
 	}
 	return nil, nil
 }
 
-func (a Percentage) String() string {
+func (a Float) String() string {
 	if a.Float == nil {
 		return ""
 	}
@@ -48,35 +48,35 @@ func (a Percentage) String() string {
 }
 
 // Add adds two numbers
-func (a Percentage) Add(b Percentage) Percentage {
+func (a Float) Add(b Float) Float {
 	n := new(big.Float)
 	n = n.Add(a.Float, b.Float)
-	return Percentage{n}
+	return Float{n}
 }
 
-// Sub substitutes a given percentage amount from the current one
-func (a Percentage) Sub(b Percentage) Percentage {
+// Sub substitutes a given float amount from the current one
+func (a Float) Sub(b Float) Float {
 	n := new(big.Float)
 	n = n.Sub(a.Float, b.Float)
-	return Percentage{n}
+	return Float{n}
 }
 
 // Mul multiplies two numbers
-func (a Percentage) Mul(b Percentage) Percentage {
+func (a Float) Mul(b Float) Float {
 	n := new(big.Float)
 	n = n.Mul(a.Float, b.Float)
-	return Percentage{n}
+	return Float{n}
 }
 
 // Quo divides two numbers
-func (a Percentage) Quo(b Percentage) Percentage {
+func (a Float) Quo(b Float) Float {
 	n := new(big.Float)
 	n = n.Quo(a.Float, b.Float)
-	return Percentage{n}
+	return Float{n}
 }
 
 // Scan assigns the value from interface
-func (a *Percentage) Scan(value interface{}) error {
+func (a *Float) Scan(value interface{}) error {
 	if value == nil {
 		return nil
 	}
@@ -89,13 +89,13 @@ func (a *Percentage) Scan(value interface{}) error {
 	case string:
 		n, ok := n.SetString(v)
 		if !ok {
-			return errInvalidPercentage
+			return errInvalidFloat
 		}
 		a.Float = n
 	case []byte:
 		n, ok := n.SetString(string(value.([]byte)))
 		if !ok {
-			return errInvalidPercentage
+			return errInvalidFloat
 		}
 		a.Float = n
 	}

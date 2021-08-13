@@ -87,7 +87,7 @@ func RewardCalculation(db *store.Store, block model.Block) error {
 	}
 	validatorReward.Reward = reward
 
-	remainingReward := types.NewPercentage(blockReward.String())
+	remainingReward := types.NewFloat(blockReward.String())
 	remainingReward = remainingReward.Sub(reward)
 
 	recordsMap := map[string]big.Float{}

@@ -14,41 +14,41 @@ const slotsPerEpoch = 7140
 var zero = types.NewInt64Amount(0)
 
 // CalculateWeight calculates weight
-func CalculateWeight(balance types.Amount, totalStakedAmount types.Amount) (types.Percentage, error) {
+func CalculateWeight(balance types.Amount, totalStakedAmount types.Amount) (types.Float, error) {
 	if totalStakedAmount.Compare(zero) == 0 {
-		return types.Percentage{}, errors.New("total staked amount can not be zero")
+		return types.Float{}, errors.New("total staked amount can not be zero")
 	}
-	w := types.NewPercentage(balance.String())
-	t := types.NewPercentage(totalStakedAmount.String())
+	w := types.NewFloat(balance.String())
+	t := types.NewFloat(totalStakedAmount.String())
 	return w.Quo(t), nil
 }
 
 // CalculateValidatorReward calculates validator reward
-func CalculateValidatorReward(blockReward types.Amount, validatorFee types.Percentage) (types.Percentage, error) {
-	vr := types.NewPercentage(blockReward.String())
-	fee := validatorFee.Quo(types.NewPercentage("100"))
+func CalculateValidatorReward(blockReward types.Amount, validatorFee types.Float) (types.Float, error) {
+	vr := types.NewFloat(blockReward.String())
+	fee := validatorFee.Quo(types.NewFloat("100"))
 	vr = vr.Mul(fee)
 	result := new(big.Int)
 	vr.Int(result)
-	return types.NewPercentage(result.String()), nil
+	return types.NewFloat(result.String()), nil
 }
 
 // CalculateDelegatorReward calculates delegator reward
-func CalculateDelegatorReward(weight big.Float, remainingReward types.Percentage) (types.Percentage, error) {
-	w := types.NewPercentage(weight.String())
+func CalculateDelegatorReward(weight big.Float, remainingReward types.Float) (types.Float, error) {
+	w := types.NewFloat(weight.String())
 	return w.Mul(remainingReward), nil
 }
 
 // CalculateSuperchargedWeighting calculates supercharged weighting for given block
 // supercharged weighting = 1 + (1 / (1 + transaction fees / coinbase))
-func CalculateSuperchargedWeighting(block model.Block) (types.Percentage, error) {
-	trFees := types.NewPercentage(block.TransactionsFees.String())
-	coinbase := types.NewPercentage(block.Coinbase.String())
+func CalculateSuperchargedWeighting(block model.Block) (types.Float, error) {
+	trFees := types.NewFloat(block.TransactionsFees.String())
+	coinbase := types.NewFloat(block.Coinbase.String())
 	denom := trFees.Quo(coinbase)
-	denom = denom.Add(types.NewPercentage("1"))
-	enum := types.NewPercentage("1")
+	denom = denom.Add(types.NewFloat("1"))
+	enum := types.NewFloat("1")
 	enum = enum.Quo(denom)
-	res := enum.Add(types.NewPercentage("1"))
+	res := enum.Add(types.NewFloat("1"))
 	return res, nil
 }
 
@@ -75,7 +75,7 @@ func CalculateWeightsNonSupercharged(delegations []model.Delegation) error {
 }
 
 // CalculateWeightsSupercharged calculates weights when block reward is doubled for supercharged
-func CalculateWeightsSupercharged(superchargedWeighting types.Percentage, delegations []model.Delegation, records []model.LedgerEntry, firstSlotOfEpoch int) error {
+func CalculateWeightsSupercharged(superchargedWeighting types.Float, delegations []model.Delegation, records []model.LedgerEntry, firstSlotOfEpoch int) error {
 	sum := new(big.Float)
 	sc := new(big.Float)
 	bln := new(big.Float)
@@ -115,7 +115,7 @@ func CalculateWeightsSupercharged(superchargedWeighting types.Percentage, delega
 		}
 		stk = bln.Mul(bln, sc)
 
-		delegations[i].Weight = types.NewPercentage(stk.String())
+		delegations[i].Weight = types.NewFloat(stk.String())
 		sum.Add(sum, stk)
 	}
 
@@ -126,7 +126,7 @@ func CalculateWeightsSupercharged(superchargedWeighting types.Percentage, delega
 			return errors.New("error with weight")
 		}
 		w = w.Quo(w, sum)
-		delegations[i].Weight = types.NewPercentage(w.String())
+		delegations[i].Weight = types.NewFloat(w.String())
 	}
 
 	return nil
@@ -137,9 +137,9 @@ func CalculateWeightsSupercharged(superchargedWeighting types.Percentage, delega
 // return 0 for if entry is unlocked entire epoch,
 //        1 for if entry is locked entire epoch,
 //        proportion calculated based on slots if it becomes unlocked during epoch
-func calculateTimedWeighting(record model.LedgerEntry, firstSlotOfEpoch int) (types.Percentage, error) {
+func calculateTimedWeighting(record model.LedgerEntry, firstSlotOfEpoch int) (types.Float, error) {
 	if record.IsUntimed() {
-		return types.NewFloat64Percentage(1), nil
+		return types.NewFloat64Float(1), nil
 	}
 
 	// unlockedTime: global slot at which that account's tokens will be fully unlocked
@@ -159,17 +159,17 @@ func calculateTimedWeighting(record model.LedgerEntry, firstSlotOfEpoch int) (ty
 	factor := float64(slotsPerEpoch-(unLockedTime.Int64()-int64(firstSlotOfEpoch))) / float64(slotsPerEpoch)
 	if factor < 0 {
 		// means it will be unlocked after this epoch, so it is locked in this one
-		return types.NewFloat64Percentage(0), nil
+		return types.NewFloat64Float(0), nil
 	}
-	return types.NewFloat64Percentage(factor), nil
+	return types.NewFloat64Float(factor), nil
 }
 
 // calculateSuperchargedContribution calculates supercharged contribution
 //
 // supercharged contribution = ((supercharged weighting - 1) * timed weighting factor) + 1
-func calculateSuperchargedContribution(superchargedWeighting, timedWeighting types.Percentage) (types.Percentage, error) {
-	res := superchargedWeighting.Sub(types.NewPercentage("1"))
+func calculateSuperchargedContribution(superchargedWeighting, timedWeighting types.Float) (types.Float, error) {
+	res := superchargedWeighting.Sub(types.NewFloat("1"))
 	res = res.Mul(timedWeighting)
-	res = res.Add(types.NewPercentage("1"))
+	res = res.Add(types.NewFloat("1"))
 	return res, nil
 }

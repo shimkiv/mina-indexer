@@ -18,7 +18,7 @@ func TestCalculateWeight(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		result  types.Percentage
+		result  types.Float
 		wantErr bool
 	}{
 		{
@@ -27,7 +27,7 @@ func TestCalculateWeight(t *testing.T) {
 				balance:            types.NewInt64Amount(10),
 				totalStakedBalance: types.NewInt64Amount(10000),
 			},
-			result: types.NewPercentage("0.001"),
+			result: types.NewFloat("0.001"),
 		},
 		{
 			name: "error case stake value",
@@ -54,21 +54,21 @@ func TestCalculateDelegatorReward(t *testing.T) {
 	w, _ := new(big.Float).SetString("0.3")
 	type args struct {
 		weight          big.Float
-		remainingReward types.Percentage
+		remainingReward types.Float
 	}
 	tests := []struct {
 		name    string
 		args    args
-		result  types.Percentage
+		result  types.Float
 		wantErr bool
 	}{
 		{
 			name: "successful",
 			args: args{
 				weight:          *w,
-				remainingReward: types.NewPercentage("95"),
+				remainingReward: types.NewFloat("95"),
 			},
-			result: types.NewPercentage("28.5"),
+			result: types.NewFloat("28.5"),
 		},
 	}
 	for _, tt := range tests {
@@ -86,7 +86,7 @@ func TestCalculateDelegatorReward(t *testing.T) {
 func TestCalculateValidatorReward(t *testing.T) {
 	type args struct {
 		blockReward  types.Amount
-		validatorFee types.Percentage
+		validatorFee types.Float
 	}
 	tests := []struct {
 		name    string
@@ -98,7 +98,7 @@ func TestCalculateValidatorReward(t *testing.T) {
 			name: "successful",
 			args: args{
 				blockReward:  types.NewInt64Amount(100),
-				validatorFee: types.NewPercentage("5"),
+				validatorFee: types.NewFloat("5"),
 			},
 			result: types.NewAmount("5"),
 		},
@@ -122,7 +122,7 @@ func TestCalculateSuperchargedWeighting(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		result  types.Percentage
+		result  types.Float
 		wantErr bool
 	}{
 		{
@@ -133,7 +133,7 @@ func TestCalculateSuperchargedWeighting(t *testing.T) {
 					TransactionsFees: types.NewAmount("0"),
 				},
 			},
-			result: types.NewPercentage("2"),
+			result: types.NewFloat("2"),
 		},
 		{
 			name: "successful same amount transaction fee and coinbase",
@@ -143,7 +143,7 @@ func TestCalculateSuperchargedWeighting(t *testing.T) {
 					TransactionsFees: types.NewAmount("200"),
 				},
 			},
-			result: types.NewPercentage("1.5"),
+			result: types.NewFloat("1.5"),
 		},
 		{
 			name: "successful low transaction fee",
@@ -153,7 +153,7 @@ func TestCalculateSuperchargedWeighting(t *testing.T) {
 					TransactionsFees: types.NewAmount("5"),
 				},
 			},
-			result: types.NewPercentage("1.975609756"),
+			result: types.NewFloat("1.975609756"),
 		},
 		{
 			name: "successful high transaction fee",
@@ -163,7 +163,7 @@ func TestCalculateSuperchargedWeighting(t *testing.T) {
 					TransactionsFees: types.NewAmount("10000"),
 				},
 			},
-			result: types.NewPercentage("1.019607843"),
+			result: types.NewFloat("1.019607843"),
 		},
 	}
 	for _, tt := range tests {
@@ -219,7 +219,7 @@ func TestCalculateWeightsSupercharged(t *testing.T) {
 	}
 
 	type args struct {
-		superchargedContribution types.Percentage
+		superchargedContribution types.Float
 		delegations              []model.Delegation
 		records                  []model.LedgerEntry
 		firstSlotOfEpoch         int
@@ -233,7 +233,7 @@ func TestCalculateWeightsSupercharged(t *testing.T) {
 		{
 			name: "successful with timing but locked entire epoch",
 			args: args{
-				superchargedContribution: types.NewPercentage("1.98765"),
+				superchargedContribution: types.NewFloat("1.98765"),
 				delegations:              delegations,
 				records:                  records,
 				firstSlotOfEpoch:         70000,
@@ -243,7 +243,7 @@ func TestCalculateWeightsSupercharged(t *testing.T) {
 		{
 			name: "successful with timing but locked entire epoch",
 			args: args{
-				superchargedContribution: types.NewPercentage("1.98765"),
+				superchargedContribution: types.NewFloat("1.98765"),
 				delegations:              delegations,
 				records:                  records,
 				firstSlotOfEpoch:         80000,
