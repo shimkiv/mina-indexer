@@ -1,11 +1,9 @@
-package test
+package util
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
-	"github.com/figment-networks/mina-indexer/model/util"
 )
 
 func TestParseMemoText(t *testing.T) {
@@ -19,6 +17,6 @@ func TestParseMemoText(t *testing.T) {
 		"E4YoBsLAeXCBHfU1puDrjpVsNyGM9sTj5HpZoiZpddaboj453bBMA": "timsmith#2774",
 	}
 	for given, expected := range examples {
-		assert.Equal(t, expected, util.ParseMemoText(given))
+		assert.Equal(t, expected, ParseMemoText(given))
 	}
 }

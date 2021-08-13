@@ -1,4 +1,4 @@
-package test
+package util
 
 import (
 	"math/big"
@@ -8,7 +8,6 @@ import (
 
 	"github.com/figment-networks/mina-indexer/model"
 	"github.com/figment-networks/mina-indexer/model/types"
-	"github.com/figment-networks/mina-indexer/model/util"
 )
 
 func TestCalculateWeight(t *testing.T) {
@@ -41,7 +40,7 @@ func TestCalculateWeight(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res, err := util.CalculateWeight(tt.args.balance, tt.args.totalStakedBalance)
+			res, err := CalculateWeight(tt.args.balance, tt.args.totalStakedBalance)
 			if err != nil {
 				assert.True(t, tt.wantErr)
 			} else {
@@ -74,7 +73,7 @@ func TestCalculateDelegatorReward(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res, err := util.CalculateDelegatorReward(tt.args.weight, tt.args.remainingReward)
+			res, err := CalculateDelegatorReward(tt.args.weight, tt.args.remainingReward)
 			if err != nil {
 				assert.True(t, tt.wantErr)
 			} else {
@@ -106,7 +105,7 @@ func TestCalculateValidatorReward(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res, err := util.CalculateValidatorReward(tt.args.blockReward, tt.args.validatorFee)
+			res, err := CalculateValidatorReward(tt.args.blockReward, tt.args.validatorFee)
 			if err != nil {
 				assert.True(t, tt.wantErr)
 			} else {
@@ -169,7 +168,7 @@ func TestCalculateSuperchargedWeighting(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res, err := util.CalculateSuperchargedWeighting(tt.args.block)
+			res, err := CalculateSuperchargedWeighting(tt.args.block)
 			if err != nil {
 				assert.True(t, tt.wantErr)
 			} else {
@@ -255,7 +254,7 @@ func TestCalculateWeightsSupercharged(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			delegations := tt.args.delegations
-			err := util.CalculateWeightsSupercharged(tt.args.superchargedContribution, delegations, tt.args.records, tt.args.firstSlotOfEpoch)
+			err := CalculateWeightsSupercharged(tt.args.superchargedContribution, delegations, tt.args.records, tt.args.firstSlotOfEpoch)
 			if err != nil {
 				assert.True(t, tt.wantErr)
 			} else {
