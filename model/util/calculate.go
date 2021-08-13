@@ -77,10 +77,10 @@ func CalculateWeightsNonSupercharged(delegations []model.Delegation) error {
 // CalculateWeightsSupercharged calculates weights when block reward is doubled for supercharged
 func CalculateWeightsSupercharged(superchargedWeighting types.Float, delegations []model.Delegation, records []model.LedgerEntry, firstSlotOfEpoch int) error {
 	sum := new(big.Float)
-	sc := new(big.Float)
-	bln := new(big.Float)
-	stk := new(big.Float)
-	w := new(big.Float)
+	supercharged := new(big.Float)
+	balance := new(big.Float)
+	stake := new(big.Float)
+	weight := new(big.Float)
 	var ok bool
 
 	recordsMap := map[string]model.LedgerEntry{}
@@ -105,28 +105,28 @@ func CalculateWeightsSupercharged(superchargedWeighting types.Float, delegations
 			return err
 		}
 
-		sc, ok = sc.SetString(superchargedContribution.String())
+		supercharged, ok = supercharged.SetString(superchargedContribution.String())
 		if !ok {
 			return errors.New("error with supercharged contribution")
 		}
-		bln, ok := bln.SetString(r.Balance.String())
+		bln, ok := balance.SetString(r.Balance.String())
 		if !ok {
 			return errors.New("error with balance")
 		}
-		stk = bln.Mul(bln, sc)
+		stake = bln.Mul(bln, supercharged)
 
-		delegations[i].Weight = types.NewFloat(stk.String())
-		sum.Add(sum, stk)
+		delegations[i].Weight = types.NewFloat(stake.String())
+		sum.Add(sum, stake)
 	}
 
 	// pool weights
 	for i, r := range delegations {
-		w, ok = new(big.Float).SetString(r.Weight.String())
+		weight, ok = new(big.Float).SetString(r.Weight.String())
 		if !ok {
 			return errors.New("error with weight")
 		}
-		w = w.Quo(w, sum)
-		delegations[i].Weight = types.NewFloat(w.String())
+		weight = weight.Quo(weight, sum)
+		delegations[i].Weight = types.NewFloat(weight.String())
 	}
 
 	return nil
