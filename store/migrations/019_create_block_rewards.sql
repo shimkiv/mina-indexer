@@ -5,7 +5,7 @@ CREATE TABLE block_rewards (
   delegate              TEXT NOT NULL,
   epoch                 INTEGER NOT NULL,
   time_bucket           CHAIN_TIME,
-  reward                NUMERIC(65, 4) DEFAULT 0,
+  reward                CHAIN_CURRENCY,
   owner_type            OWNER_TYPE
 );
 

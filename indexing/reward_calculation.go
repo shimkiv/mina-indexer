@@ -85,7 +85,9 @@ func RewardCalculation(db *store.Store, block model.Block) error {
 	if err != nil {
 		return err
 	}
-	validatorReward.Reward = reward
+	r := new(big.Int)
+	reward.Int(r)
+	validatorReward.Reward = types.NewAmount(r.String())
 
 	remainingReward := types.NewFloat(blockReward.String())
 	remainingReward = remainingReward.Sub(reward)
@@ -111,7 +113,9 @@ func RewardCalculation(db *store.Store, block model.Block) error {
 		if err != nil {
 			return err
 		}
-		delegatorsBlockRewards[i].Reward = res
+		r = new(big.Int)
+		res.Int(r)
+		delegatorsBlockRewards[i].Reward = types.NewAmount(r.String())
 	}
 
 	if err := db.Rewards.Import(delegatorsBlockRewards); err != nil {
