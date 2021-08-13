@@ -66,7 +66,7 @@ func RewardCalculation(db *store.Store, block model.Block) error {
 		if err != nil {
 			return err
 		}
-		records, err := db.Staking.LedgerRecordsOfDelegate(ledger.ID, block.Creator)
+		records, err := db.Staking.DelegateLedgerRecords(ledger.ID, block.Creator)
 		if err != nil && err != store.ErrNotFound {
 			return err
 		}

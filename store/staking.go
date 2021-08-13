@@ -116,8 +116,8 @@ func (s StakingStore) LedgerRecords(ledgerID int) ([]model.LedgerEntry, error) {
 	return result, checkErr(err)
 }
 
-// LedgerRecordsOfDelegate returns delegations' ledger info
-func (s StakingStore) LedgerRecordsOfDelegate(ledgerID int, delegate string) ([]model.LedgerEntry, error) {
+// DelegateLedgerRecords returns delegations' ledger info
+func (s StakingStore) DelegateLedgerRecords(ledgerID int, delegate string) ([]model.LedgerEntry, error) {
 	result := []model.LedgerEntry{}
 
 	err := s.db.
