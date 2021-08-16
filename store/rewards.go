@@ -31,7 +31,7 @@ func (s *RewardStore) FetchRewardsByInterval(ownerAccount string, delegate strin
 		scope = scope.Where("owner_type = ?", rewardOwnerType)
 	}
 	if !from.IsZero() {
-		scope = scope.Where("time_bucket > ?", from)
+		scope = scope.Where("time_bucket >= ?", from)
 	}
 	if !to.IsZero() {
 		scope = scope.Where("time_bucket < ?", to)
