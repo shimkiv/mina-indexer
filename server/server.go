@@ -387,7 +387,7 @@ func (s Server) GetRewards(c *gin.Context) {
 	}
 	interval, _ := model.GetTypeForTimeInterval(params.Interval)
 	rewardOwnerType, _ := model.GetTypeForRewardOwnerType(params.RewardOwnerType)
-	resp, err := s.db.Rewards.FetchRewardsByInterval(c.Param("id"), params.ValidatorId, params.From, params.To, interval, rewardOwnerType)
+	resp, err := s.db.Rewards.FetchRewardsByInterval(c.Param("id"), "", params.From, params.To, interval, rewardOwnerType)
 	if shouldReturn(c, err) {
 		return
 	}
