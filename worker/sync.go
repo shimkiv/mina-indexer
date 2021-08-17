@@ -19,9 +19,10 @@ import (
 	"github.com/figment-networks/mina-indexer/store"
 )
 
-const unsafeBlockThreshold = 15
-
-const finalityThreshold uint = 290
+const (
+	unsafeBlockThreshold      = 15
+	finalityThreshold    uint = 290
+)
 
 type SyncWorker struct {
 	cfg            *config.Config

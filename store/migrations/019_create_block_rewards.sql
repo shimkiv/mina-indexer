@@ -2,7 +2,7 @@
 CREATE TABLE block_rewards (
   id                    CHAIN_UUID,
   owner_account         TEXT NOT NULL,
-  delegate              TEXT NOT NULL,
+  delegate              TEXT,
   epoch                 INTEGER NOT NULL,
   time_bucket           CHAIN_TIME,
   reward                CHAIN_CURRENCY,
