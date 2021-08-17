@@ -20,8 +20,8 @@ import (
 )
 
 const (
-	unsafeBlockThreshold      = 2
-	finalityThreshold    uint = 10
+	unsafeBlockThreshold      = 15
+	finalityThreshold    uint = 290
 )
 
 type SyncWorker struct {
