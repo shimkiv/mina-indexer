@@ -41,7 +41,7 @@ func Ledger(tip *graph.Block, records []archive.StakingInfo) (*LedgerData, error
 			PublicKey:                   record.Pk,
 			Delegate:                    record.Delegate,
 			Balance:                     balance,
-			Delegation:                  record.Pk != record.Delegate,
+			Delegation:                  true,
 			TimingInitialMinimumBalance: types.Amount{},
 			TimingCliffAmount:           types.Amount{},
 		}
