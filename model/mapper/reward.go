@@ -34,7 +34,7 @@ func DelegatorBlockRewards(accounts []model.Delegation, block model.Block) ([]mo
 		// reward to be calculated next step
 		dbr := model.BlockReward{
 			OwnerAccount: a.PublicKey,
-			Delegate:     a.Delegate,
+			Delegate:     &a.Delegate,
 			Epoch:        block.Epoch,
 			OwnerType:    string(model.RewardOwnerTypeDelegator),
 		}
