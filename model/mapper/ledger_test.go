@@ -11,6 +11,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var (
+	graphTip = &graph.Block{
+		ProtocolState: &graph.ProtocolState{
+			ConsensusState: &graph.ConsensusState{
+				Epoch: "10",
+			},
+		},
+	}
+)
+
 func readLedgerFromFile(path string) []archive.StakingInfo {
 	f, err := os.Open(path)
 	if err != nil {
@@ -29,15 +39,7 @@ func readLedgerFromFile(path string) []archive.StakingInfo {
 func TestLedger(t *testing.T) {
 	entries := readLedgerFromFile("../../test/fixtures/ledger.json")
 
-	block := &graph.Block{
-		ProtocolState: &graph.ProtocolState{
-			ConsensusState: &graph.ConsensusState{
-				Epoch: "10",
-			},
-		},
-	}
-
-	ledgerData, err := Ledger(block, entries)
+	ledgerData, err := Ledger(graphTip, entries)
 	ledger := ledgerData.Ledger
 
 	assert.NoError(t, err)
@@ -65,4 +67,11 @@ func TestLedger(t *testing.T) {
 	assert.Equal(t, types.NewFloatAmount("0").String(), entry.TimingCliffAmount.String())
 	assert.Equal(t, 1, *entry.TimingVestingPeriod)
 	assert.Equal(t, types.NewFloatAmount("70.730534765").String(), entry.TimingVestingIncrement.String())
+}
+
+func TestLedgerError(t *testing.T) {
+	entries := readLedgerFromFile("../../test/fixtures/ledger_with_error.json")
+	_, err := Ledger(graphTip, entries)
+	assert.Error(t, err)
+	assert.Equal(t, `strconv.ParseInt: parsing "some wrong value": invalid syntax`, err.Error())
 }
