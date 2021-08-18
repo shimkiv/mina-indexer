@@ -54,9 +54,17 @@ func Ledger(tip *graph.Block, records []archive.StakingInfo) (*LedgerData, error
 		}
 
 		if timing := record.Timing; timing != nil {
-			cliffTime, _ := util.ParseInt(timing.CliffTime)
-			vestingIncrement, _ := util.ParseInt(timing.VestingIncrement)
-			vestingPeriod, _ := util.ParseInt(timing.VestingPeriod)
+			cliffTime, err := util.ParseInt(timing.CliffTime)
+			if err != nil {
+				return nil, err
+			}
+
+			vestingPeriod, err := util.ParseInt(timing.VestingPeriod)
+			if err != nil {
+				return nil, err
+			}
+
+			vestingIncrement := types.NewFloatAmount(timing.VestingIncrement)
 
 			entry.TimingInitialMinimumBalance = types.NewFloatAmount(timing.InitialMinimumBalance)
 			entry.TimingCliffAmount = types.NewFloatAmount(timing.CliffAmount)
