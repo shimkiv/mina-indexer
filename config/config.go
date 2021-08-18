@@ -29,24 +29,24 @@ var (
 
 // Config holds the configration data
 type Config struct {
-	AppEnv           string `json:"app_env" envconfig:"APP_ENV" default:"development"`
-	MinaEndpoint     string `json:"mina_endpoint" envconfig:"MINA_ENDPOINT"`
-	ArchiveEndpoint  string `json:"archive_endpoint" envconfig:"ARCHIVE_ENDPOINT"`
-	GenesisFile      string `json:"genesis_file" envconfig:"GENESIS_FILE"`
-	IdentityFile     string `json:"identity_file" envconfig:"IDENTITY_FILE"`
-	ServerAddr       string `json:"server_addr" envconfig:"SERVER_ADDR" default:"0.0.0.0"`
-	ServerPort       int    `json:"server_port" envconfig:"SERVER_PORT" default:"8080"`
-	SyncInterval     string `json:"sync_interval" envconfig:"SYNC_INTERVAL" default:"60s"`
-	CleanupInterval  string `json:"cleanup_interval" envconfig:"CLEANUP_INTERVAL" default:"10m"`
-	CleanupThreshold int    `json:"cleanup_threshold" envconfig:"CLEANUP_THRESHOLD" default:"1000"`
-	DatabaseURL      string `json:"database_url" envconfig:"DATABASE_URL"`
-	DumpDir          string `json:"dump_dir" envconfig:"DUMP_DIR"`
-	LogLevel         string `json:"log_level" envconfig:"LOG_LEVEL" default:"info"`
-	LogFormat        string `json:"log_format" envconfig:"LOG_FORMAT" default:"text"`
-	RollbarToken     string `json:"rollbar_token" envconfig:"ROLLBAR_TOKEN"`
-	RollbarNamespace string `json:"rollbar_namespace" envconfig:"ROLLBAR_NAMESPACE"`
-
-	HistoricalLimit uint `json:"historical_limit" envconfig:"HISTORICAL_LIMIT" default:"290"`
+	AppEnv                string `json:"app_env" envconfig:"APP_ENV" default:"development"`
+	MinaEndpoint          string `json:"mina_endpoint" envconfig:"MINA_ENDPOINT"`
+	ArchiveEndpoint       string `json:"archive_endpoint" envconfig:"ARCHIVE_ENDPOINT"`
+	GenesisFile           string `json:"genesis_file" envconfig:"GENESIS_FILE"`
+	IdentityFile          string `json:"identity_file" envconfig:"IDENTITY_FILE"`
+	ServerAddr            string `json:"server_addr" envconfig:"SERVER_ADDR" default:"0.0.0.0"`
+	ServerPort            int    `json:"server_port" envconfig:"SERVER_PORT" default:"8080"`
+	SyncInterval          string `json:"sync_interval" envconfig:"SYNC_INTERVAL" default:"60s"`
+	CleanupInterval       string `json:"cleanup_interval" envconfig:"CLEANUP_INTERVAL" default:"10m"`
+	CleanupThreshold      int    `json:"cleanup_threshold" envconfig:"CLEANUP_THRESHOLD" default:"1000"`
+	DatabaseURL           string `json:"database_url" envconfig:"DATABASE_URL"`
+	DumpDir               string `json:"dump_dir" envconfig:"DUMP_DIR"`
+	LogLevel              string `json:"log_level" envconfig:"LOG_LEVEL" default:"info"`
+	LogFormat             string `json:"log_format" envconfig:"LOG_FORMAT" default:"text"`
+	RollbarToken          string `json:"rollbar_token" envconfig:"ROLLBAR_TOKEN"`
+	RollbarNamespace      string `json:"rollbar_namespace" envconfig:"ROLLBAR_NAMESPACE"`
+	HistoricalLimit       uint   `json:"historical_limit" envconfig:"HISTORICAL_LIMIT" default:"290"`
+	StagingLedgerDisabled bool   `json:"staging_ledger_disabled" envconfig:"STAGING_LEDGER_DISABLED"`
 
 	syncDuration    time.Duration
 	cleanupDuration time.Duration
