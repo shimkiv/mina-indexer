@@ -2,7 +2,6 @@ package indexing
 
 import (
 	"errors"
-	"fmt"
 	"math/big"
 	"strconv"
 
@@ -25,7 +24,7 @@ func RewardCalculation(db *store.Store, block model.Block) error {
 	if err != nil && err != store.ErrNotFound {
 		return err
 	} else if len(validatorEpochs) == 0 {
-		log.Warn(fmt.Sprintf("validator fee for epoch not found. validator id = %s", block.Creator))
+		log.WithField("validator", block.Creator).Warn("epoch commission rate not found")
 		return nil
 	}
 
