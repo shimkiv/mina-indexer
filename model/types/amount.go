@@ -93,6 +93,13 @@ func (a Amount) Mul(b Amount) Amount {
 	return Amount{n}
 }
 
+// Quo divides two numbers
+func (a Amount) Quo(b Amount) Amount {
+	n := new(big.Int)
+	n = n.Quo(a.Int, b.Int)
+	return Amount{n}
+}
+
 func (a Amount) PercentOf(b Amount) float64 {
 	if b.Int.Cmp(zero) == 0 {
 		return float64(0.0)

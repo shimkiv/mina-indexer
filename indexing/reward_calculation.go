@@ -49,13 +49,6 @@ func RewardCalculation(db *store.Store, block model.Block) error {
 		return err
 	}
 
-	firstBlockOfEpoch, err := db.Blocks.FirstBlockOfEpoch(strconv.Itoa(block.Epoch))
-	if err != nil {
-		return err
-	}
-
-	firstSlotOfEpoch := firstBlockOfEpoch.Slot
-
 	if !block.Supercharged {
 		err = util.CalculateWeightsNonSupercharged(delegations)
 		if err != nil {
@@ -70,8 +63,7 @@ func RewardCalculation(db *store.Store, block model.Block) error {
 		if err != nil && err != store.ErrNotFound {
 			return err
 		}
-
-		err = util.CalculateWeightsSupercharged(superchargedWeighting, delegations, records, firstSlotOfEpoch)
+		err = util.CalculateWeightsSupercharged(superchargedWeighting, delegations, records)
 		if err != nil {
 			return err
 		}
