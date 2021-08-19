@@ -265,7 +265,7 @@ func (w SyncWorker) processBlock(hash string) error {
 					continue
 				}
 				validatorEpoch := model.ValidatorEpoch{
-					AccountId:      p.ProviderId,
+					StaketabID:     p.ProviderId,
 					AccountAddress: p.ProviderAddress,
 					ValidatorFee:   types.NewFloat64Float(p.ProviderFee),
 				}
