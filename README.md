@@ -128,3 +128,4 @@ foreach delegator
       weight = pool stake / sum(pool stakes)
       reward = delegators reward / weight
 ```
+Note: the reward results are estimated and tracked by daily.
