@@ -26,7 +26,6 @@ func (s ValidatorsEpochsStore) Import(records []model.ValidatorEpoch) error {
 			r.ValidatorFee,
 		}
 	})
-	d
 }
 
 // GetValidatorEpochs fetches validator epochs
