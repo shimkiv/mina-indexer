@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math"
 	"math/big"
+	"strconv"
 
 	"github.com/figment-networks/mina-indexer/model"
 	"github.com/figment-networks/mina-indexer/model/types"
@@ -169,6 +170,15 @@ func calculateTimedWeighting(record model.LedgerEntry) (types.Float, error) {
 
 	factor := types.NewFloat(globalSlotEnd.String()).Sub(types.NewFloat(unLockedTime.String()))
 	res := types.NewFloat("1").Sub(factor.Quo(types.NewFloat64Float(slotsPerEpoch)))
+
+	f, err := strconv.ParseFloat(res.Float.String(), 9)
+	if err != nil {
+		return res, err
+	}
+	if f < 0 || f > 1 {
+		return types.NewFloat64Float(0), nil
+	}
+
 	return res, nil
 }
 
