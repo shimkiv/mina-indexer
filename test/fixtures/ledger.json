@@ -1,0 +1,74 @@
+[
+  {
+    "pk": "B62qqnZWjM68fMq7jVR19fGDnrigtYX9WZ14enXFiLZkE13WDe4aLy3",
+    "balance": "4793.953311237",
+    "delegate": "B62qorXXHv971Kvnq91TkvWsRAvMCB8yszCX6yUhpyZseKcibSZSDSF",
+    "timing": {
+      "initial_minimum_balance": "4651",
+      "cliff_time": "86400",
+      "cliff_amount": "4651",
+      "vesting_period": "1",
+      "vesting_increment": "0"
+    },
+    "token": "1",
+    "token_permissions": {},
+    "receipt_chain_hash": "2mzbV7WevxLuchs2dAMY4vQBS6XttnCUF8Hvks4XNBQ5qiSGGBQe",
+    "voting_for": "3NK2tkzqqK5spR2sZ7tujjqPksL45M3UUrcA4WhCkeiPtnugyE2x",
+    "permissions": {
+      "stake": true,
+      "edit_state": "signature",
+      "send": "signature",
+      "set_delegate": "signature",
+      "set_permissions": "signature",
+      "set_verification_key": "signature"
+    }
+  },
+  {
+    "pk": "B62qkUQyaxfFNtoMXoZwa6Ar9pXPzhzeWCEsvvN1Eb6KfDeP5PgXJFv",
+    "balance": "68018.061360456",
+    "delegate": "B62qrCz3ehCqi8Pn8y3vWC9zYEB9RKsidauv15DeZxhzkxL3bKeba5h",
+    "timing": {
+      "initial_minimum_balance": "66000",
+      "cliff_time": "172800",
+      "cliff_amount": "16500",
+      "vesting_period": "1",
+      "vesting_increment": "0.095486111"
+    },
+    "token": "1",
+    "token_permissions": {},
+    "receipt_chain_hash": "2mzbV7WevxLuchs2dAMY4vQBS6XttnCUF8Hvks4XNBQ5qiSGGBQe",
+    "voting_for": "3NK2tkzqqK5spR2sZ7tujjqPksL45M3UUrcA4WhCkeiPtnugyE2x",
+    "permissions": {
+      "stake": true,
+      "edit_state": "signature",
+      "send": "signature",
+      "set_delegate": "signature",
+      "set_permissions": "signature",
+      "set_verification_key": "signature"
+    }
+  },
+  {
+    "pk": "B62qr2ingZ5sWoyEPFazcQkYYWx99mLqs84pPYSdpWkRCKsg9Gz4kTz",
+    "balance": "15277797.5103651",
+    "delegate": "B62qjJ2eGwj1mmB6XThCV2m9JxUqJGXLqwyirxTbzBanzs2ThazD1Gy",
+    "timing": {
+      "initial_minimum_balance": "15277795.5092651",
+      "cliff_time": "43200",
+      "cliff_amount": "0",
+      "vesting_period": "1",
+      "vesting_increment": "70.730534765"
+    },
+    "token": "1",
+    "token_permissions": {},
+    "receipt_chain_hash": "2mzbV7WevxLuchs2dAMY4vQBS6XttnCUF8Hvks4XNBQ5qiSGGBQe",
+    "voting_for": "3NK2tkzqqK5spR2sZ7tujjqPksL45M3UUrcA4WhCkeiPtnugyE2x",
+    "permissions": {
+      "stake": true,
+      "edit_state": "signature",
+      "send": "signature",
+      "set_delegate": "signature",
+      "set_permissions": "signature",
+      "set_verification_key": "signature"
+    }
+  }
+]
