@@ -31,7 +31,7 @@ type LedgerEntry struct {
 	TimingCliffTime             *int         `json:"timing_cliff_time"`
 	TimingCliffAmount           types.Amount `json:"timing_cliff_amount"`
 	TimingVestingPeriod         *int         `json:"timing_vesting_period"`
-	TimingVestingIncrement      *int         `json:"timing_vesting_increment"`
+	TimingVestingIncrement      types.Amount `json:"timing_vesting_increment"`
 }
 
 func (LedgerEntry) TableName() string {
