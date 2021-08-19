@@ -19,10 +19,7 @@ import (
 	"github.com/figment-networks/mina-indexer/store"
 )
 
-const (
-	unsafeBlockThreshold      = 15
-	finalityThreshold    uint = 290
-)
+const unsafeBlockThreshold = 15
 
 type SyncWorker struct {
 	cfg            *config.Config
@@ -106,7 +103,6 @@ func (w SyncWorker) Run() (int, error) {
 		}
 	}
 
-	log.Info("correcting canonical blocks")
 	lastBlock, err = w.db.Blocks.LastBlock()
 	if err != nil {
 		return 0, err
@@ -122,6 +118,7 @@ func (w SyncWorker) Run() (int, error) {
 		blocksRequest.StartHeight = 0
 		blocksRequest.Limit = uint(lastBlock.Height)
 	}
+	log.WithField("from", blocksRequest.StartHeight).Info("correcting canonical blocks")
 	canonicalBlocks, err := w.archiveClient.Blocks(blocksRequest)
 	if err != nil {
 		return 0, err
@@ -151,11 +148,11 @@ func (w SyncWorker) Run() (int, error) {
 		}
 	}
 
-	log.Info("correcting canonical blocks and validators statistics")
 	var unsafeBlocksStarting uint64
-	if (int(lastBlock.Height) - int(finalityThreshold)) > 0 {
+	if (int(lastBlock.Height) - int(limit)) > 0 {
 		unsafeBlocksStarting = lastBlock.Height - unsafeBlockThreshold
 	}
+	log.WithField("from", unsafeBlocksStarting).Info("correcting canonical blocks and validators statistics")
 	unsafeBlocks, err := w.db.Blocks.FindUnsafeBlocks(unsafeBlocksStarting)
 	if err != nil {
 		return 0, err
@@ -198,9 +195,8 @@ func (w SyncWorker) Run() (int, error) {
 		}
 	}
 
-	log.Info("calculating rewards for safe canonical blocks")
-	safeCanonicalBlocksStarting := uint64(blocksRequest.StartHeight)
-	lastCalculatedBlockReward, err := w.db.Blocks.FindLastCalculatedBlockReward(uint64(blocksRequest.StartHeight))
+	safeCanonicalBlocksStarting := unsafeBlocksStarting - uint64(limit)
+	lastCalculatedBlockReward, err := w.db.Blocks.FindLastCalculatedBlockReward(safeCanonicalBlocksStarting, unsafeBlocksStarting)
 	if err != nil && err != store.ErrNotFound {
 		return 0, err
 	}
@@ -208,11 +204,13 @@ func (w SyncWorker) Run() (int, error) {
 		safeCanonicalBlocksStarting = lastCalculatedBlockReward.Height
 	}
 
+	log.WithField("from", safeCanonicalBlocksStarting).WithField("to", unsafeBlocksStarting).Info("calculating rewards for safe canonical blocks")
 	blocksForRewards, err := w.db.Blocks.FindNonCalculatedBlockRewards(safeCanonicalBlocksStarting, unsafeBlocksStarting)
 	if err != nil {
 		return 0, err
 	}
 	for _, block := range blocksForRewards {
+		log.WithField("height", block.Height).WithField("hash", block.Hash).Info("calculating rewards")
 		if err := indexing.RewardCalculation(w.db, block); err != nil {
 			return 0, err
 		}
