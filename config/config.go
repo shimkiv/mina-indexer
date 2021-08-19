@@ -33,6 +33,7 @@ type Config struct {
 	MinaEndpoint          string `json:"mina_endpoint" envconfig:"MINA_ENDPOINT"`
 	ArchiveEndpoint       string `json:"archive_endpoint" envconfig:"ARCHIVE_ENDPOINT"`
 	GenesisFile           string `json:"genesis_file" envconfig:"GENESIS_FILE"`
+	StaketabEndpoint      string `json:"staketab_endpoint" envconfig:"STAKETAB_ENDPOINT" default:"https://api.staketab.com/mina"`
 	IdentityFile          string `json:"identity_file" envconfig:"IDENTITY_FILE"`
 	ServerAddr            string `json:"server_addr" envconfig:"SERVER_ADDR" default:"0.0.0.0"`
 	ServerPort            int    `json:"server_port" envconfig:"SERVER_PORT" default:"8080"`
