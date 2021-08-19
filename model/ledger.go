@@ -43,5 +43,5 @@ func (l LedgerEntry) IsUntimed() bool {
 		l.TimingCliffTime == nil &&
 		l.TimingCliffAmount.Int == nil &&
 		l.TimingVestingPeriod == nil &&
-		l.TimingVestingIncrement == nil
+		l.TimingVestingIncrement.Int == nil
 }

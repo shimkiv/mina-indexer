@@ -143,11 +143,11 @@ func calculateTimedWeighting(record model.LedgerEntry) (types.Float, error) {
 	}
 
 	var globalSlotStart types.Amount
-	if *record.TimingVestingPeriod == 0 || *record.TimingVestingIncrement == 0 {
+	if *record.TimingVestingPeriod == 0 || record.TimingVestingIncrement.Int == nil || record.TimingVestingIncrement.Int64() == 0 {
 		globalSlotStart = types.NewInt64Amount(int64(*record.TimingCliffTime))
 	} else {
 		globalSlotStart = record.TimingInitialMinimumBalance.Sub(record.TimingCliffAmount)
-		globalSlotStart = globalSlotStart.Quo(types.NewInt64Amount(int64(*record.TimingVestingIncrement)))
+		globalSlotStart = globalSlotStart.Quo(types.NewAmount(record.TimingVestingIncrement.String()))
 		globalSlotStart = globalSlotStart.Mul(types.NewInt64Amount(int64(*record.TimingVestingPeriod)))
 		globalSlotStart = globalSlotStart.Add(types.NewInt64Amount(int64(*record.TimingCliffTime)))
 	}
@@ -162,13 +162,14 @@ func calculateTimedWeighting(record model.LedgerEntry) (types.Float, error) {
 	ca := types.NewAmount(record.TimingCliffAmount.String())
 	ct := types.NewInt64Amount(int64(*record.TimingCliffTime))
 	vestingAmount := imb.Sub(ca)
-	vestingPerc := math.Ceil(float64(*record.TimingVestingPeriod) / float64(*record.TimingVestingIncrement))
+	vestingPerc := math.Ceil(float64(*record.TimingVestingPeriod) / float64(record.TimingVestingIncrement.Int64()))
 	vestingTime := types.NewInt64Amount(int64(vestingPerc))
 	vestingTime = vestingTime.Mul(vestingAmount)
 	unLockedTime := ct.Add(vestingTime)
 
 	factor := types.NewFloat(globalSlotEnd.String()).Sub(types.NewFloat(unLockedTime.String()))
-	return factor.Quo(types.NewFloat64Float(slotsPerEpoch)), nil
+	res := types.NewFloat("1").Sub(factor.Quo(types.NewFloat64Float(slotsPerEpoch)))
+	return res, nil
 }
 
 // calculateSuperchargedContribution calculates supercharged contribution
