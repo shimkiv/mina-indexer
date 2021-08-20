@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math"
 	"math/big"
+	"strconv"
 
 	"github.com/figment-networks/mina-indexer/model"
 	"github.com/figment-networks/mina-indexer/model/types"
@@ -75,7 +76,7 @@ func CalculateWeightsNonSupercharged(delegations []model.Delegation) error {
 }
 
 // CalculateWeightsSupercharged calculates weights when block reward is doubled for supercharged
-func CalculateWeightsSupercharged(superchargedWeighting types.Float, delegations []model.Delegation, records []model.LedgerEntry, firstSlotOfEpoch int) error {
+func CalculateWeightsSupercharged(superchargedWeighting types.Float, delegations []model.Delegation, records []model.LedgerEntry) error {
 	sum := new(big.Float)
 	supercharged := new(big.Float)
 	balance := new(big.Float)
@@ -95,7 +96,7 @@ func CalculateWeightsSupercharged(superchargedWeighting types.Float, delegations
 			return errors.New("ledger record not found")
 		}
 
-		timedWeighting, err := calculateTimedWeighting(record, firstSlotOfEpoch)
+		timedWeighting, err := calculateTimedWeighting(record)
 		if err != nil {
 			return err
 		}
@@ -134,13 +135,24 @@ func CalculateWeightsSupercharged(superchargedWeighting types.Float, delegations
 
 // calculateTimedWeighting calculates timed weighting
 //
-// return 0 for if entry is unlocked entire epoch,
-//        1 for if entry is locked entire epoch,
+// return 1 for if entry is unlocked entire epoch,
+//        0 for if entry is locked entire epoch,
 //        proportion calculated based on slots if it becomes unlocked during epoch
-func calculateTimedWeighting(record model.LedgerEntry, firstSlotOfEpoch int) (types.Float, error) {
+func calculateTimedWeighting(record model.LedgerEntry) (types.Float, error) {
 	if record.IsUntimed() {
 		return types.NewFloat64Float(1), nil
 	}
+
+	var globalSlotStart types.Amount
+	if *record.TimingVestingPeriod == 0 || record.TimingVestingIncrement.Int == nil || record.TimingVestingIncrement.Int64() == 0 {
+		globalSlotStart = types.NewInt64Amount(int64(*record.TimingCliffTime))
+	} else {
+		globalSlotStart = record.TimingInitialMinimumBalance.Sub(record.TimingCliffAmount)
+		globalSlotStart = globalSlotStart.Quo(types.NewAmount(record.TimingVestingIncrement.String()))
+		globalSlotStart = globalSlotStart.Mul(types.NewInt64Amount(int64(*record.TimingVestingPeriod)))
+		globalSlotStart = globalSlotStart.Add(types.NewInt64Amount(int64(*record.TimingCliffTime)))
+	}
+	globalSlotEnd := globalSlotStart.Add(types.NewInt64Amount(slotsPerEpoch))
 
 	// unlockedTime: global slot at which that account's tokens will be fully unlocked
 	//
@@ -151,17 +163,23 @@ func calculateTimedWeighting(record model.LedgerEntry, firstSlotOfEpoch int) (ty
 	ca := types.NewAmount(record.TimingCliffAmount.String())
 	ct := types.NewInt64Amount(int64(*record.TimingCliffTime))
 	vestingAmount := imb.Sub(ca)
-	vestingPerc := math.Ceil(float64(*record.TimingVestingPeriod) / float64(*record.TimingVestingIncrement))
+	vestingPerc := math.Ceil(float64(*record.TimingVestingPeriod) / float64(record.TimingVestingIncrement.Int64()))
 	vestingTime := types.NewInt64Amount(int64(vestingPerc))
 	vestingTime = vestingTime.Mul(vestingAmount)
 	unLockedTime := ct.Add(vestingTime)
 
-	factor := float64(slotsPerEpoch-(unLockedTime.Int64()-int64(firstSlotOfEpoch))) / float64(slotsPerEpoch)
-	if factor < 0 {
-		// means it will be unlocked after this epoch, so it is locked in this one
+	factor := types.NewFloat(globalSlotEnd.String()).Sub(types.NewFloat(unLockedTime.String()))
+	res := types.NewFloat("1").Sub(factor.Quo(types.NewFloat64Float(slotsPerEpoch)))
+
+	f, err := strconv.ParseFloat(res.Float.String(), 9)
+	if err != nil {
+		return res, err
+	}
+	if f < 0 || f > 1 {
 		return types.NewFloat64Float(0), nil
 	}
-	return types.NewFloat64Float(factor), nil
+
+	return res, nil
 }
 
 // calculateSuperchargedContribution calculates supercharged contribution

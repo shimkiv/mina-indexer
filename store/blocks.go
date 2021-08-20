@@ -125,10 +125,10 @@ func (s BlocksStore) FindNonCalculatedBlockRewards(from, to uint64) ([]model.Blo
 }
 
 // FindLastCalculatedBlockReward returns the last calculated block reward
-func (s BlocksStore) FindLastCalculatedBlockReward(from uint64) (*model.Block, error) {
+func (s BlocksStore) FindLastCalculatedBlockReward(from, to uint64) (*model.Block, error) {
 	block := &model.Block{}
 
-	err := s.db.Where("height > ? AND canonical = ? AND reward_calculated = ?", from, true, true).
+	err := s.db.Where("height > ? AND height < ? AND canonical = ? AND reward_calculated = ?", from, to, true, true).
 		Order("height desc").Limit(1).Take(block).Error
 	return block, checkErr(err)
 }

@@ -115,8 +115,8 @@ foreach delegator
 supercharged weighting = 1 + (1 / (1 + transaction fees / coinbase))
 
 foreach delegator
-      timed weighting = 0 for if entry is unlocked entire epoch
-                        1 for if entry is locked entire epoch 
+      timed weighting = 1 for if entry is unlocked entire epoch
+                        0 for if entry is locked entire epoch 
                         proportion calculated based on slots if it becomes unlocked during epoch
       supercharged contribution = ((supercharged weighting - 1) * timed weighting factor) + 1
       pool stake = stake * supercharged contribution
@@ -128,3 +128,4 @@ foreach delegator
       weight = pool stake / sum(pool stakes)
       reward = delegators reward / weight
 ```
+Note: the reward results are estimated and tracked by daily.

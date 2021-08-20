@@ -34,7 +34,7 @@ type ValidatorStat struct {
 
 type ValidatorEpoch struct {
 	ID             int         `json:"-"`
-	AccountId      int         `json:"account_id"`
+	StaketabID     int         `json:"staketab_id"`
 	AccountAddress string      `json:"account_address"`
 	Epoch          int         `json:"epoch"`
 	ValidatorFee   types.Float `json:"validator_fee"`

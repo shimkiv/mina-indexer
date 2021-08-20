@@ -181,7 +181,6 @@ func TestCalculateSuperchargedWeighting(t *testing.T) {
 func TestCalculateWeightsSupercharged(t *testing.T) {
 	ct := 86400
 	vp := 1
-	vi := 0
 
 	records := []model.LedgerEntry{
 		{
@@ -199,7 +198,7 @@ func TestCalculateWeightsSupercharged(t *testing.T) {
 			TimingCliffAmount:           types.NewAmount("230400"),
 			TimingCliffTime:             &ct,
 			TimingVestingPeriod:         &vp,
-			TimingVestingIncrement:      &vi,
+			TimingVestingIncrement:      types.NewAmount("100"),
 		},
 	}
 
@@ -236,25 +235,14 @@ func TestCalculateWeightsSupercharged(t *testing.T) {
 				superchargedContribution: types.NewFloat("1.98765"),
 				delegations:              delegations,
 				records:                  records,
-				firstSlotOfEpoch:         70000,
 			},
 			result: []string{"0.2350364057", "0.5875910143", "0.17737258"},
-		},
-		{
-			name: "successful with timing but locked entire epoch",
-			args: args{
-				superchargedContribution: types.NewFloat("1.98765"),
-				delegations:              delegations,
-				records:                  records,
-				firstSlotOfEpoch:         80000,
-			},
-			result: []string{"0.2308451533", "0.5771128832", "0.1920419636"},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			delegations := tt.args.delegations
-			err := CalculateWeightsSupercharged(tt.args.superchargedContribution, delegations, tt.args.records, tt.args.firstSlotOfEpoch)
+			err := CalculateWeightsSupercharged(tt.args.superchargedContribution, delegations, tt.args.records)
 			if err != nil {
 				assert.True(t, tt.wantErr)
 			} else {

@@ -20,7 +20,7 @@ func (s ValidatorsEpochsStore) Import(records []model.ValidatorEpoch) error {
 	return bulk.Import(s.db, queries.ValidatorsEpochsImport, len(records), func(idx int) bulk.Row {
 		r := records[idx]
 		return bulk.Row{
-			r.AccountId,
+			r.StaketabID,
 			r.AccountAddress,
 			r.Epoch,
 			r.ValidatorFee,
