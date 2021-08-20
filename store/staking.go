@@ -2,9 +2,10 @@ package store
 
 import (
 	"github.com/figment-networks/indexing-engine/store/bulk"
+	"github.com/jinzhu/gorm"
+
 	"github.com/figment-networks/mina-indexer/model"
 	"github.com/figment-networks/mina-indexer/store/queries"
-	"github.com/jinzhu/gorm"
 )
 
 const batchSize = 100
