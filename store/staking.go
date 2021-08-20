@@ -2,6 +2,8 @@ package store
 
 import (
 	"github.com/figment-networks/indexing-engine/store/bulk"
+	"github.com/jinzhu/gorm"
+
 	"github.com/figment-networks/mina-indexer/model"
 	"github.com/figment-networks/mina-indexer/store/queries"
 )
@@ -16,6 +18,16 @@ type StakingStore struct {
 // CreateLedger creates a new ledger record
 func (s StakingStore) CreateLedger(ledger *model.Ledger) error {
 	return s.Create(ledger)
+}
+
+// DeleteEpochLedger removes ledger and all associated records for an epoch
+func (s StakingStore) DeleteEpochLedger(epoch int) error {
+	return s.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Exec("DELETE FROM ledger_entries WHERE ledger_id = (SELECT id FROM ledgers WHERE epoch = ? LIMIT 1)", epoch).Error; err != nil {
+			return err
+		}
+		return tx.Exec("DELETE FROM ledgers WHERE epoch = ?", epoch).Error
+	})
 }
 
 // CreateLedgerEntries create a batch of ledger entries
