@@ -53,15 +53,10 @@ func (w SyncWorker) Run() (int, error) {
 		return 0, err
 	}
 
-	// Dumping staging ledger is very expensive on the node and always times out.
-	// It also locks the GraphQL endpoint, so no queries could be made during the dump.
-	// We want to make this configurable rather then removing it completely.
-	if !w.cfg.StagingLedgerDisabled {
-		log.Info("processing staking ledger")
-		_, err = w.processStakingLedger()
-		if err != nil {
-			return 0, err
-		}
+	log.Info("processing staking ledger")
+	_, err = w.processStakingLedger()
+	if err != nil {
+		return 0, err
 	}
 
 	log.Info("fetching the most recent indexed block")
@@ -216,10 +211,15 @@ func (w SyncWorker) Run() (int, error) {
 		}
 	}
 
-	log.Info("processing staging ledger")
-	if err := w.processStagingLedger(); err != nil {
-		log.WithError(err).Error("staging ledger processing failed")
-		// do not abort here
+	// Dumping staging ledger is very expensive on the node and always times out.
+	// It also locks the GraphQL endpoint, so no queries could be made during the dump.
+	// We want to make this configurable rather then removing it completely.
+	if !w.cfg.StagingLedgerDisabled {
+		log.Info("processing staging ledger")
+		if err := w.processStagingLedger(); err != nil {
+			log.WithError(err).Error("staging ledger processing failed")
+			// do not abort here
+		}
 	}
 
 	var lag int
