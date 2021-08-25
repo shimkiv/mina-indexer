@@ -10,20 +10,23 @@ import (
 
 	"github.com/figment-networks/mina-indexer/client/archive"
 	"github.com/figment-networks/mina-indexer/client/graph"
+	"github.com/figment-networks/mina-indexer/client/staketab"
 	"github.com/figment-networks/mina-indexer/config"
 	"github.com/figment-networks/mina-indexer/indexing"
 	"github.com/figment-networks/mina-indexer/model"
 	"github.com/figment-networks/mina-indexer/model/mapper"
+	"github.com/figment-networks/mina-indexer/model/types"
 	"github.com/figment-networks/mina-indexer/store"
 )
 
 const unsafeBlockThreshold = 15
 
 type SyncWorker struct {
-	cfg           *config.Config
-	db            *store.Store
-	graphClient   *graph.Client
-	archiveClient *archive.Client
+	cfg            *config.Config
+	db             *store.Store
+	graphClient    *graph.Client
+	archiveClient  *archive.Client
+	staketabClient *staketab.Client
 }
 
 func NewSyncWorker(
@@ -31,12 +34,14 @@ func NewSyncWorker(
 	db *store.Store,
 	graphClient *graph.Client,
 	archiveClient *archive.Client,
+	staketabClient *staketab.Client,
 ) SyncWorker {
 	return SyncWorker{
-		cfg:           cfg,
-		db:            db,
-		graphClient:   graphClient,
-		archiveClient: archiveClient,
+		cfg:            cfg,
+		db:             db,
+		graphClient:    graphClient,
+		archiveClient:  archiveClient,
+		staketabClient: staketabClient,
 	}
 }
 
@@ -93,7 +98,6 @@ func (w SyncWorker) Run() (int, error) {
 		}
 	}
 
-	log.Info("correcting canonical blocks")
 	lastBlock, err = w.db.Blocks.LastBlock()
 	if err != nil {
 		return 0, err
@@ -109,7 +113,7 @@ func (w SyncWorker) Run() (int, error) {
 		blocksRequest.StartHeight = 0
 		blocksRequest.Limit = uint(lastBlock.Height)
 	}
-
+	log.WithField("from", blocksRequest.StartHeight).Info("correcting canonical blocks")
 	canonicalBlocks, err := w.archiveClient.Blocks(blocksRequest)
 	if err != nil {
 		return 0, err
@@ -139,12 +143,12 @@ func (w SyncWorker) Run() (int, error) {
 		}
 	}
 
-	log.Info("correcting canonical blocks and validators statistics")
-	var startingBlock uint64
+	var unsafeBlocksStarting uint64
 	if (int(lastBlock.Height) - int(limit)) > 0 {
-		startingBlock = lastBlock.Height - unsafeBlockThreshold
+		unsafeBlocksStarting = lastBlock.Height - unsafeBlockThreshold
 	}
-	unsafeBlocks, err := w.db.Blocks.FindUnsafeBlocks(startingBlock)
+	log.WithField("from", unsafeBlocksStarting).Info("correcting canonical blocks and validators statistics")
+	unsafeBlocks, err := w.db.Blocks.FindUnsafeBlocks(unsafeBlocksStarting)
 	if err != nil {
 		return 0, err
 	}
@@ -186,6 +190,27 @@ func (w SyncWorker) Run() (int, error) {
 		}
 	}
 
+	safeCanonicalBlocksStarting := unsafeBlocksStarting - uint64(limit)
+	lastCalculatedBlockReward, err := w.db.Blocks.FindLastCalculatedBlockReward(safeCanonicalBlocksStarting, unsafeBlocksStarting)
+	if err != nil && err != store.ErrNotFound {
+		return 0, err
+	}
+	if err == nil {
+		safeCanonicalBlocksStarting = lastCalculatedBlockReward.Height
+	}
+
+	log.WithField("from", safeCanonicalBlocksStarting).WithField("to", unsafeBlocksStarting).Info("calculating rewards for safe canonical blocks")
+	blocksForRewards, err := w.db.Blocks.FindNonCalculatedBlockRewards(safeCanonicalBlocksStarting, unsafeBlocksStarting)
+	if err != nil {
+		return 0, err
+	}
+	for _, block := range blocksForRewards {
+		log.WithField("height", block.Height).WithField("hash", block.Hash).Info("calculating rewards")
+		if err := indexing.RewardCalculation(w.db, block); err != nil {
+			return 0, err
+		}
+	}
+
 	// Dumping staging ledger is very expensive on the node and always times out.
 	// It also locks the GraphQL endpoint, so no queries could be made during the dump.
 	// We want to make this configurable rather then removing it completely.
@@ -198,7 +223,6 @@ func (w SyncWorker) Run() (int, error) {
 	}
 
 	var lag int
-
 	if len(blocks) > 0 {
 		lag = status.HighestBlockLengthReceived - int(blocks[len(blocks)-1].Height)
 		log.WithField("lag", lag).Info("sync finished")
@@ -223,12 +247,38 @@ func (w SyncWorker) processBlock(hash string) error {
 		graphBlock = nil
 	}
 
+	validatorEpochs := []model.ValidatorEpoch{}
+	if graphBlock != nil {
+		validatorEpochs, err = w.db.ValidatorsEpochs.GetValidatorEpochs(graphBlock.ProtocolState.ConsensusState.Epoch, "")
+		if err != nil && err != store.ErrNotFound {
+			return err
+		}
+		if len(validatorEpochs) == 0 {
+			providers, err := w.staketabClient.GetAllProviders()
+			if err != nil {
+				return err
+			}
+			for _, p := range providers.StakingProviders {
+				if p.ProviderAddress == "" {
+					continue
+				}
+				validatorEpoch := model.ValidatorEpoch{
+					StaketabID:     p.ProviderId,
+					AccountAddress: p.ProviderAddress,
+					ValidatorFee:   types.NewFloat64Float(p.ProviderFee),
+				}
+				fmt.Sscanf(graphBlock.ProtocolState.ConsensusState.Epoch, "%d", &validatorEpoch.Epoch)
+				validatorEpochs = append(validatorEpochs, validatorEpoch)
+			}
+		}
+	}
+
 	log.
 		WithField("hash", archiveBlock.StateHash).
 		WithField("height", archiveBlock.Height).
 		Debug("processing block")
 
-	data, err := indexing.Prepare(archiveBlock, graphBlock)
+	data, err := indexing.Prepare(archiveBlock, graphBlock, validatorEpochs)
 	if err != nil {
 		return err
 	}
