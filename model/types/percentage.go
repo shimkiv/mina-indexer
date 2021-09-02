@@ -2,6 +2,7 @@ package types
 
 import (
 	"database/sql/driver"
+	"encoding/json"
 	"errors"
 	"math/big"
 )
@@ -101,4 +102,11 @@ func (a *Float) Scan(value interface{}) error {
 	}
 
 	return nil
+}
+
+func (a Float) MarshalJSON() ([]byte, error) {
+	if a.Float == nil {
+		return json.Marshal(nil)
+	}
+	return json.Marshal(a.Float.String())
 }
