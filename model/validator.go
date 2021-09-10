@@ -15,6 +15,7 @@ type Validator struct {
 	BlocksCreated  int          `json:"blocks_created"`
 	BlocksProposed int          `json:"blocks_proposed"`
 	Stake          types.Amount `json:"stake"`
+	Fee            types.Float  `json:"fee" gorm:"-"`
 	Delegations    int          `json:"delegations"`
 	StartHeight    uint64       `json:"start_height"`
 	StartTime      time.Time    `json:"start_time"`

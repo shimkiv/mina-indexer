@@ -317,6 +317,14 @@ func (s *Server) GetValidator(c *gin.Context) {
 		return
 	}
 
+	epoch, err := s.db.ValidatorsEpochs.GetLastValidatorEpoch(validator.PublicKey)
+	if err != store.ErrNotFound && shouldReturn(c, err) {
+		return
+	}
+	if epoch != nil {
+		validator.Fee = epoch.ValidatorFee
+	}
+
 	delegations, err := s.db.Staking.FindDelegations(store.FindDelegationsParams{
 		Delegate: validator.PublicKey,
 	})

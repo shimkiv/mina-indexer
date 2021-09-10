@@ -43,3 +43,18 @@ func (s *ValidatorsEpochsStore) GetValidatorEpochs(epoch string, accountAddress 
 
 	return res, scope.Find(&res).Error
 }
+
+// GetLastValidatorEpoch returns the most recent validator epoch record
+func (s *ValidatorsEpochsStore) GetLastValidatorEpoch(address string) (*model.ValidatorEpoch, error) {
+	result := &model.ValidatorEpoch{}
+
+	err := s.db.
+		Model(result).
+		Where("account_address = ?", address).
+		Order("epoch DESC").
+		Limit(1).
+		Take(result).
+		Error
+
+	return result, checkErr(err)
+}
