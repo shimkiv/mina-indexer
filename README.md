@@ -4,18 +4,18 @@ Blockchain data indexer and API service for Mina blockchain protocol
 
 ## Requirements
 
-- PostgreSQL 10.x+
-- Go 1.15+
+- PostgreSQL 12.x+
+- Go 1.16+
 
 ## Installation
 
-*Not available yet*
+Download binary releases from [Github](https://github.com/figment-networks/mina-indexer/releases)
 
 ## Configuration
 
-You can configure the service using either a config file or environment variables.
+You can configure the service using a config file or environment variables.
 
-### Config File
+### Configuration file
 
 Example:
 
@@ -88,6 +88,7 @@ mina-indexer -config path/to/config.json -cmd=server
 | GET    | /rewards/:id                    | Reward details
 
 ## How do we calculate rewards?
+
 We wait a certain number of blocks to calculate rewards, also known as transaction finality.
 (Please see https://learn.figment.io/network-documentation/mina/mina-101#transaction-speed-and-finality) so 15, which provides a 99.9% confidence that the transaction will not be reversed, is the threshold for calculations. That means we only show the rewards calculated 45 minute before.
 
@@ -106,7 +107,7 @@ For calculating delegator rewards we have 2 different algorithms based on coinba
 ```
 total staked amount = sum of delegations
 
-foreach delegator 
+foreach delegator
       weight = delegation amount / total staked amount
       reward = delegators reward / weight
 ```
@@ -116,7 +117,7 @@ supercharged weighting = 1 + (1 / (1 + transaction fees / coinbase))
 
 foreach delegator
       timed weighting = 1 for if entry is unlocked entire epoch
-                        0 for if entry is locked entire epoch 
+                        0 for if entry is locked entire epoch
                         proportion calculated based on slots if it becomes unlocked during epoch
       supercharged contribution = ((supercharged weighting - 1) * timed weighting factor) + 1
       pool stake = stake * supercharged contribution
@@ -124,7 +125,7 @@ foreach delegator
 foreach delegator
       pool weighting = pool stake / sum(pool stakes)
 
-foreach delegator 
+foreach delegator
       weight = pool stake / sum(pool stakes)
       reward = delegators reward / weight
 ```
