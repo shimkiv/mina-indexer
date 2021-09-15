@@ -380,6 +380,10 @@ func (s *Server) GetDelegations(c *gin.Context) {
 	epochID := c.Query("epoch")
 	if epochID != "" {
 		epoch, err := strconv.Atoi(epochID)
+		if err != nil {
+			badRequest(c, err)
+			return
+		}
 		ledger, err := s.db.Staking.FindLedger(epoch)
 		if (err != nil && err != store.ErrNotFound) || ledger == nil {
 			notFound(c, errors.New("epoch not found"))
