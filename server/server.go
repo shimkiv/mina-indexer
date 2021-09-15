@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"errors"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -363,11 +364,28 @@ func (s *Server) GetValidatorStats(c *gin.Context) {
 
 // GetDelegations rendes all existing delegations
 func (s *Server) GetDelegations(c *gin.Context) {
-	delegations, err := s.db.Staking.FindDelegations(store.FindDelegationsParams{
+	params := store.FindDelegationsParams{
 		PublicKey: c.Query("public_key"),
 		Delegate:  c.Query("delegate"),
-	})
+	}
+
+	ledgerID := c.Query("ledger_id")
+	if ledgerID != "" {
+		ledger, err := strconv.Atoi(ledgerID)
+		params.LedgerID = &ledger
+		if err != nil {
+			badRequest(c, err)
+			return
+		}
+	}
+
+	delegations, err := s.db.Staking.FindDelegations(params)
 	if err != store.ErrNotFound && shouldReturn(c, err) {
+		return
+	}
+
+	if len(delegations) == 0 {
+		notFound(c, store.ErrNotFound)
 		return
 	}
 
