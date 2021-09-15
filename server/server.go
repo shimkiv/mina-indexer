@@ -369,10 +369,15 @@ func (s *Server) GetDelegations(c *gin.Context) {
 		Delegate:  c.Query("delegate"),
 	}
 
-	ledgerID := c.Query("ledger_id")
-	if ledgerID != "" {
-		ledger, err := strconv.Atoi(ledgerID)
-		params.LedgerID = &ledger
+	epochID := c.Query("epoch")
+	if epochID != "" {
+		epoch, err := strconv.Atoi(epochID)
+		ledger, err := s.db.Staking.FindLedger(epoch)
+		if (err != nil && err != store.ErrNotFound) || ledger == nil {
+			notFound(c, errors.New("epoch not found"))
+			return
+		}
+		params.LedgerID = &ledger.ID
 		if err != nil {
 			badRequest(c, err)
 			return
