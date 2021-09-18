@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/figment-networks/mina-indexer/config"
 	"github.com/figment-networks/mina-indexer/store"
@@ -14,8 +15,9 @@ import (
 )
 
 type identity struct {
-	PublicKey string `json:"public_key"`
-	Name      string `json:"name"`
+	PublicKey string   `json:"public_key"`
+	Name      string   `json:"name"`
+	Fee       *float64 `json:"fee"`
 }
 
 func runUpdateIdentity(cfg *config.Config) error {
@@ -28,8 +30,6 @@ func runUpdateIdentity(cfg *config.Config) error {
 		return err
 	}
 	defer db.Close()
-
-	db.SetDebugMode(true)
 
 	return readIdentityFile(cfg.IdentityFile, func(item identity) error {
 		err := db.Validators.UpdateIdentity(item.PublicKey, item.Name)
@@ -53,33 +53,58 @@ func readIdentityFile(src string, handler func(identity) error) error {
 
 	switch filepath.Ext(filepath.Base(src)) {
 	case ".csv":
-		reader := csv.NewReader(f)
-
-		for {
-			row, err := reader.Read()
-			if err != nil {
-				if err == io.EOF {
-					break
-				}
-				return err
-			}
-
-			if err := handler(identity{row[0], row[1]}); err != nil {
-				return err
-			}
-		}
+		err = importFromCSV(f, handler)
 	case ".json":
-		identities := []identity{}
-		if err := json.NewDecoder(f).Decode(&identities); err != nil {
+		err = importFromJSON(f, handler)
+	default:
+		err = errors.New("unsupported file extension")
+	}
+
+	return err
+}
+
+func importFromCSV(f *os.File, handler func(identity) error) error {
+	reader := csv.NewReader(f)
+
+	for {
+		row, err := reader.Read()
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
 			return err
 		}
-		for _, identityItem := range identities {
-			if err := handler(identityItem); err != nil {
+
+		currentIdentity := identity{
+			PublicKey: row[0],
+			Name:      row[1],
+		}
+		if len(row) > 2 {
+			fee, err := strconv.ParseFloat(row[2], 32)
+			if err != nil {
 				return err
 			}
+			currentIdentity.Fee = &fee
 		}
-	default:
-		return errors.New("unsupported file extension")
+
+		if err := handler(currentIdentity); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func importFromJSON(f *os.File, handler func(identity) error) error {
+	identities := []identity{}
+	if err := json.NewDecoder(f).Decode(&identities); err != nil {
+		return err
+	}
+
+	for _, identityItem := range identities {
+		if err := handler(identityItem); err != nil {
+			return err
+		}
 	}
 
 	return nil
