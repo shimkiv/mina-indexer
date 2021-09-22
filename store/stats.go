@@ -27,7 +27,7 @@ func (s StatsStore) CreateChainStats(bucket string, ts time.Time) error {
 	}
 
 	err = s.db.Exec(
-		s.prepareBucket(sqlChainStatsDelete, bucket),
+		s.prepareBucket(queries.ChainStatsDelete, bucket),
 		start,
 	).Error
 	if err != nil && err != ErrNotFound {
@@ -99,7 +99,3 @@ func (s StatsStore) getTimeRange(bucket string, ts time.Time) (start time.Time, 
 func (s StatsStore) prepareBucket(q, bucket string) string {
 	return strings.ReplaceAll(q, "@bucket", bucket)
 }
-
-var (
-	sqlChainStatsDelete = `DELETE FROM chain_stats WHERE time = ? AND BUCKET = '@bucket';`
-)
