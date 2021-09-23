@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -253,22 +254,26 @@ func (w SyncWorker) processBlock(hash string) error {
 		if err != nil && err != store.ErrNotFound {
 			return err
 		}
-		if len(validatorEpochs) == 0 {
-			providers, err := w.staketabClient.GetAllProviders()
+
+		if len(validatorEpochs) == 0 && w.cfg.IdentityFile != "" {
+			epoch, err := strconv.Atoi(graphBlock.ProtocolState.ConsensusState.Epoch)
 			if err != nil {
 				return err
 			}
-			for _, p := range providers.StakingProviders {
-				if p.ProviderAddress == "" {
-					continue
+
+			indexing.ReadIdentityFile(w.cfg.IdentityFile, func(identity indexing.Identity) error {
+				if identity.PublicKey == "" || identity.Fee == nil {
+					return nil
 				}
-				validatorEpoch := model.ValidatorEpoch{
-					AccountAddress: p.ProviderAddress,
-					ValidatorFee:   types.NewFloat64Float(p.ProviderFee),
-				}
-				fmt.Sscanf(graphBlock.ProtocolState.ConsensusState.Epoch, "%d", &validatorEpoch.Epoch)
-				validatorEpochs = append(validatorEpochs, validatorEpoch)
-			}
+
+				validatorEpochs = append(validatorEpochs, model.ValidatorEpoch{
+					AccountAddress: identity.PublicKey,
+					ValidatorFee:   types.NewFloat64Float(*identity.Fee),
+					Epoch:          epoch,
+				})
+
+				return nil
+			})
 		}
 	}
 
