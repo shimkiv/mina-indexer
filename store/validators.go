@@ -44,6 +44,11 @@ func (s ValidatorsStore) UpdateIdentity(key string, name string) error {
 	).Error
 }
 
+// UpdateFee updates the validator fee
+func (s ValidatorsStore) UpdateFee(key string, value float64) error {
+	return s.db.Exec(queries.ValidatorEpochsCreate, key, value).Error
+}
+
 // Import creates or updates validator records in bulk
 func (s ValidatorsStore) Import(records []model.Validator) error {
 	if len(records) == 0 {
