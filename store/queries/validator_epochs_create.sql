@@ -1,7 +1,7 @@
 INSERT INTO validator_epochs (account_address, epoch, validator_fee)
 VALUES (
   ?,
-  (SELECT MAX(epoch) FROM ledgers),
+  COALESCE((SELECT MAX(epoch) FROM ledgers), 0),
   ?
 )
 ON CONFLICT (account_address, epoch) DO UPDATE
