@@ -143,22 +143,22 @@ var (
 					votingFor
 					balance {
 						blockHeight
-      			liquid
-      			locked
-      			stateHash
-      			total
-      			unknown
+						liquid
+						locked
+						stateHash
+						total
+						unknown
 					}
 				}
 				votingFor
 				locked
 				balance {
 					blockHeight
-      		liquid
-      		locked
-      		stateHash
-      		total
-      		unknown
+					liquid
+					locked
+					stateHash
+					total
+					unknown
 				}
 			}
 		}`
