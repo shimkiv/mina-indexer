@@ -36,20 +36,14 @@ func runUpdateIdentity(cfg *config.Config) error {
 			}
 		}
 
-		if item.Name != "" {
-			err := db.Validators.UpdateIdentity(item.PublicKey, item.Name)
+		err := db.Validators.UpdateIdentity(item.PublicKey, item.Name)
 
-			logrus.
-				WithField("pk", item.PublicKey).
-				WithField("name", item.Name).
-				WithError(err).
-				Info("identity updated")
+		logrus.
+			WithField("pk", item.PublicKey).
+			WithField("name", item.Name).
+			WithError(err).
+			Info("identity updated")
 
-			if err != nil {
-				return err
-			}
-		}
-
-		return nil
+		return err
 	})
 }

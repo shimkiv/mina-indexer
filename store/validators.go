@@ -1,6 +1,7 @@
 package store
 
 import (
+	"strings"
 	"time"
 
 	"github.com/figment-networks/indexing-engine/store/bulk"
@@ -38,10 +39,7 @@ func (s ValidatorsStore) UpdateStaking() error {
 
 // UpdateIdentity updates the identity name of the validator
 func (s ValidatorsStore) UpdateIdentity(key string, name string) error {
-	return s.db.Exec(
-		"UPDATE validators SET identity_name = ? WHERE public_key = ?",
-		name, key,
-	).Error
+	return s.db.Exec(queries.ValidatorsUpdateIdentity, key, strings.TrimSpace(name)).Error
 }
 
 // UpdateFee updates the validator fee
