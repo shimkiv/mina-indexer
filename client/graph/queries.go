@@ -131,6 +131,7 @@ var (
 	queryAccount = `
 		query {
 			account(publicKey: "%s") {
+				publicKey
 				nonce
 				inferredNonce
 				receiptChainHash
@@ -142,6 +143,9 @@ var (
 					votingFor
 					balance {
 						blockHeight
+						liquid
+						locked
+						stateHash
 						total
 						unknown
 					}
@@ -149,9 +153,12 @@ var (
 				votingFor
 				locked
 				balance {
-					unknown
-					total
 					blockHeight
+					liquid
+					locked
+					stateHash
+					total
+					unknown
 				}
 			}
 		}`
