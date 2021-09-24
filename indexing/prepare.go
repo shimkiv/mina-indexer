@@ -56,17 +56,10 @@ func Prepare(archiveBlock *archive.Block, graphBlock *graph.Block, validatorEpoc
 		block.SnarkJobsFees = block.SnarkJobsFees.Add(job.Fee)
 	}
 
-	// Prepare accounts
-	accounts, err := mapper.Accounts(graphBlock)
-	if err != nil {
-		return nil, err
-	}
-
 	data := &Data{
 		Block:           block,
 		Validator:       validator,
 		ValidatorEpochs: validatorEpochs,
-		Accounts:        accounts,
 		Transactions:    transactions,
 		Snarkers:        snarkers,
 		SnarkJobs:       snarkJobs,

@@ -15,3 +15,31 @@ type Data struct {
 	Transactions    []model.Transaction
 	SnarkJobs       []model.SnarkJob
 }
+
+// AccountIDs returns a list of all accounts seen in the data payload
+func (d Data) AccountIDs() []string {
+	accounts := map[string]bool{
+		d.Block.Creator: true,
+	}
+
+	for _, tx := range d.Transactions {
+		accounts[tx.Receiver] = true
+		if tx.Sender != nil {
+			accounts[*tx.Sender] = true
+		}
+	}
+
+	for _, snarker := range d.Snarkers {
+		accounts[snarker.Account] = true
+	}
+
+	result := make([]string, len(accounts))
+	idx := 0
+
+	for k := range accounts {
+		result[idx] = k
+		idx++
+	}
+
+	return result
+}

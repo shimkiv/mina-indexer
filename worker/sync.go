@@ -287,12 +287,39 @@ func (w SyncWorker) processBlock(hash string) error {
 		return err
 	}
 
+	// Fetch account details for all accounts seen in the block
+	if err := w.fetchSeenAccounts(graphBlock, data); err != nil {
+		return err
+	}
+
 	if err := indexing.Import(w.db, data); err != nil {
 		return err
 	}
 
 	if err := indexing.Finalize(w.db, data); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (w SyncWorker) fetchSeenAccounts(graphBlock *graph.Block, data *indexing.Data) error {
+	if graphBlock == nil {
+		return nil
+	}
+
+	for _, accID := range data.AccountIDs() {
+		acc, err := w.graphClient.GetAccount(accID)
+		if err != nil {
+			return err
+		}
+
+		mappedAcc, err := mapper.Account(graphBlock, acc)
+		if err != nil {
+			return err
+		}
+
+		data.Accounts = append(data.Accounts, *mappedAcc)
 	}
 
 	return nil
