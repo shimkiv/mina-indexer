@@ -423,7 +423,7 @@ func (s Server) GetRewards(c *gin.Context) {
 
 	interval, _ := model.GetTypeForTimeInterval(params.Interval)
 	rewardOwnerType, _ := model.GetTypeForRewardOwnerType(params.RewardOwnerType)
-	includeEpoch := true
+	includeEpoch := false
 
 	if c.Query("include_epoch") != "" {
 		includeEpoch = c.Query("include_epoch") == "1"
