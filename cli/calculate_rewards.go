@@ -17,7 +17,7 @@ func runCalculateRewards(cfg *config.Config) error {
 	}
 	defer db.Close()
 
-	account := os.Getenv("ACCOUNT")
+	account := os.Getenv("REWARDS_ACCOUNT")
 	if account == "" {
 		return errors.New("account is not provided")
 	}
