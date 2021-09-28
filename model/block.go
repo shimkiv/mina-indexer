@@ -79,3 +79,9 @@ func (b Block) Validate() error {
 	}
 	return nil
 }
+
+func (b Block) EligibleForRewardCalculation() bool {
+	return b.TransactionsFees.Int != nil &&
+		b.SnarkJobsFees.Int != nil &&
+		b.Coinbase.Int != nil
+}

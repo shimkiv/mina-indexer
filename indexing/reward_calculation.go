@@ -16,7 +16,8 @@ import (
 
 // RewardCalculation calculates rewards
 func RewardCalculation(db *store.Store, block model.Block) error {
-	if block.TransactionsFees.Int == nil || block.SnarkJobsFees.Int == nil {
+	if !block.EligibleForRewardCalculation() {
+		log.WithField("hash", block.Hash).Warn("block is not eligible for rewards calculation")
 		return nil
 	}
 
@@ -32,6 +33,7 @@ func RewardCalculation(db *store.Store, block model.Block) error {
 	if err != nil {
 		return err
 	}
+
 	blockReward := block.Coinbase.Add(block.TransactionsFees)
 	blockReward = blockReward.Sub(block.SnarkJobsFees)
 
