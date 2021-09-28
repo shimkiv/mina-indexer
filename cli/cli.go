@@ -68,6 +68,8 @@ func startCommand(cfg *config.Config, name string) error {
 		return startStatus(cfg)
 	case "update-identity":
 		return runUpdateIdentity(cfg)
+	case "calculate-rewards":
+		return runCalculateRewards(cfg)
 	default:
 		return fmt.Errorf("%s is not a valid command", name)
 	}

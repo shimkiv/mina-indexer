@@ -25,7 +25,7 @@ func RewardCalculation(db *store.Store, block model.Block) error {
 	if err != nil && err != store.ErrNotFound {
 		return err
 	} else if len(validatorEpochs) == 0 {
-		log.WithField("validator", block.Creator).Warn("epoch commission rate not found")
+		log.WithField("validator", block.Creator).WithField("epoch", block.Epoch).Warn("epoch commission rate not found")
 		return nil
 	}
 
