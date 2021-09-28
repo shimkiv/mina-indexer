@@ -420,12 +420,20 @@ func (s Server) GetRewards(c *gin.Context) {
 		badRequest(c, err)
 		return
 	}
+
 	interval, _ := model.GetTypeForTimeInterval(params.Interval)
 	rewardOwnerType, _ := model.GetTypeForRewardOwnerType(params.RewardOwnerType)
-	resp, err := s.db.Rewards.FetchRewardsByInterval(c.Param("id"), "", params.From, params.To, interval, rewardOwnerType)
+	includeEpoch := true
+
+	if c.Query("include_epoch") != "" {
+		includeEpoch = c.Query("include_epoch") == "1"
+	}
+
+	resp, err := s.db.Rewards.FetchRewardsByInterval(c.Param("id"), "", params.From, params.To, interval, rewardOwnerType, includeEpoch)
 	if shouldReturn(c, err) {
 		return
 	}
+
 	jsonOk(c, resp)
 }
 

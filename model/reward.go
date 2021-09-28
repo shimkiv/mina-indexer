@@ -18,14 +18,14 @@ type BlockReward struct {
 }
 
 // String returns account text representation
-func (dbr BlockReward) String() string {
-	return dbr.OwnerAccount
+func (br BlockReward) String() string {
+	return br.OwnerAccount
 }
 
 type RewardsSummary struct {
 	Interval string       `json:"interval"`
-	Epoch    string       `json:"epoch"`
-	Delegate string       `json:"delegate"`
+	Epoch    string       `json:"epoch,omitempty"`
+	Delegate string       `json:"delegate,omitempty"`
 	Amount   types.Amount `json:"amount"`
 }
 

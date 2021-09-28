@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/figment-networks/indexing-engine/store/bulk"
+
 	"github.com/figment-networks/mina-indexer/model"
 	"github.com/figment-networks/mina-indexer/store/queries"
 )
@@ -15,11 +16,30 @@ type RewardStore struct {
 }
 
 // FetchRewardsByInterval fetches rewards by interval
-func (s *RewardStore) FetchRewardsByInterval(ownerAccount string, delegate string, from time.Time, to time.Time, timeInterval model.TimeInterval, rewardOwnerType model.RewardOwnerType) ([]model.RewardsSummary, error) {
-	slt := "to_char(time_bucket, $INTERVAL) AS interval,  delegate,  epoch,  SUM(reward) AS amount"
-	slt = strings.Replace(slt, "$INTERVAL", "'"+timeInterval.String()+"'", -1)
+func (s *RewardStore) FetchRewardsByInterval(
+	ownerAccount string,
+	delegate string,
+	from time.Time,
+	to time.Time,
+	timeInterval model.TimeInterval,
+	rewardOwnerType model.RewardOwnerType,
+	includeEpoch bool,
+) ([]model.RewardsSummary, error) {
+	var (
+		sqlSelect string
+		sqlGroup  string
+	)
 
-	scope := s.db.Select(slt).Table("block_rewards")
+	if includeEpoch {
+		sqlSelect = "to_char(time_bucket, $INTERVAL) AS interval, delegate,  epoch,  SUM(reward) AS amount"
+	} else {
+		sqlSelect = "to_char(time_bucket, $INTERVAL) AS interval, delegate, SUM(reward) AS amount"
+	}
+	sqlSelect = strings.Replace(sqlSelect, "$INTERVAL", "'"+timeInterval.String()+"'", -1)
+
+	scope := s.db.
+		Table("block_rewards").
+		Select(sqlSelect)
 
 	if ownerAccount != "" {
 		scope = scope.Where("owner_account = ?", ownerAccount)
@@ -37,13 +57,17 @@ func (s *RewardStore) FetchRewardsByInterval(ownerAccount string, delegate strin
 		scope = scope.Where("time_bucket < ?", to)
 	}
 
-	grp := "to_char(time_bucket, $INTERVAL), delegate,  epoch"
-	grp = strings.Replace(grp, "$INTERVAL", "'"+timeInterval.String()+"'", -1)
-	scope = scope.Group(grp)
+	if includeEpoch {
+		sqlGroup = "to_char(time_bucket, $INTERVAL), delegate,  epoch"
+	} else {
+		sqlGroup = "to_char(time_bucket, $INTERVAL), delegate"
+	}
+	sqlGroup = strings.Replace(sqlGroup, "$INTERVAL", "'"+timeInterval.String()+"'", -1)
+	scope = scope.Group(sqlGroup)
 
-	ord := "to_char(time_bucket, $INTERVAL)"
-	ord = strings.Replace(ord, "$INTERVAL", "'"+timeInterval.String()+"'", -1)
-	scope = scope.Order(ord)
+	sqlOrder := "to_char(time_bucket, $INTERVAL)"
+	sqlOrder = strings.Replace(sqlOrder, "$INTERVAL", "'"+timeInterval.String()+"'", -1)
+	scope = scope.Order(sqlOrder)
 
 	res := []model.RewardsSummary{}
 	err := scope.Find(&res).Error
