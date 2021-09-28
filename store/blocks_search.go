@@ -7,6 +7,7 @@ import (
 // BlockSearch contains a block search params
 type BlockSearch struct {
 	Creator   string `form:"creator"`
+	Canonical string `form:"canonical"`
 	MinHeight uint   `form:"min_height"`
 	MaxHeight uint   `form:"max_height"`
 	Sort      string `form:"sort"`
