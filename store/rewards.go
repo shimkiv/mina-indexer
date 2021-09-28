@@ -96,3 +96,13 @@ func (s RewardStore) Import(records []model.BlockReward) error {
 		}
 	})
 }
+
+// DeleteByValidator removes all block rewards records for a given validator address
+func (s RewardStore) DeleteByValidator(account string) error {
+	return s.db.Exec("DELETE FROM block_rewards WHERE owner_account = ? AND owner_type = 'validator'", account).Error
+}
+
+// DeleteByDelegator removes all block rewards records for given delegator address
+func (s RewardStore) DeleteByDelegator(account string) error {
+	return s.db.Exec("DELETE FROM block_rewards WHERE delegate = ? AND owner_type = 'delegator'", account).Error
+}
