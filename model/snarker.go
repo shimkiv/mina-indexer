@@ -37,3 +37,16 @@ type SnarkerJobsStat struct {
 	SnarkersCount int          `json:"snarkers_count"`
 	WorksCount    int          `json:"works_count"`
 }
+
+type SnarkerStat struct {
+	Time                 time.Time    `json:"time"`
+	FeeMin               types.Amount `json:"fee_min"`
+	FeeMax               types.Amount `json:"fee_max"`
+	FeeAvg               types.Amount `json:"fee_avg"`
+	JobsCount            int          `json:"jobs_count"`
+	WorksCount           int          `json:"works_count"`
+	BlocksCount          int          `json:"blocks_count"`
+	CanonicalBlocksCount int          `json:"canonical_blocks_count"`
+	InclusionRatio       float32      `json:"inclusion_ratio"`
+	FeesAmount           types.Amount `json:"fees_amount"`
+}

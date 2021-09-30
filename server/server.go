@@ -455,8 +455,14 @@ func (s *Server) GetSnarker(c *gin.Context) {
 		return
 	}
 
+	stats, err := s.db.Stats.SnarkerStats(snarker.Account)
+	if shouldReturn(c, err) {
+		return
+	}
+
 	resp := SnarkerResponse{
 		Snarker: *snarker,
+		Stats:   stats,
 	}
 
 	jsonOk(c, resp)

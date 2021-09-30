@@ -14,3 +14,5 @@ WHERE
   AND time <= NOW()
 GROUP BY
   DATE_TRUNC('@bucket', time)
+ORDER BY
+  time DESC
