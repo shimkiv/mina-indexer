@@ -58,6 +58,7 @@ func (s *Server) initRoutes() {
 	s.GET("/rewards/:id", s.GetRewards)
 	s.GET("/snarkers", s.GetSnarkers)
 	s.GET("/snarker/:id", s.GetSnarker)
+	s.GET("/snarkers/:id", s.GetSnarker)
 	s.GET("/transactions", s.GetTransactions)
 	s.GET("/pending_transactions", s.GetPendingTransactions)
 	s.GET("/transactions/:id", s.GetTransaction)
@@ -453,13 +454,11 @@ func (s *Server) GetSnarker(c *gin.Context) {
 		return
 	}
 
-	result, err := s.db.Snarkers.SnarkerInfoFromCanonicalBlocks(snarker.Account, snarker.StartHeight, snarker.LastHeight)
-	if err != nil {
-		badRequest(c, err)
-		return
+	resp := SnarkerResponse{
+		Snarker: *snarker,
 	}
 
-	jsonOk(c, result)
+	jsonOk(c, resp)
 }
 
 // GetTransactions returns transactions by height
