@@ -58,6 +58,8 @@ func (s *Server) initRoutes() {
 	s.GET("/rewards/:id", s.GetRewards)
 	s.GET("/snarkers", s.GetSnarkers)
 	s.GET("/snarker/:id", s.GetSnarker)
+	s.GET("/snarkers/:id", s.GetSnarker)
+	s.GET("/snarker_jobs_stats", timeBucketMiddleware(), s.GetSnarkerJobsStats)
 	s.GET("/transactions", s.GetTransactions)
 	s.GET("/pending_transactions", s.GetPendingTransactions)
 	s.GET("/transactions/:id", s.GetTransaction)
@@ -453,9 +455,36 @@ func (s *Server) GetSnarker(c *gin.Context) {
 		return
 	}
 
-	result, err := s.db.Snarkers.SnarkerInfoFromCanonicalBlocks(snarker.Account, snarker.StartHeight, snarker.LastHeight)
-	if err != nil {
-		badRequest(c, err)
+	stats, err := s.db.Stats.SnarkerTimeStats(snarker.Account)
+	if shouldReturn(c, err) {
+		return
+	}
+
+	jobFees, err := s.db.Stats.SnarkerJobFeesBreakdown(snarker.Account)
+	if shouldReturn(c, err) {
+		return
+	}
+
+	jobStats, err := s.db.Stats.SnarkerStats(snarker.Account)
+	if shouldReturn(c, err) {
+		return
+	}
+
+	resp := SnarkerResponse{
+		Snarker: *snarker,
+		Stats:   stats,
+		Fees:    jobFees,
+		Jobs:    jobStats,
+	}
+
+	jsonOk(c, resp)
+}
+
+func (s *Server) GetSnarkerJobsStats(c *gin.Context) {
+	timeBucket := c.MustGet("timebucket").(timeBucket)
+
+	result, err := s.db.Stats.SnarkerJobsStats(timeBucket.Interval, timeBucket.Period)
+	if shouldReturn(c, err) {
 		return
 	}
 

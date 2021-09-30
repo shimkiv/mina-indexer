@@ -5,6 +5,7 @@ import (
 
 	"github.com/figment-networks/indexing-engine/store/bulk"
 	"github.com/figment-networks/indexing-engine/store/jsonquery"
+
 	"github.com/figment-networks/mina-indexer/model"
 	"github.com/figment-networks/mina-indexer/store/queries"
 )

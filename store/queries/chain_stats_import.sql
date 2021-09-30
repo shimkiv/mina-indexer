@@ -43,7 +43,7 @@ SELECT
   (SELECT COUNT(1) FROM accounts),
   COUNT(DISTINCT(blocks.epoch)),
   COUNT(DISTINCT(blocks.slot)),
-  (SELECT COUNT(1) FROM snarkers),
+  COUNT(DISTINCT(snark_jobs.prover)),
   COALESCE(SUM(blocks.snark_jobs_count), 0),
   COALESCE(SUM(blocks.snark_jobs_fees), 0),
   COALESCE(AVG(blocks.coinbase), 0),
@@ -64,6 +64,8 @@ FROM
 LEFT JOIN transactions
   ON transactions.block_hash = blocks.hash
   AND transactions.status = 'applied'
+LEFT JOIN snark_jobs
+  ON snark_jobs.block_hash = blocks.hash
 WHERE
   blocks.time >= $1
   AND blocks.time <= $2
