@@ -109,6 +109,18 @@ func (s StatsStore) SnarkerStats(account string) ([]model.SnarkerStat, error) {
 	return result, err
 }
 
+func (s StatsStore) SnarkerJobFeesBreakdown(account string) ([]model.SnarkerJobFee, error) {
+	result := []model.SnarkerJobFee{}
+
+	err := s.db.
+		Raw(queries.SnarkerJobFees, account).
+		Scan(&result).
+		Error
+
+	return result, err
+
+}
+
 // getTimeRange returns the start/end time for a given time bucket
 func (s StatsStore) getTimeRange(bucket string, ts time.Time) (start time.Time, end time.Time, err error) {
 	switch bucket {

@@ -50,3 +50,9 @@ type SnarkerStat struct {
 	InclusionRatio       float32      `json:"inclusion_ratio"`
 	FeesAmount           types.Amount `json:"fees_amount"`
 }
+
+type SnarkerJobFee struct {
+	Fee        types.Amount `json:"fee"`
+	JobsCount  int          `json:"jobs_count"`
+	WorksCount int          `json:"works_count"`
+}
