@@ -2,6 +2,7 @@ package store
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -81,6 +82,20 @@ func (s StatsStore) FindValidatorsForDefaultStats(bucket string, ts time.Time) (
 		return nil, checkErr(err)
 	}
 	return res, nil
+}
+
+func (s StatsStore) SnarkerJobsStats(bucket string, limit uint) ([]model.SnarkerJobsStat, error) {
+	query := s.prepareBucket(queries.SnarkerJobsStats, bucket)
+	query = strings.Replace(query, "@interval", fmt.Sprintf("%d%s", limit, bucket), -1)
+
+	result := []model.SnarkerJobsStat{}
+
+	err := s.db.
+		Raw(query).
+		Scan(&result).
+		Error
+
+	return result, err
 }
 
 // getTimeRange returns the start/end time for a given time bucket

@@ -59,6 +59,7 @@ func (s *Server) initRoutes() {
 	s.GET("/snarkers", s.GetSnarkers)
 	s.GET("/snarker/:id", s.GetSnarker)
 	s.GET("/snarkers/:id", s.GetSnarker)
+	s.GET("/snarker_jobs_stats", timeBucketMiddleware(), s.GetSnarkerJobsStats)
 	s.GET("/transactions", s.GetTransactions)
 	s.GET("/pending_transactions", s.GetPendingTransactions)
 	s.GET("/transactions/:id", s.GetTransaction)
@@ -459,6 +460,17 @@ func (s *Server) GetSnarker(c *gin.Context) {
 	}
 
 	jsonOk(c, resp)
+}
+
+func (s *Server) GetSnarkerJobsStats(c *gin.Context) {
+	timeBucket := c.MustGet("timebucket").(timeBucket)
+
+	result, err := s.db.Stats.SnarkerJobsStats(timeBucket.Interval, timeBucket.Period)
+	if shouldReturn(c, err) {
+		return
+	}
+
+	jsonOk(c, result)
 }
 
 // GetTransactions returns transactions by height
