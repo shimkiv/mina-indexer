@@ -54,7 +54,8 @@ type LedgerResponse struct {
 }
 
 type SnarkerResponse struct {
-	Snarker model.Snarker         `json:"snarker"`
-	Stats   []model.SnarkerStat   `json:"stats"`
-	Fees    []model.SnarkerJobFee `json:"job_fees"`
+	Snarker model.Snarker           `json:"snarker"`
+	Stats   []model.SnarkerTimeStat `json:"stats"`
+	Fees    []model.SnarkerJobFee   `json:"job_fees"`
+	Jobs    model.SnarkerStat       `json:"jobs"`
 }

@@ -98,8 +98,19 @@ func (s StatsStore) SnarkerJobsStats(bucket string, limit uint) ([]model.Snarker
 	return result, err
 }
 
-func (s StatsStore) SnarkerStats(account string) ([]model.SnarkerStat, error) {
-	result := []model.SnarkerStat{}
+func (s StatsStore) SnarkerTimeStats(account string) ([]model.SnarkerTimeStat, error) {
+	result := []model.SnarkerTimeStat{}
+
+	err := s.db.
+		Raw(queries.SnarkerTimeStats, account).
+		Scan(&result).
+		Error
+
+	return result, err
+}
+
+func (s StatsStore) SnarkerStats(account string) (model.SnarkerStat, error) {
+	result := model.SnarkerStat{}
 
 	err := s.db.
 		Raw(queries.SnarkerStats, account).
