@@ -16,6 +16,7 @@ SELECT
   coinbase_amount::TEXT coinbase_amount,
   total_currency::TEXT total_currency,
   staked_amount::TEXT staked_amount,
+  ROUND(staked_amount * 100.0 / total_currency, 2) staking_ratio,
   delegations_count,
   delegations_amount::TEXT delegations_amount
 FROM
