@@ -9,6 +9,8 @@ require (
 	github.com/go-playground/validator/v10 v10.8.0 // indirect
 	github.com/go-sql-driver/mysql v1.5.0 // indirect
 	github.com/jessevdk/go-assets v0.0.0-20160921144138-4f4301a06e15
+	github.com/jessevdk/go-assets-builder v0.0.0-20130903091706-b8483521738f // indirect
+	github.com/jessevdk/go-flags v1.5.0 // indirect
 	github.com/jinzhu/gorm v1.9.12
 	github.com/json-iterator/go v1.1.11 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
@@ -17,9 +19,10 @@ require (
 	github.com/pressly/goose v2.6.0+incompatible
 	github.com/rollbar/rollbar-go v1.2.0
 	github.com/sirupsen/logrus v1.7.0
+	github.com/sosedoff/sqlembed v0.1.1 // indirect
 	github.com/stretchr/testify v1.7.0
 	github.com/ugorji/go v1.2.6 // indirect
-	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
+	golang.org/x/sys v0.0.0-20220315194320-039c03cc5b86 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
