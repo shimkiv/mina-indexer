@@ -72,6 +72,9 @@ func (c Client) Block(hash string) (*Block, error) {
 	if err != nil {
 		return nil, err
 	}
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("Cannot fetch block %s: %s", hash, resp.Status)
+	}
 	defer resp.Body.Close()
 
 	block := &Block{}
