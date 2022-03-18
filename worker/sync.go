@@ -261,19 +261,40 @@ func (w SyncWorker) processBlock(hash string) error {
 				return err
 			}
 
-			indexing.ReadIdentityFile(w.cfg.IdentityFile, func(identity indexing.Identity) error {
+			uniqueValidatorEpochs := map[string]model.ValidatorEpoch{}
+
+			err = indexing.ReadIdentityFile(w.cfg.IdentityFile, func(identity indexing.Identity) error {
 				if identity.PublicKey == "" || identity.Fee == nil {
 					return nil
 				}
 
-				validatorEpochs = append(validatorEpochs, model.ValidatorEpoch{
+				validatorEpoch := model.ValidatorEpoch{
 					AccountAddress: identity.PublicKey,
 					ValidatorFee:   types.NewFloat64Float(*identity.Fee),
 					Epoch:          epoch,
-				})
+				}
+
+				// check for duplicates, but only fail if the fee is different (ignore different Names since it isn't used for validatorEpochs)
+				if prev, found := uniqueValidatorEpochs[identity.PublicKey]; found {
+					if prev.ValidatorFee.String() != validatorEpoch.ValidatorFee.String() {
+						return fmt.Errorf("duplicate validator PublicKey: %s with different fees %d vs %d", identity.PublicKey, prev.ValidatorFee.String(), validatorEpoch.ValidatorFee.String())
+					} else {
+						// if the fees are the same, don't add this epoch to the validatorEpochs slice
+						return nil
+					}
+				}
+
+				uniqueValidatorEpochs[validatorEpoch.AccountAddress] = validatorEpoch
+
+				validatorEpochs = append(validatorEpochs, validatorEpoch)
 
 				return nil
 			})
+
+			if err != nil {
+				return err
+			}
+
 		}
 	}
 
