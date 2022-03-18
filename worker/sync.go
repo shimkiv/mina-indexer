@@ -277,7 +277,7 @@ func (w SyncWorker) processBlock(hash string) error {
 				// check for duplicates, but only fail if the fee is different (ignore different Names since it isn't used for validatorEpochs)
 				if prev, found := uniqueValidatorEpochs[identity.PublicKey]; found {
 					if prev.ValidatorFee.String() != validatorEpoch.ValidatorFee.String() {
-						return fmt.Errorf("duplicate validator PublicKey: %s with different fees %d vs %d", identity.PublicKey, prev.ValidatorFee.String(), validatorEpoch.ValidatorFee.String())
+						return fmt.Errorf("duplicate validator PublicKey: %s with different fees %s vs %s", identity.PublicKey, prev.ValidatorFee.String(), validatorEpoch.ValidatorFee.String())
 					} else {
 						// if the fees are the same, don't add this epoch to the validatorEpochs slice
 						return nil
