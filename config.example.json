@@ -1,0 +1,8 @@
+{
+  "database_url": "postgres://mina:mina@0.0.0.0:5445/mina?sslmode=disable",
+  "mina_endpoint": "http://0.0.0.0:3085/graphql",
+  "archive_endpoint": "http://0.0.0.0:3088",
+  "sync_interval": "10s",
+  "log_level": "info",
+  "staging_ledger_disabled": true
+}

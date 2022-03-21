@@ -1,0 +1,83 @@
+version: "3.7"
+
+networks:
+  internal:
+    name: internal
+    driver: bridge
+
+volumes:
+  database:
+
+services:
+  database:
+    image: postgres:13
+    networks: 
+      - internal
+    ports:
+      - "5445:5432"
+    environment:
+      POSTGRES_USER: mina
+      POSTGRES_PASSWORD: mina
+      POSTGRES_DB: mina
+    volumes:
+      - database:/var/lib/postgresql/data/
+    healthcheck:
+      # use psql instead of pg_isready since pg_isready doesn't check if the user is valid 
+      test: psql postgres://mina:mina@database:5432/mina?sslmode=disable --command "select 1"
+      interval: 1s
+      timeout: 1s
+      retries: 20
+  
+  server:
+    build: .
+    command: -cmd=server
+    env_file:
+      - config.example.env
+    networks:
+      - internal
+    ports:
+      - "8081:8081"
+    depends_on:
+      database:
+        condition: service_healthy
+
+  worker:
+    build: .
+    command: -cmd=worker
+    env_file:
+      - config.example.env
+    networks:    
+      - internal
+    depends_on:
+      database:
+        condition: service_healthy
+
+  migrate:
+    build: .
+    command: -cmd=migrate
+    env_file:
+      - config.example.env
+    networks:
+      - internal
+    depends_on:
+      database:
+        condition: service_healthy
+
+  migrate-cmd:
+    image: migrate/migrate
+    volumes:
+      - ./migrations:/migrations
+    command: version
+    env_file:
+      - config.example.env
+    networks:
+      - internal
+    entrypoint:
+      - migrate
+      - -path
+      - /migrations/
+      - -database
+      - postgres://mina:mina@database:5432/mina?sslmode=disable
+    depends_on:
+      database:
+        condition: service_healthy

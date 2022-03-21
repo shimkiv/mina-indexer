@@ -45,6 +45,8 @@ docker-build:
 		-t ${DOCKER_IMAGE}:${DOCKER_TAG} \
 		-f Dockerfile \
 		.
+run: build
+	./mina-indexer -config config.example.json -cmd=worker
 
 # Tag and push docker images
 docker-push: docker-build
