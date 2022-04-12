@@ -335,6 +335,14 @@ func (w SyncWorker) fetchSeenAccounts(graphBlock *graph.Block, data *indexing.Da
 			return err
 		}
 
+		// an account may be in the block, but doesn't actually exist because of a failed account creation transaction
+		// e.g. Amount_insufficient_to_create_account
+		// skip these since the account does not exist
+		if acc == nil {
+			log.WithField("account_id", accID).Info("skipping nonexistent account")
+			continue
+		}
+
 		mappedAcc, err := mapper.Account(graphBlock, acc)
 		if err != nil {
 			return err

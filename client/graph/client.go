@@ -243,7 +243,14 @@ func (c Client) GetAccount(publicKey string) (*Account, error) {
 	if err := c.Query(buildAccountQuery(publicKey), &result); err != nil {
 		return nil, err
 	}
-	return &result.Account, nil
+
+	// the GraphQL endpoint will return a null account object for nonexistent accounts
+	// check if the required account fields are empty/nil to confirm if it's null
+	if result.Account.PublicKey == "" && result.Account.Balance == nil {
+		return nil, nil
+	} else {
+		return &result.Account, nil
+	}
 }
 
 func (c Client) ConsensusTip() (*Block, error) {
